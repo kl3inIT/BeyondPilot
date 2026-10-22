@@ -11,6 +11,7 @@ const privateSections = [
   "workspace",
   "reviews",
   "account",
+  "consent",
   "applications",
   "oauth-consent",
   "sign-in",

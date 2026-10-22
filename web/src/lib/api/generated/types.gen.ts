@@ -1371,6 +1371,62 @@ export type ConnectingApp = {
 };
 
 /**
+ * The current consent text and what the caller agreed to under it.
+ */
+export type Consent = {
+    /**
+     * The language of the text.
+     */
+    locale: string;
+    /**
+     * True while the caller has not agreed to the platform purpose of the current version. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.
+     */
+    needed: boolean;
+    /**
+     * Every purpose, in the order the text lists them.
+     */
+    purposes: Array<ConsentPurpose>;
+    /**
+     * The full consent text, in Markdown.
+     */
+    text: string;
+    /**
+     * The version of the text; a choice records it.
+     */
+    version: number;
+};
+
+export type ConsentPurpose = {
+    /**
+     * When the caller made that choice.
+     */
+    answeredAt?: string | null;
+    /**
+     * The caller's current choice; null when they have not answered it under a version that still counts.
+     */
+    granted?: boolean | null;
+    key: 'platform' | 'partners' | 'ai' | 'updates';
+    /**
+     * What needs it: using the platform, submitting an application or proposal, or nothing.
+     */
+    requiredFor: 'platform' | 'apply' | 'none';
+};
+
+/**
+ * The caller's choice for every purpose. Only a choice that differs from the current one, or that the current version asks again, is recorded.
+ */
+export type ConsentRequest = {
+    ai: boolean;
+    partners: boolean;
+    platform: boolean;
+    /**
+     * Where the person made the choice; it is recorded with it.
+     */
+    source: 'accept_all' | 'choose' | 'settings' | 'undo' | 'application';
+    updates: boolean;
+};
+
+/**
  * How judges and GenAI Fund reach an applicant. Each part may be empty while the application is a draft.
  */
 export type ContactDetails = {
@@ -3384,6 +3440,10 @@ export type McpToolSwitch = {
  * The signed-in account.
  */
 export type Me = {
+    /**
+     * True until the person agrees to the platform purpose of the current consent text. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.
+     */
+    consentNeeded: boolean;
     /**
      * ISO 3166-1 alpha-2; null until the person says where they are.
      */
@@ -8705,6 +8765,68 @@ export type RevokeConnectedAppResponses = {
 };
 
 export type RevokeConnectedAppResponse = RevokeConnectedAppResponses[keyof RevokeConnectedAppResponses];
+
+export type GetMyConsentData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/identity/consent';
+};
+
+export type GetMyConsentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The account has been disabled.
+     */
+    403: Problem;
+};
+
+export type GetMyConsentError = GetMyConsentErrors[keyof GetMyConsentErrors];
+
+export type GetMyConsentResponses = {
+    /**
+     * The current text and the caller's choices.
+     */
+    200: Consent;
+};
+
+export type GetMyConsentResponse = GetMyConsentResponses[keyof GetMyConsentResponses];
+
+export type RecordMyConsentData = {
+    body: ConsentRequest;
+    path?: never;
+    query?: never;
+    url: '/api/identity/consent';
+};
+
+export type RecordMyConsentErrors = {
+    /**
+     * A purpose or the source is missing or not one of those listed.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The account has been disabled.
+     */
+    403: Problem;
+};
+
+export type RecordMyConsentError = RecordMyConsentErrors[keyof RecordMyConsentErrors];
+
+export type RecordMyConsentResponses = {
+    /**
+     * The choices as they are now.
+     */
+    200: Consent;
+};
+
+export type RecordMyConsentResponse = RecordMyConsentResponses[keyof RecordMyConsentResponses];
 
 export type GetMeData = {
     body?: never;

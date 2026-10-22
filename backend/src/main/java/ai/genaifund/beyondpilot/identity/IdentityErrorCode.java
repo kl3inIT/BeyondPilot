@@ -11,6 +11,9 @@ public enum IdentityErrorCode implements ErrorCode {
 
 	OPERATOR_REQUIRED("IDENTITY_OPERATOR_REQUIRED", ErrorCategory.NOT_PERMITTED, "This needs the operator role."),
 
+	PARTNERS_CONSENT_REQUIRED("IDENTITY_PARTNERS_CONSENT_REQUIRED", ErrorCategory.NOT_PERMITTED,
+			"Submitting shares it with the partners and judges of the program, or with the organization behind the use case. Turn on sharing with program partners first."),
+
 	ACCOUNT_NOT_FOUND("IDENTITY_ACCOUNT_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such account."),
 
 	APP_HOST_INVALID("IDENTITY_APP_HOST_INVALID", ErrorCategory.VALIDATION,

@@ -45,6 +45,8 @@ public class EmailService {
 	/** The signed-in person's organization on the site; its solutions and use cases open under it. */
 	private static final String MY_ORGANIZATION = "/workspace/organization";
 
+	private static final String CONSENT = "/consent";
+
 	/** The signed-in person's talent profile on the site. */
 	private static final String MY_TALENT = "/workspace/talent";
 
@@ -102,6 +104,15 @@ public class EmailService {
 		delivery.sendNow(id, sent).ifPresent(failure -> {
 			throw notSent(failure);
 		});
+	}
+
+	/**
+	 * Confirms to a person that they withdrew their consent to use the platform, which locks their account until they
+	 * agree again: the acknowledgement Decree 356/2025/ND-CP art. 5(2) asks for, sent at once.
+	 */
+	@Transactional
+	public void sendConsentWithdrawn(String recipient) {
+		queue(EmailKind.CONSENT_WITHDRAWN, recipient, values("consentUrl", url(CONSENT)));
 	}
 
 	/**

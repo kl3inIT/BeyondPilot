@@ -37,21 +37,22 @@ export const getCurrentAccount = cache(async (): Promise<Me | null> => {
 });
 
 /**
- * The signed-in account, for a page nobody may see signed out. A visitor is sent to sign in and
- * comes back to `returnTo`, the page's route without its locale prefix. A page calls this itself:
- * a layout is not rendered again when a person moves between its pages, so a check placed there
- * is skipped.
+ * The signed-in account, for a page nobody may see signed out. A visitor is sent to sign in, and a
+ * person who has not agreed to use the platform under the current consent text to agree (BEY-240);
+ * either comes back to `returnTo`, the page's route without its locale prefix. A page calls this
+ * itself: a layout is not rendered again when a person moves between its pages, so a check placed
+ * there is skipped.
  */
 export async function requireAccount(returnTo: string): Promise<Me> {
   const account = await getCurrentAccount();
-  if (account) {
+  if (account && !account.consentNeeded) {
     return account;
   }
   const locale = await getLocale();
   redirect(
     getPathname({
       href: {
-        pathname: siteRoutes.signIn,
+        pathname: account ? siteRoutes.consent : siteRoutes.signIn,
         query: { returnTo: getPathname({ href: returnTo, locale }) },
       },
       locale,

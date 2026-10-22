@@ -164,7 +164,7 @@ class EmailRendererTest {
 			RenderedEmail kept = renderer.render(kind, saved, values, APPEARANCE);
 			assertThat(kept.text()).as(kind.value()).startsWith("Saved wording.").doesNotContain(url);
 		}
-		assertThat(linked).containsExactlyInAnyOrder("organization_invitation",
+		assertThat(linked).containsExactlyInAnyOrder("consent_withdrawn", "organization_invitation",
 				"organization_request_approved", "organization_restored",
 				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
 				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",

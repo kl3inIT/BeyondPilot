@@ -343,6 +343,7 @@
     "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
     "IDENTITY_ACCOUNT_DISABLED": "This account has been disabled, so it can no longer be used. Ask GenAI Fund if you need it back.",
     "IDENTITY_OPERATOR_REQUIRED": "You are no longer an operator.",
+    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Submitting shares it with the partners and judges of the program, or with the organization behind the use case. Turn on sharing with program partners in Settings first.",
     "IDENTITY_ACCOUNT_NOT_FOUND": "This account no longer exists.",
     "IDENTITY_APP_HOST_INVALID": "Enter a host name such as app.example.com.",
     "IDENTITY_APP_HOST_NOT_FOUND": "This host is no longer in the list. Reload the page.",
@@ -569,7 +570,6 @@
     "title": "Sign in to BeyondPilot",
     "lead": "One account to apply to programs, list your solutions and publish use cases.",
     "returnLead": "Once you sign in, you'll continue to the page you opened.",
-    "legal": "By continuing, you accept the <terms>Terms of Service</terms> and the <privacy>Privacy Policy</privacy>.",
     "google": "Continue with Google",
     "or": "or",
     "emailLabel": "Email",
@@ -598,6 +598,62 @@
         "locked": "Too many wrong codes. Send a new code to try again.",
         "disabled": "This account has been disabled, so it cannot sign in.",
         "failed": "We couldn't check the code. Try again in a moment."
+      }
+    }
+  },
+  "Consent": {
+    "metaTitle": "Your personal data",
+    "title": "Your personal data on BeyondPilot",
+    "lead": "To use BeyondPilot, confirm that you have read and agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>, and choose how we may collect, process and share your personal data for the purposes in <text>the consent text</text>.",
+    "summary": "Accept all turns on",
+    "later": "You can change any of these later in Settings.",
+    "acceptAll": "Accept all",
+    "choose": "Choose one by one",
+    "signOut": "Sign out",
+    "failed": "Your choices were not saved. Try again.",
+    "required": {
+      "platform": "Required",
+      "apply": "Needed to apply",
+      "none": "Optional"
+    },
+    "purposes": {
+      "platform": {
+        "short": "Use the platform",
+        "without": "Needed to use BeyondPilot."
+      },
+      "partners": {
+        "short": "Share with program partners",
+        "without": "Partner enterprises, judges and mentors read your applications. Without it you can use BeyondPilot but not apply to programs."
+      },
+      "ai": {
+        "short": "AI suggestions and evaluation",
+        "without": "Without it your profile stays listed but AI does not suggest it, and only people review your applications."
+      },
+      "updates": {
+        "short": "Updates and newsletters",
+        "without": "Emails about your account and applications still arrive."
+      }
+    },
+    "dialog": {
+      "title": "BeyondPilot – Personal Data Consent",
+      "version": "Version {version}",
+      "choices": "Your choices",
+      "save": "Save my choices",
+      "platformMissing": "Tick the first box to use the platform. The others are up to you."
+    },
+    "settings": {
+      "title": "Privacy and consent",
+      "agreed": "Version {version}, agreed {date} ·",
+      "read": "Read the consent text",
+      "requests": "To get a copy of your data, correct it or have it deleted, email <mail>team@beyondpilot.ai</mail>.",
+      "turnedOn": "{purpose} turned on.",
+      "turnedOff": "{purpose} turned off.",
+      "withdraw": {
+        "title": "Withdraw your consent to use the platform?",
+        "description": "Your account is locked straight away, and you need to agree again to use BeyondPilot.",
+        "note": "We email you to confirm it and act on it within 15 days. This does not delete your data.",
+        "keep": "Keep my account",
+        "confirm": "Withdraw and lock"
       }
     }
   },
@@ -3189,6 +3245,7 @@
       },
       "groups": {
         "sign_in": "Sign-in",
+        "account": "Account",
         "organizations": "Organizations",
         "applications": "Programs and applications",
         "solutions": "Solutions",
@@ -3200,6 +3257,10 @@
         "sign_in_code": {
           "name": "Sign-in code",
           "description": "Sent each time someone asks for a code to sign in with their address."
+        },
+        "consent_withdrawn": {
+          "name": "Consent withdrawn",
+          "description": "Sent to the person when they withdraw their consent to use the platform, which locks their account until they agree again."
         },
         "organization_invitation": {
           "name": "Organization invitation",
@@ -7239,7 +7300,7 @@
         {
           "heading": "Who we are",
           "body": [
-            "BeyondPilot operates the website and web application at beyondpilot.ai. For any privacy question or request, write to team@beyondpilot.ai."
+            "BeyondPilot is funded and operated by GenAI Fund, through GenAI Technology Development Pte. Ltd., which is responsible for your personal data. It runs the website and web application at beyondpilot.ai. For any privacy question or request, write to team@beyondpilot.ai."
           ]
         },
         {
@@ -7264,9 +7325,15 @@
           ]
         },
         {
+          "heading": "Your consent",
+          "body": [
+            "Before you use the platform, we ask you to agree to how we use your personal data, one purpose at a time: using the platform (required), sharing with a program's partners, judges and mentors (needed to apply to programs), AI suggestions and evaluation (optional), and updates and newsletters (optional). We keep a record of each choice and the version of the text you agreed to. You can change any choice in Settings; it takes effect at once and does not affect what was done before. Withdrawing your consent to use the platform locks your account until you agree again."
+          ]
+        },
+        {
           "heading": "AI features",
           "body": [
-            "Search and matching use AI models to read the text of public profiles, solutions, decks and use cases. That text is sent to our AI provider (OpenAI, directly or through OpenRouter) only to produce search results and match explanations. We do not use your data to train AI models, and our providers process it under their API terms, which do not allow training on it either."
+            "Search and matching use AI models to read the text of public profiles, solutions, decks and use cases. That text is sent to our AI provider (OpenAI, directly or through OpenRouter) only to produce search results and match explanations. We do not use your data to train AI models, and our providers process it under their API terms, which do not allow training on it either. If you decline AI, your talent profile is not sent to our AI provider and AI does not evaluate your applications or proposals; people still review them."
           ]
         },
         {
@@ -7299,13 +7366,13 @@
         {
           "heading": "How long we keep it",
           "body": [
-            "We keep your data while your account is active. When you delete your account or ask us to, we delete or anonymize your personal data within 30 days, except what we must keep for legal, security or audit reasons. Submissions to a program may be kept as part of that program's record."
+            "We keep your data while your account is active. When you ask us to delete it, we delete or anonymize your personal data within 20 days, except what we must keep for legal, security or audit reasons. Submissions to a program may be kept as part of that program's record."
           ]
         },
         {
           "heading": "Your choices and rights",
           "body": [
-            "You can view and edit most of your data in your account. You can also ask us to give you a copy of your data, correct it, delete it, or stop processing it, by writing to team@beyondpilot.ai. We answer within 30 days."
+            "You can view and edit most of your data in your account, and change your consent choices in Settings. You can also ask us to give you a copy of your data, correct it, delete it, restrict or stop processing it, or object to it, by writing to team@beyondpilot.ai. We acknowledge every request within 2 working days and act on it within the time Vietnam's Personal Data Protection Law (Law 91/2025/QH15) and Decree 356/2025/ND-CP set: 10 days to give a copy or correct, 15 days to stop or restrict, 20 days to delete."
           ]
         },
         {

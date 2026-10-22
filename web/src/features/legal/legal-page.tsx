@@ -7,7 +7,7 @@ type LegalDoc = "privacy" | "terms";
 type LegalSection = { heading: string; body?: string[]; items?: string[]; after?: string[] };
 
 /** The day the policies below last changed; bump it with every change to their copy. */
-const LAST_UPDATED = new Date("2026-10-08T00:00:00Z");
+const LAST_UPDATED = new Date("2026-10-22T00:00:00Z");
 
 const anchor = (index: number) => `section-${index + 1}`;
 

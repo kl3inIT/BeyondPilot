@@ -12,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Who calls an MCP server. Every call is checked afresh, so nothing that changed since the token was issued is missed:
  * the token is for that server and carries its scope, its connection still stands (a revoke ends it at once), the
- * account is active, and for the operators' server the account is an operator now.
+ * account is active and has agreed to the platform purpose of the current consent text, and for the operators' server
+ * the account is an operator now.
  */
 @Service
 public class McpCallers {
@@ -23,10 +24,14 @@ public class McpCallers {
 
 	private final IdentityService identity;
 
-	McpCallers(McpBearerTokens tokens, OAuthTableRepository tables, IdentityService identity) {
+	private final ConsentChoices consents;
+
+	McpCallers(McpBearerTokens tokens, OAuthTableRepository tables, IdentityService identity,
+			ConsentChoices consents) {
 		this.tokens = tokens;
 		this.tables = tables;
 		this.identity = identity;
+		this.consents = consents;
 	}
 
 	/** The public address of BeyondPilot: its authorization server, and the base of its pages and MCP servers. */
@@ -69,6 +74,11 @@ public class McpCallers {
 		}
 		catch (IdentityException disabled) {
 			throw new McpCallRefused("The account is disabled", false);
+		}
+		// An app could otherwise be used without its person ever opening a page, where the consent is asked. Signing the
+		// app in again passes through that page.
+		if (consents.needed(accountId)) {
+			throw new McpCallRefused("Agree to the personal data consent at " + site() + "/consent first", false);
 		}
 		if (audience == McpAudience.OPERATOR && !identity.isOperator(actor)) {
 			throw new McpCallRefused("The account is no longer an operator", false);

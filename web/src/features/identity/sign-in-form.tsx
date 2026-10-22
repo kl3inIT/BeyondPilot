@@ -4,14 +4,12 @@ import { CircleAlertIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { TextButton } from "@/components/actions/text-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FieldSeparator } from "@/components/ui/field";
 import { CheckEmail } from "@/features/identity/check-email";
 import { EmailSignIn } from "@/features/identity/email-sign-in";
 import { GoogleButton } from "@/features/identity/google-button";
 import type { CodeRequestOutcome } from "@/features/identity/identity-api";
-import { siteRoutes } from "@/lib/site";
 
 /** What can come back in `?error=` after a round trip; an unknown value shows nothing. */
 const errorCodes = ["google"] as const;
@@ -83,20 +81,6 @@ function SignInForm({ returnTo, home, error }: SignInFormProps) {
           }}
         />
       </div>
-      <p className="text-xs text-muted-foreground">
-        {t.rich("legal", {
-          terms: (chunks) => (
-            <TextButton size="sm" href={siteRoutes.terms} className="whitespace-normal">
-              {chunks}
-            </TextButton>
-          ),
-          privacy: (chunks) => (
-            <TextButton size="sm" href={siteRoutes.privacy} className="whitespace-normal">
-              {chunks}
-            </TextButton>
-          ),
-        })}
-      </p>
     </>
   );
 }

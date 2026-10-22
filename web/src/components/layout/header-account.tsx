@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { ConsentRedirect } from "@/components/layout/consent-redirect";
 import { HeaderMessages } from "@/components/layout/header-messages";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { judgesAnyProgram } from "@/features/review/review-queries";
@@ -21,6 +22,7 @@ async function HeaderAccount() {
     const reviewer = account.role !== "operator" && (await judgesAnyProgram());
     return (
       <>
+        {account.consentNeeded && <ConsentRedirect />}
         <HeaderMessages />
         <AccountMenu
           name={account.displayName ?? null}

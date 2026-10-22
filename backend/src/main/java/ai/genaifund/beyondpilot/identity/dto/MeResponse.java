@@ -15,5 +15,7 @@ public record MeResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UU
 		@Schema(types = { "string", "null" },
 				description = "ISO 3166-1 alpha-2; null until the person says where they are.") @Nullable String country,
 		@Schema(types = { "string", "null" },
-				description = "With its country code; null until the person gives a number.") @Nullable String phone) {
+				description = "With its country code; null until the person gives a number.") @Nullable String phone,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "True until the person agrees to the platform purpose of the current consent text. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.") boolean consentNeeded) {
 }

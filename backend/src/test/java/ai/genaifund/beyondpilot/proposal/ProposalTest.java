@@ -19,6 +19,7 @@ import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -31,6 +32,48 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  * and its email, a change submitted again, withdrawing, and what is refused. Only the SMTP server is replaced.
  */
 class ProposalTest extends ApplicationsHttpTest {
+
+	@Autowired
+	private ReviewService review;
+
+	@Test
+	void anApplicantWhoDeclinesAiIsLeftOutOfTheAiEvaluation() {
+		Form form = program("private-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String email = "private@individual.test";
+		String applicant = TestSignIn.session(client, mail, email);
+		String draft = body(put(applicant, form.path(), application(Map.of("firstName", "Lan"), null, Map.of(), null))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(draft, "$.application.id");
+		String organized = body(post(applicant, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Lan Vo", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		UUID solution = completeSolution(applicant, email, "Quiet Copilot");
+		put(applicant, form.path(),
+				withDeck(application(contact(), solution, answers(form, email), versionOf(organized)), email))
+			.expectStatus()
+			.isOk();
+		post(applicant, API + "/applications/" + id + "/submit", null).expectStatus().isOk();
+		UUID program = UUID.fromString(JsonPath.read(draft, "$.program.id"));
+		assertThat(review.submissionsTo(program)).extracting(ProgramSubmission::id).contains(UUID.fromString(id));
+
+		client.put()
+			.uri("/api/identity/consent")
+			.cookie(TestSignIn.SESSION_COOKIE, applicant)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("platform", true, "partners", true, "ai", false, "updates", false, "source", "settings"))
+			.exchange()
+			.expectStatus()
+			.isOk();
+
+		assertThat(review.submissionsTo(program)).extracting(ProgramSubmission::id)
+			.doesNotContain(UUID.fromString(id));
+		// People still review it.
+		assertThat(JsonPath.<String>read(body(get(applicant, API + "/applications/" + id).expectStatus().isOk()),
+				"$.application.status")).isEqualTo("submitted");
+	}
 
 	@Test
 	void anIndividualAppliesChangesItSubmitsAgainAndWithdraws() {

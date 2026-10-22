@@ -23,6 +23,9 @@ public enum EmailKind {
 	SIGN_IN_CODE("sign_in_code", EmailGroup.SIGN_IN, true, null,
 			Variable.required("code", "482913"), Variable.required("minutes", "15")),
 
+	CONSENT_WITHDRAWN("consent_withdrawn", EmailGroup.ACCOUNT, true, null,
+			Variable.optional("consentUrl", "https://beyondpilot.example/consent")),
+
 	ORGANIZATION_INVITATION("organization_invitation", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"), Variable.required("inviterName", "Hà Lê"),
 			Variable.optional("owner", Boolean.FALSE),

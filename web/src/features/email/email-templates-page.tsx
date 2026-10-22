@@ -14,6 +14,7 @@ import { isEmailKind, KindIcon } from "./email-kinds";
 
 const groups = [
   "sign_in",
+  "account",
   "organizations",
   "applications",
   "solutions",

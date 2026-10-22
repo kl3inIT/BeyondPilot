@@ -202,6 +202,25 @@ public class SearchDocumentRepository {
 			.update();
 	}
 
+	/**
+	 * Whether the item's text may go to the embedding provider. An item that may not loses its vector at once, so
+	 * meaning search stops finding it; one that may again waits for the next embedding run.
+	 */
+	public void embeddable(String kind, UUID itemId, boolean embeddable) {
+		jdbc.sql("""
+				update search_document
+				set embeddable = :embeddable,
+				    embedding = case when :embeddable then embedding end,
+				    embedding_model = case when :embeddable then embedding_model end,
+				    embedded_hash = case when :embeddable then embedded_hash end
+				where kind = :kind and item_id = :itemId and embeddable is distinct from :embeddable
+				""")
+			.param("embeddable", embeddable)
+			.param("kind", kind)
+			.param("itemId", itemId)
+			.update();
+	}
+
 	/** The title of every item of a kind the index holds, by its identifier. */
 	public Map<UUID, String> titles(String kind) {
 		Map<UUID, String> titles = new LinkedHashMap<>();
@@ -247,7 +266,8 @@ public class SearchDocumentRepository {
 	public List<Pending> pendingEmbeddings(String model, int limit) {
 		return jdbc.sql("""
 				select kind, item_id, card, content_hash from search_document
-				where (embedded_hash is distinct from content_hash or embedding_model is distinct from :model)
+				where embeddable
+				  and (embedded_hash is distinct from content_hash or embedding_model is distinct from :model)
 				  and (embedding_next_attempt_at is null or embedding_next_attempt_at <= now())
 				order by indexed_at, kind, item_id
 				limit :limit
@@ -268,7 +288,7 @@ public class SearchDocumentRepository {
 				update search_document
 				set embedding = cast(:embedding as vector), embedding_model = :model, embedded_hash = content_hash,
 				    embedding_attempts = 0, embedding_next_attempt_at = null, embedding_error = null
-				where kind = :kind and item_id = :itemId and content_hash = :hash
+				where kind = :kind and item_id = :itemId and content_hash = :hash and embeddable
 				""")
 			.param("embedding", vector(embedding))
 			.param("model", model)
@@ -318,11 +338,12 @@ public class SearchDocumentRepository {
 	 */
 	public List<KindStatus> status(@Nullable String model) {
 		return jdbc.sql("""
-				select kind, total, listed, embedded, held_back, total - embedded - held_back as waiting
+				select kind, total, listed, embedded, held_back, total - embedded - held_back - withheld as waiting
 				from (
 				    select kind, count(*) as total, count(*) filter (where listed) as listed,
+				           count(*) filter (where not embeddable) as withheld,
 				           count(*) filter (where embedding_model = :model and embedded_hash = content_hash) as embedded,
-				           count(*) filter (where embedding_error is not null and (embedding_model is distinct from :model
+				           count(*) filter (where embeddable and embedding_error is not null and (embedding_model is distinct from :model
 				                            or embedded_hash is distinct from content_hash)) as held_back
 				    from search_document
 				    group by kind

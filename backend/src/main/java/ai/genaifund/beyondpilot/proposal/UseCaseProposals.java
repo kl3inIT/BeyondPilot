@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.ConsentPurpose;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
@@ -215,10 +216,13 @@ public class UseCaseProposals {
 	 * Sends the proposal as it was saved: it is checked again, and the sender's name, country and number must be given.
 	 * @throws ProposalException when the caller has no such proposal, it was sent, the use case no longer takes
 	 * proposals, or it lacks what a proposal needs; the code says what
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller has not agreed to share their data
+	 * with program partners
 	 */
 	@Transactional
 	public UseCaseProposalFormResponse send(Actor actor, UUID id) {
 		identity.requireActive(actor);
+		identity.requirePartnersConsent(actor);
 		UseCaseProposal proposal = proposals.findForUpdate(id).orElseThrow(() -> notFound(id));
 		Membership membership = organizations.membershipOf(actor)
 			.filter(found -> found.organizationId().equals(proposal.getOrganizationId()))
@@ -564,12 +568,16 @@ public class UseCaseProposals {
 	/**
 	 * The proposals a use case holds now, sent and not withdrawn, the latest first, with what each says and the PDF it
 	 * attached, for matching to judge them (BEY-229). Nobody is checked here: it is read by a module, never answered to
-	 * a person as it is.
+	 * a person as it is. A proposal whose sender declined AI processing of their data is left out (BEY-240).
 	 */
 	@Transactional(readOnly = true)
 	public List<SentUseCaseProposal> sentTo(UUID useCaseId) {
-		List<UseCaseProposal> sent = proposals.findByUseCaseIdAndStatusOrderBySentAtDesc(useCaseId,
-				UseCaseProposal.SENT);
+		List<UseCaseProposal> sent = proposals
+			.findByUseCaseIdAndStatusOrderBySentAtDesc(useCaseId, UseCaseProposal.SENT)
+			.stream()
+			.filter(proposal -> proposal.getSentByAccountId() == null
+					|| !identity.declined(proposal.getSentByAccountId(), ConsentPurpose.AI))
+			.toList();
 		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
 		Map<UUID, StoredFile> files = storage.describe(sent.stream()
 			.map(UseCaseProposal::getDeckFileId)

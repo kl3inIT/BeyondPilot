@@ -486,6 +486,25 @@ createServer((request, response) => {
   if (url.pathname === "/api/identity/me") {
     return json(response, account ? 200 : 401, account ?? {});
   }
+  // Every stub account has agreed to every purpose of the consent text (BEY-240).
+  if (url.pathname === "/api/identity/consent") {
+    if (!account) {
+      return json(response, 401, {});
+    }
+    const answeredAt = "2026-10-22T03:00:00Z";
+    return json(response, 200, {
+      version: 1,
+      locale: "en",
+      text: "## 1. Who we are\n\nGenAI Fund.\n\n## 7. Your consent\n\n- I agree to use the platform. (Required)\n- I agree to share with partners. (Required to take part in programs)\n- I agree to AI. (Optional)\n- I agree to updates. (Optional)\n",
+      needed: false,
+      purposes: [
+        { key: "platform", requiredFor: "platform", granted: true, answeredAt },
+        { key: "partners", requiredFor: "apply", granted: true, answeredAt },
+        { key: "ai", requiredFor: "none", granted: true, answeredAt },
+        { key: "updates", requiredFor: "none", granted: true, answeredAt },
+      ],
+    });
+  }
   if (url.pathname === "/api/usecase/admin/organizations") {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});

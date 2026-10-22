@@ -310,10 +310,13 @@ public class ProposalService {
 	 * version of who applied, with what and what they answered, and a copy goes to the applicant by email.
 	 * @throws ProposalException when the caller has no such application, the program's applications have closed, the
 	 * application was submitted to a program that takes no changes, or it lacks what a submission needs
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller has not agreed to share their data
+	 * with program partners
 	 */
 	@Transactional
 	public ApplicationViewResponse submit(Actor actor, UUID id) {
 		Person person = identity.person(actor);
+		identity.requirePartnersConsent(actor);
 		Proposal proposal = proposals.findForUpdate(id)
 			.filter(found -> found.getAccountId().equals(actor.accountId()))
 			.orElseThrow(() -> notFound(id));

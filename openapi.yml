@@ -2297,6 +2297,71 @@ paths:
       summary: End an AI app's connection
       tags:
       - Identity
+  /api/identity/consent:
+    get:
+      operationId: getMyConsent
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consent"
+          description: The current text and the caller's choices.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The account has been disabled.
+      security:
+      - session: []
+      summary: The consent text and what the caller agreed to
+      tags:
+      - Identity
+    put:
+      operationId: recordMyConsent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Consent"
+          description: The choices as they are now.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A purpose or the source is missing or not one of those listed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The account has been disabled.
+      security:
+      - session: []
+      summary: Record the caller's choice for every purpose
+      tags:
+      - Identity
   /api/identity/me:
     get:
       operationId: getMe
@@ -17380,6 +17445,99 @@ components:
       - local
       - name
       - reviewed
+    Consent:
+      type: object
+      description: The current consent text and what the caller agreed to under it.
+      properties:
+        locale:
+          type: string
+          description: The language of the text.
+        needed:
+          type: boolean
+          description: True while the caller has not agreed to the platform purpose
+            of the current version. The web sends them to the consent step from every
+            page and the MCP servers refuse their tokens; the API itself still answers
+            them.
+        purposes:
+          type: array
+          description: "Every purpose, in the order the text lists them."
+          items:
+            $ref: "#/components/schemas/ConsentPurpose"
+        text:
+          type: string
+          description: "The full consent text, in Markdown."
+        version:
+          type: integer
+          format: int32
+          description: The version of the text; a choice records it.
+      required:
+      - locale
+      - needed
+      - purposes
+      - text
+      - version
+    ConsentPurpose:
+      type: object
+      properties:
+        answeredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the caller made that choice.
+        granted:
+          type:
+          - boolean
+          - "null"
+          description: The caller's current choice; null when they have not answered
+            it under a version that still counts.
+        key:
+          type: string
+          enum:
+          - platform
+          - partners
+          - ai
+          - updates
+        requiredFor:
+          type: string
+          description: "What needs it: using the platform, submitting an application\
+            \ or proposal, or nothing."
+          enum:
+          - platform
+          - apply
+          - none
+      required:
+      - key
+      - requiredFor
+    ConsentRequest:
+      type: object
+      description: "The caller's choice for every purpose. Only a choice that differs\
+        \ from the current one, or that the current version asks again, is recorded."
+      properties:
+        ai:
+          type: boolean
+        partners:
+          type: boolean
+        platform:
+          type: boolean
+        source:
+          type: string
+          description: Where the person made the choice; it is recorded with it.
+          enum:
+          - accept_all
+          - choose
+          - settings
+          - undo
+          - application
+          pattern: ^(accept_all|choose|settings|undo|application)$
+        updates:
+          type: boolean
+      required:
+      - ai
+      - partners
+      - platform
+      - source
+      - updates
     ContactDetails:
       type: object
       description: How judges and GenAI Fund reach an applicant. Each part may be
@@ -20931,6 +21089,12 @@ components:
       type: object
       description: The signed-in account.
       properties:
+        consentNeeded:
+          type: boolean
+          description: True until the person agrees to the platform purpose of the
+            current consent text. The web sends them to the consent step from every
+            page and the MCP servers refuse their tokens; the API itself still answers
+            them.
         country:
           type:
           - string
@@ -20959,6 +21123,7 @@ components:
           - user
           - operator
       required:
+      - consentNeeded
       - email
       - id
       - role

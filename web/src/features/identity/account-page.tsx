@@ -1,11 +1,15 @@
 import { getTranslations } from "next-intl/server";
 
-import type { Me } from "@/lib/api/generated";
+import type { Consent, Me } from "@/lib/api/generated";
 
+import { AccountConsent } from "./account-consent";
 import { AccountContactForm } from "./account-contact-form";
 
-/** A person's account: who they signed in as, and where and how to reach them. */
-async function AccountPage({ account }: { account: Me }) {
+/**
+ * A person's account: who they signed in as, where and how to reach them, and what they agreed to
+ * about their personal data.
+ */
+async function AccountPage({ account, consent }: { account: Me; consent: Consent }) {
   const t = await getTranslations("Account");
 
   return (
@@ -18,6 +22,7 @@ async function AccountPage({ account }: { account: Me }) {
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
         <AccountContactForm account={account} />
+        <AccountConsent consent={consent} />
       </div>
     </div>
   );

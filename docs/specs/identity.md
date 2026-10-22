@@ -41,6 +41,11 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
   unknown ones out and not filtering by status.
 - **`IdentityService.reachAtIfUnknown(actor, country, phone)`** keeps a country and a phone number the person gave
   elsewhere where the account has none; what the account holds is left as it is. `proposal` calls it on a submission.
+- **Consent (BEY-240).** `IdentityService.requirePartnersConsent(actor)` refuses with
+  `IDENTITY_PARTNERS_CONSENT_REQUIRED` a person whose latest `partners` choice is not an agreement; `proposal` calls it
+  before submitting an application and sending a use case proposal. `IdentityService.declined(accountId, purpose)` says
+  whether the person's latest choice for a `ConsentPurpose` is a refusal; an account that has not answered has not
+  declined. `talent` and `proposal` read it for `AI`.
 - **Labels.** `Person.label()` and `Operator.label` are the display name, or the address while there is none.
 - **The MCP servers' callers.** `McpCallers.authenticate(token, audience)` returns the
   `McpCaller(accountId, clientId, connectionId)` behind a call to the server `McpAudience` names, or throws
@@ -74,6 +79,10 @@ Other modules' tables reference `identity_account (id)` by foreign key. Persiste
 [persistence guideline](../guidelines/persistence.md) describes: `AccountRepository`, `ExternalIdentityRepository` and
 `SignInChallengeRepository` are Spring Data repositories, and `AccountQueryRepository` is the `JdbcClient` projection
 of the operators' list.
+
+- **`identity_consent_record`** (`V112__identity_create_consent_records.sql`). `id`, `account_id`, `purpose`, `granted`,
+  `version`, `locale`, `source`, `request_id`, `recorded_at`; indexed by account, purpose and time; a trigger refuses
+  every update and delete.
 
 ## Accounts
 
@@ -261,6 +270,27 @@ below.
   (`/account/mcp`); operators list every person's connections and revoke one (Admin › AI › MCP). A revoke stops the
   refresh token at once and the access token at its next call, and is audited as `mcp.app_revoke`.
 
+## Consent to the use of personal data
+
+What each person agreed to about their personal data, as Vietnam's Personal Data Protection Law (Law 91/2025/QH15) and
+Decree 356/2025/ND-CP require (BEY-240; [design](../increments/active/bey-240-personal-data-consent/design.md),
+[research](../research/2026-10-22-personal-data-consent.md)).
+
+- **Purposes.** `ConsentPurpose`: `platform` (required to use the platform), `partners` (needed to submit an
+  application or send a use case proposal), `ai` and `updates` (optional). Each was last asked by version 1.
+- **Text.** Each version is an unchanged file, `backend/src/main/resources/consent/v<version>.<locale>.md`; version 1
+  is English, GenAI Fund's text of 22 October 2026 with the AI purpose. `Consents.VERSION` names the current one. A new
+  text is a new file and a new version; a purpose it asks again gets a higher `askedSince`, and a choice made under
+  an older version no longer counts.
+- **Record.** `PUT /api/identity/consent` writes a row of `identity_consent_record` for each purpose whose choice
+  changes or that the person never answered, so the first answer records all four, a refusal included. Rows are never
+  changed or deleted. A person's current choice for a purpose is their latest row for it.
+- **Needed.** An account whose latest `platform` choice is missing or a refusal has `consentNeeded` on `/me`. The web
+  sends it to `/consent` from every page; the MCP servers refuse its tokens with `invalid_token` and a reason naming
+  `/consent`. The API itself does not refuse it.
+- **Withdrawal.** Each recorded choice publishes `ConsentChanged`. A withdrawal of `platform` emails the person a
+  confirmation (`consent_withdrawn`); no other choice is emailed, and nobody at GenAI Fund is.
+
 ## HTTP
 
 | Method and path                                                              | Answer                                                                                                                                                                                                                                                                           |
@@ -269,7 +299,9 @@ below.
 | `POST /login/ott`                                                            | `204` signed in; `401` wrong code; `410` no code waiting, expired or used; `429` too many wrong codes; `403` account disabled                                                                                                                                                    |
 | `GET /oauth2/authorization/google`                                           | A redirect to Google, then to the remembered path or `/`, or to `/sign-in?error=google`                                                                                                                                                                                          |
 | `POST /logout`                                                               | `204`                                                                                                                                                                                                                                                                            |
-| `GET /api/identity/me` (`getMe`)                                             | `Me`: `id`, `email`, `displayName`, `role`, `country`, `phone`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`                                                                                                                                                              |
+| `GET /api/identity/me` (`getMe`)                                             | `Me`: `id`, `email`, `displayName`, `role`, `country`, `phone`, `consentNeeded`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`                                                                                                                                             |
+| `GET /api/identity/consent` (`getMyConsent`)                                 | `Consent`: `version`, `locale`, `text` (Markdown), `needed`, and each purpose with `requiredFor`, the caller's `granted` and `answeredAt`; `401`; `403`                                                                                                                          |
+| `PUT /api/identity/consent` (`recordMyConsent`)                              | `Consent` after recording `platform`, `partners`, `ai`, `updates` and `source` (`accept_all`, `choose`, `settings`, `undo` or `application`); `400` a purpose or the source missing or unknown; `401`; `403`                                                                     |
 | `PUT /api/identity/me/contact` (`updateMyContact`)                           | `Me` after replacing `country` and `phone` (a part left out is cleared) and `name`; `400` not written as asked; `401`; `403`                                                                                                                                                     |
 | `GET /api/identity/accounts` (`listAccounts`)                                | `AccountList`; `400` invalid parameter                                                                                                                                                                                                                                           |
 | `POST /api/identity/accounts/{id}/disable` (`disableAccount`)                | `204`; `404`; `409` own account                                                                                                                                                                                                                                                  |
@@ -296,18 +328,19 @@ problem with the request identifier.
 
 `IdentityErrorCode`, turned into problems by `config.ApiExceptionHandler`:
 
-| Code                             | Category, status     | When                                                    |
-| -------------------------------- | -------------------- | ------------------------------------------------------- |
-| `IDENTITY_ACCOUNT_DISABLED`      | Not permitted, `403` | The account is disabled, or a session's account is gone |
-| `IDENTITY_EMAIL_NOT_VERIFIED`    | Not permitted, `403` | A first Google sign-in with an unverified address       |
-| `IDENTITY_OPERATOR_REQUIRED`     | Not permitted, `403` | The caller is not an operator now                       |
-| `IDENTITY_ACCOUNT_NOT_FOUND`     | Not found, `404`     | No account has that id                                  |
-| `IDENTITY_APP_HOST_INVALID`      | Validation, `400`    | An app host that is not a host name                     |
-| `IDENTITY_APP_HOST_NOT_FOUND`    | Not found, `404`     | Removing a host that is not in the reviewed list        |
-| `IDENTITY_APP_NOT_CONNECTED`     | Not found, `404`     | Revoking an app the person has not connected            |
-| `IDENTITY_APP_REQUEST_NOT_FOUND` | Not found, `404`     | No connection request of the caller's is waiting        |
-| `IDENTITY_OWN_ACCOUNT`           | Conflict, `409`      | An operator disables or demotes themselves              |
-| `IDENTITY_OPERATOR_CONFIGURED`   | Conflict, `409`      | Withdrawing the role of a configured operator           |
+| Code                                 | Category, status     | When                                                    |
+| ------------------------------------ | -------------------- | ------------------------------------------------------- |
+| `IDENTITY_ACCOUNT_DISABLED`          | Not permitted, `403` | The account is disabled, or a session's account is gone |
+| `IDENTITY_EMAIL_NOT_VERIFIED`        | Not permitted, `403` | A first Google sign-in with an unverified address       |
+| `IDENTITY_OPERATOR_REQUIRED`         | Not permitted, `403` | The caller is not an operator now                       |
+| `IDENTITY_PARTNERS_CONSENT_REQUIRED` | Not permitted, `403` | Submitting or sending without the `partners` consent    |
+| `IDENTITY_ACCOUNT_NOT_FOUND`         | Not found, `404`     | No account has that id                                  |
+| `IDENTITY_APP_HOST_INVALID`          | Validation, `400`    | An app host that is not a host name                     |
+| `IDENTITY_APP_HOST_NOT_FOUND`        | Not found, `404`     | Removing a host that is not in the reviewed list        |
+| `IDENTITY_APP_NOT_CONNECTED`         | Not found, `404`     | Revoking an app the person has not connected            |
+| `IDENTITY_APP_REQUEST_NOT_FOUND`     | Not found, `404`     | No connection request of the caller's is waiting        |
+| `IDENTITY_OWN_ACCOUNT`               | Conflict, `409`      | An operator disables or demotes themselves              |
+| `IDENTITY_OPERATOR_CONFIGURED`       | Conflict, `409`      | Withdrawing the role of a configured operator           |
 
 During sign-in these codes do not reach the browser as problems: on the code path `IDENTITY_ACCOUNT_DISABLED` becomes
 the status `403`, and on the Google path any code becomes the redirect to `/sign-in?error=google`.
@@ -318,6 +351,9 @@ the status `403`, and on the Google path any code becomes the redirect to `/sign
   modules that carries a secret, the code in clear: it is handled only by a synchronous listener, never by
   `@ApplicationModuleListener`, so it is never stored in the event publication registry, and its `toString` leaves out
   the address and the code ([ADR 0005](../decisions/0005-operators-run-email-delivery.md)).
+- **`ConsentChanged(accountId, purpose, granted, withdrawal)`**, published by `Consents` for each choice it records,
+  in that transaction. `notification` emails a withdrawal of `platform`; `talent` has the person's profile indexed
+  again when `ai` changes.
 - The module publishes no other event.
 
 ## Not done

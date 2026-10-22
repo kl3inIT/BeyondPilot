@@ -38,7 +38,7 @@ class TalentIndexing {
 		lock.run(() -> {
 			UUID id = changed.profileId();
 			talent.indexed(id)
-				.ifPresentOrElse(profile -> index.save(document(profile)),
+				.ifPresentOrElse(this::save,
 						() -> index.remove(SearchDocumentRepository.TALENT, id));
 		});
 	}
@@ -46,10 +46,16 @@ class TalentIndexing {
 	/** Saves every approved, listed profile and takes out every other. */
 	Rebuilt rebuild() {
 		List<IndexedTalent> listed = talent.indexedAll();
-		listed.forEach(profile -> index.save(document(profile)));
+		listed.forEach(this::save);
 		int removed = index.removeAllExcept(SearchDocumentRepository.TALENT,
 				listed.stream().map(IndexedTalent::id).toList());
 		return new Rebuilt(listed.size(), removed);
+	}
+
+	/** Saves the profile, without a vector when its person declined AI processing of their data. */
+	private void save(IndexedTalent profile) {
+		index.save(document(profile));
+		index.embeddable(SearchDocumentRepository.TALENT, profile.id(), !profile.aiDeclined());
 	}
 
 	static Document document(IndexedTalent profile) {

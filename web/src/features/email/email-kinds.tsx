@@ -18,6 +18,7 @@ import {
   MessageSquareDotIcon,
   MessageSquareIcon,
   MessageSquareXIcon,
+  ShieldOffIcon,
   TimerIcon,
   TimerOffIcon,
   UserPlusIcon,
@@ -28,6 +29,7 @@ import type { EmailKind } from "./email-search";
 /** The icon each kind of email is shown with: plain, in the muted colour, beside its name. */
 const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   sign_in_code: KeyRoundIcon,
+  consent_withdrawn: ShieldOffIcon,
   organization_invitation: UserPlusIcon,
   // The three kinds of the retired organization review stay for the rows of the log.
   organization_approved: BadgeCheckIcon,

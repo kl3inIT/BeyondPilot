@@ -33,6 +33,7 @@ const rootPaths = [
 const areaPaths = {
   public: [
     "Account",
+    "Consent",
     "Application",
     "Home.featured",
     "Mcp",
@@ -47,7 +48,7 @@ const areaPaths = {
     "PdfViewer",
     "UseCaseProposal.errors",
   ],
-  auth: ["SignIn"],
+  auth: ["SignIn", "Consent"],
   apply: [
     "Apply",
     "EntryList",
