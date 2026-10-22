@@ -7053,7 +7053,6 @@
     },
     "scores": {
       "metaTitle": "Bảng điểm",
-      "lead": "Điểm của mỗi giám khảo là trung bình các tiêu chí, trên thang {scale}. Chênh lệch từ {wide} điểm trở lên giữa giám khảo cao nhất và thấp nhất được đánh dấu: nên bàn những đơn đó trước.",
       "search": "Tìm theo giải pháp hoặc tổ chức",
       "view": {
         "label": "So sánh",
@@ -7075,6 +7074,7 @@
         "reviewer": "Giám khảo"
       },
       "wide": "Giám khảo chấm vênh nhau",
+      "spreadHint": "Điểm của giám khảo cao nhất trừ thấp nhất. ⚠ khi từ {wide} trở lên.",
       "noMatch": {
         "title": "Không có đơn shortlist nào khớp",
         "clear": "Xóa tìm kiếm"

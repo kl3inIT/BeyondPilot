@@ -7053,7 +7053,6 @@
     },
     "scores": {
       "metaTitle": "Scores",
-      "lead": "Each judge's score is their mean over the criteria, out of {scale}. A spread of {wide} or more between the highest and lowest judge is marked: start the discussion there.",
       "search": "Search by solution or organization",
       "view": {
         "label": "Compare",
@@ -7075,6 +7074,7 @@
         "reviewer": "Judge"
       },
       "wide": "Judges far apart",
+      "spreadHint": "The highest judge's score less the lowest. ⚠ at {wide} or more.",
       "noMatch": {
         "title": "No shortlisted application matches",
         "clear": "Clear the search"

@@ -32,17 +32,14 @@ function ProgramScoresPage({ programId, data, search }: ProgramScoresPageProps) 
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <p className="max-w-prose text-sm text-muted-foreground">
-          {t("lead", { scale: data.scale, wide: table.wide })}
-        </p>
+      {/* The table says what it holds; what a mark means is on the mark and the Spread heading. */}
+      <ScoresToolbar>
         <ExportScores
           programId={programId}
           applicationIds={table.rows.map((row) => row.id)}
           disabled={table.rows.length === 0}
         />
-      </div>
-      <ScoresToolbar />
+      </ScoresToolbar>
       {table.rows.length === 0 ? (
         table.shortlisted > 0 ? (
           <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>

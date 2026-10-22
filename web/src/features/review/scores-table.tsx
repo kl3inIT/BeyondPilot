@@ -78,12 +78,12 @@ function ScoresByApplication({
       cell: ({ getValue }) => <span className="font-medium">{shown(getValue())}</span>,
     }),
     applicationColumn.accessor("spread", {
-      header: t("columns.spread"),
+      header: () => <span title={t("spreadHint", { wide })}>{t("columns.spread")}</span>,
       meta: { numeric: true, nowrap: true, descFirst: true, pin: 2 },
       cell: ({ getValue }) => {
         const spread = getValue();
         return spread != null && spread >= wide ? (
-          <span className="inline-flex items-center gap-1 font-medium">
+          <span title={t("wide")} className="inline-flex items-center gap-1 font-medium">
             <TriangleAlertIcon aria-hidden="true" className="size-3.5 text-warning" />
             {shown(spread)}
             <span className="sr-only">{t("wide")}</span>
