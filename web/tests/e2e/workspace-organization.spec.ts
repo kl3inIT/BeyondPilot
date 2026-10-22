@@ -456,6 +456,10 @@ test.describe("workspace organization", () => {
     await expect(description).toHaveValue("Assistants for insurers and brokers.");
     await page.getByRole("combobox", { name: "Industries" }).fill("Health");
     await page.getByRole("option", { name: "Healthcare" }).click();
+    // The list of several choices stays open after a pick, and while it is open the rest of the page
+    // is hidden from the accessibility tree: Save is closed out until the list is.
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("listbox")).toBeHidden();
     await save.click();
 
     await expect(page.getByText("Profile saved.")).toBeVisible();
