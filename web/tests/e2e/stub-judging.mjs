@@ -85,7 +85,7 @@ const applications = [
     bookmarked: false,
     average: 2.5,
     scored: 1,
-    mine: "conflict",
+    mine: "scored",
   },
 ];
 
@@ -178,7 +178,6 @@ function application(operator) {
             scores: { [criteria[0].id]: 4, [criteria[1].id]: 4 },
             average: 4,
             note: "Strong on consent.",
-            conflict: false,
             bookmarked: false,
             version: 1,
             savedAt: new Date(Date.now() - day).toISOString(),
@@ -266,8 +265,6 @@ export function answerJudging(url, account) {
             invitedAt: new Date(Date.now() - 5 * day).toISOString(),
             expiresAt: new Date(Date.now() + 2 * day).toISOString(),
             assessed: 2,
-            // One of the two is a step back for a conflict.
-            conflicts: 1,
           },
           {
             id: "r0000000-0000-4000-8000-000000000002",
@@ -278,7 +275,6 @@ export function answerJudging(url, account) {
             invitedAt: new Date(Date.now() - day).toISOString(),
             expiresAt: new Date(Date.now() + 6 * day).toISOString(),
             assessed: 0,
-            conflicts: 0,
           },
         ],
         applications: 3,
@@ -312,25 +308,15 @@ export function answerJudging(url, account) {
           row(
             applications[0],
             [
-              { accountId: minh, score: 2.5, conflict: false },
-              { accountId: lan, score: 6, conflict: false },
+              { accountId: minh, score: 2.5 },
+              { accountId: lan, score: 6 },
             ],
             4.3,
             2,
             3.5,
           ),
           row(applications[1], [], null, 0, null),
-          row(
-            applications[2],
-            [
-              { accountId: minh, score: 2.5, conflict: false },
-              { accountId: lan, score: null, conflict: true },
-            ],
-            2.5,
-            1,
-            null,
-            "shortlisted",
-          ),
+          row(applications[2], [{ accountId: minh, score: 2.5 }], 2.5, 1, null, "shortlisted"),
         ],
       },
     ];

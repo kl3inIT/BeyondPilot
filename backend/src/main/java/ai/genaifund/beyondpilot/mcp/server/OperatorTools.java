@@ -287,8 +287,8 @@ class OperatorTools {
 				.forEach((criterion, score) -> scores.put(criteria.getOrDefault(criterion, criterion.toString()),
 						score));
 			return fields("reviewer", assessment.reviewer(), "role", assessment.role(), "scores", scores, "average",
-					assessment.average(), "note", detail ? assessment.note() : null, "conflict",
-					assessment.conflict(), "version", assessment.version());
+					assessment.average(), "note", detail ? assessment.note() : null, "version",
+					assessment.version());
 		}).toList());
 		result.put("history", application.history()
 			.stream()

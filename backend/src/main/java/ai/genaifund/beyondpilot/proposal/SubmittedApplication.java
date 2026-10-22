@@ -62,11 +62,11 @@ public record SubmittedApplication(UUID id, Program program, int version, Instan
 	/**
 	 * One person's assessment.
 	 * @param role {@code operator} or {@code reviewer}
-	 * @param scores the score of each criterion from 1 to 10, by its identifier; empty for a conflict or a note alone
+	 * @param scores the score of each criterion from 1 to 10, by its identifier; empty for a note alone
 	 * @param version the version it was made on; earlier than the application's when it was submitted again since
 	 */
 	public record Assessment(String reviewer, String role, Map<UUID, Integer> scores, @Nullable Double average,
-			@Nullable String note, boolean conflict, int version) {
+			@Nullable String note, int version) {
 	}
 
 }

@@ -12,10 +12,11 @@ import { exportProgramScores } from "@/lib/api/generated";
 import { scoresSearch, scoresViews } from "./scores-search";
 
 /**
- * The switch between By application and By judge, and the search above the Scores tab. They are
- * the URL: a change writes it and the server renders the tab again.
+ * The switch between By application and By judge, the search, and the tab's actions at the end of
+ * the row. The switch and the search are the URL: a change writes it and the server renders the tab
+ * again.
  */
-function ScoresToolbar() {
+function ScoresToolbar({ children }: { children?: React.ReactNode }) {
   const t = useTranslations("Review.scores");
   const list = useTranslations("Review.list");
   const [, startTransition] = useTransition();
@@ -53,6 +54,7 @@ function ScoresToolbar() {
             filters={[]}
           />
         </div>
+        {children}
       </div>
     </div>
   );

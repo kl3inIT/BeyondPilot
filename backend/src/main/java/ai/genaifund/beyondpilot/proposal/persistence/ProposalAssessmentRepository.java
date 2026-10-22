@@ -14,8 +14,8 @@ public interface ProposalAssessmentRepository extends JpaRepository<ProposalAsse
 	List<ProposalAssessment> findByProposalIdOrderBySavedAt(UUID proposalId);
 
 	/**
-	 * Whether anyone has scored an application of the program, which fixes its criteria. A note, a bookmark or a
-	 * conflict holds no scores and fixes nothing.
+	 * Whether anyone has scored an application of the program, which fixes its criteria. A note or a bookmark holds
+	 * no scores and fixes nothing.
 	 */
 	@Query(value = """
 			select exists (select 1 from proposal_assessment a join proposal p on p.id = a.proposal_id

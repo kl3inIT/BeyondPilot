@@ -19,7 +19,5 @@ public record ReviewerResponse(
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant invitedAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant expiresAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many submitted applications they are done with: scored, or stepped back from for a conflict.") long assessed,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many of those they stepped back from for a conflict, without a score.") long conflicts) {
+				description = "How many submitted applications they scored.") long assessed) {
 }

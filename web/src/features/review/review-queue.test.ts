@@ -13,10 +13,10 @@ describe("judgeQueue", () => {
     item("b", "none"),
     item("c", "scored"),
     item("d", "none"),
-    item("e", "conflict"),
+    item("e", "scored"),
   ];
 
-  it("counts what is left and skips what is scored or declared a conflict", () => {
+  it("counts what is left and skips what is scored", () => {
     expect(judgeQueue(items, "a")).toEqual({ left: 2, nextId: "b" });
     expect(judgeQueue(items, "b")).toEqual({ left: 2, nextId: "d" });
   });
@@ -31,7 +31,7 @@ describe("judgeQueue", () => {
       left: 1,
       nextId: null,
     });
-    expect(judgeQueue([item("a", "scored"), item("b", "conflict")], "a")).toEqual({
+    expect(judgeQueue([item("a", "scored"), item("b", "scored")], "a")).toEqual({
       left: 0,
       nextId: null,
     });

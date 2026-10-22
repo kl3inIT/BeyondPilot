@@ -472,7 +472,7 @@
     "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
     "PROPOSAL_REVIEWER_NOT_FOUND": "This judge is no longer on the list. Reload the page.",
     "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
-    "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 10, or none to keep only a note, or declare a conflict.",
+    "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 10, or none to keep only a note.",
     "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
     "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
     "PROPOSAL_USE_CASE_NOT_FOUND": "There is no such use case.",
@@ -6698,7 +6698,6 @@
         "not_selected": "Not selected"
       },
       "mine": {
-        "conflict": "Conflict",
         "none": "Not scored"
       },
       "average": "{value}",
@@ -6753,7 +6752,6 @@
         "average": "{value} average",
         "none": "No judge has scored it yet.",
         "you": "{name} (you)",
-        "conflict": "Declared a conflict",
         "role": {
           "operator": "GenAI Fund",
           "reviewer": "Judge"
@@ -6774,7 +6772,6 @@
     "assessment": {
       "title": "Your assessment · version {version}",
       "earlierVersion": "You scored version {version}. The applicant has submitted again since; check what changed and save again.",
-      "conflictDeclared": "You declared a conflict with this applicant, so your score is left out. Score it below to take that back.",
       "noCriteria": "Scoring opens once GenAI Fund sets the judging criteria.",
       "criteria": "Criteria, 1 (lowest) to 10 (highest)",
       "average": "Average {value}",
@@ -6792,9 +6789,7 @@
       "skip": "Skip",
       "saveAndNext": "Save and next",
       "save": "Save",
-      "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
-      "conflictSaved": "Conflict recorded. Your score is left out.",
       "incomplete": "{count, plural, one {# criterion still needs} other {# criteria still need}} a score before you can save.",
       "bar": {
         "progress": "{scored} of {total} criteria scored",
@@ -6958,7 +6953,7 @@
         "invited": "Invited",
         "lapsed": "Lapsed"
       },
-      "assessed": "{done} of {total} applications done{conflicts, plural, =0 {} one { · # conflict} other { · # conflicts}}",
+      "assessed": "{done} of {total} applications scored",
       "note": "An invitation lasts 7 days. Judges never see each other's scores.",
       "invite": {
         "open": "Invite a judge",
@@ -7058,7 +7053,6 @@
     },
     "scores": {
       "metaTitle": "Scores",
-      "lead": "Each judge's score is their mean over the criteria, out of {scale}. A spread of {wide} or more between the highest and lowest judge is marked: start the discussion there.",
       "search": "Search by solution or organization",
       "view": {
         "label": "Compare",
@@ -7072,7 +7066,6 @@
         "spread": "Spread",
         "judge": "Judge",
         "role": "Role",
-        "conflicts": "Conflicts",
         "waiting": "Not scored yet",
         "mean": "Their mean"
       },
@@ -7080,8 +7073,8 @@
         "operator": "GenAI Fund",
         "reviewer": "Judge"
       },
-      "conflict": "Conflict",
       "wide": "Judges far apart",
+      "spreadHint": "The highest judge's score less the lowest. ⚠ at {wide} or more.",
       "noMatch": {
         "title": "No shortlisted application matches",
         "clear": "Clear the search"

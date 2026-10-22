@@ -330,20 +330,16 @@ class DecisionTools {
 		properties.put("scores", Map.of("type", "object", "additionalProperties", Map.of("type", "integer",
 				"minimum", LOWEST_SCORE, "maximum", HIGHEST_SCORE), "description",
 				"A score from 1 to 10 for every one of the program's criteria, keyed by the criterion's name as "
-						+ "get_application lists it (or its id). Leave it out only with conflict."));
-		properties.put("conflict", Map.of("type", "boolean", "description",
-				"True when the operator knows the applicant and steps back: no scores are kept, and the "
-						+ "application counts as done for them without counting as a score."));
+						+ "get_application lists it (or its id)."));
 		properties.put("note", Map.of("type", "string", "maxLength", MAX_NOTE, "description",
 				"The operator's private note, which other operators read and judges never do. It replaces their "
 						+ "note; leave it out to keep the note they have."));
 		Map<String, Object> schema = Map.of("type", "object", "properties", properties, "required",
-				List.of("application"), "additionalProperties", false);
+				List.of("application", "scores"), "additionalProperties", false);
 		Tool tool = Tool.builder("score_application", schema)
 			.title("Score an application as a judge")
 			.description("Save the operator's own scores of one submitted application to a program, as they would "
-					+ "on its review page: a score from 1 to 10 for every criterion of the program, or a declared "
-					+ "conflict of interest. Saving again replaces their scores; the same scores again change "
+					+ "on its review page: a score from 1 to 10 for every criterion of the program. Saving again replaces their scores; the same scores again change "
 					+ "nothing. Nobody is told, and judges never read another person's scores. Once a program's "
 					+ "outcomes are released only its shortlisted applications are still scored. Use it only for "
 					+ "scores the operator gave in this conversation, one application per call, after reading it with "
@@ -357,7 +353,6 @@ class DecisionTools {
 			if (id == null) {
 				return error("Name the application with an id list_applications returned.");
 			}
-			boolean conflict = Boolean.TRUE.equals(arguments.get("conflict"));
 			String note = text(string(arguments, "note"));
 			if (note != null && note.length() > MAX_NOTE) {
 				return error("Keep the note to " + MAX_NOTE + " characters.");
@@ -366,13 +361,11 @@ class DecisionTools {
 			try {
 				SubmittedApplication before = reviews.applicationOf(actor, id);
 				Map<UUID, Integer> scores = new LinkedHashMap<>();
-				if (!conflict) {
-					String wrong = scoresOf(arguments.get("scores"), before.criteria(), scores);
-					if (wrong != null) {
-						return error(wrong);
-					}
+				String wrong = scoresOf(arguments.get("scores"), before.criteria(), scores);
+				if (wrong != null) {
+					return error(wrong);
 				}
-				SubmittedApplication after = reviews.scoreOf(actor, id, scores, note, conflict);
+				SubmittedApplication after = reviews.scoreOf(actor, id, scores, note);
 				String name = after.solution().name() + " · " + after.program().name();
 				String path = "/admin/programs/" + after.program().id() + "/applications/" + id;
 				CallLog.read("application", id, name, path);
@@ -380,7 +373,6 @@ class DecisionTools {
 				result.put("kind", "application");
 				result.put("id", id.toString());
 				result.put("name", name);
-				result.put("conflict", conflict);
 				Map<String, Object> mine = new LinkedHashMap<>();
 				after.criteria().forEach(criterion -> {
 					if (scores.containsKey(criterion.id())) {
@@ -409,7 +401,7 @@ class DecisionTools {
 			Map<UUID, Integer> scores) {
 		String names = String.join(", ", criteria.stream().map(SubmittedApplication.Criterion::name).toList());
 		if (!(given instanceof Map<?, ?> byName) || byName.isEmpty()) {
-			return "Give a score from 1 to 10 for every criterion: " + names + ". Or set conflict to step back.";
+			return "Give a score from 1 to 10 for every criterion: " + names + ".";
 		}
 		for (Map.Entry<?, ?> entry : byName.entrySet()) {
 			String key = String.valueOf(entry.getKey()).strip();
