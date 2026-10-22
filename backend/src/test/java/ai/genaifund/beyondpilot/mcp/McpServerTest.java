@@ -222,7 +222,7 @@ class McpServerTest {
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
 				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
-				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
+				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
@@ -460,7 +460,7 @@ class McpServerTest {
 			.containsExactly("search", "fetch", "list_applications", "get_application",
 					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
-					"get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
+					"get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
