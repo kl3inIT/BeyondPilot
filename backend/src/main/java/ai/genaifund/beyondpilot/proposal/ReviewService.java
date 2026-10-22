@@ -745,6 +745,24 @@ public class ReviewService {
 	}
 
 	/**
+	 * An operator's own assessment of an application, saved from their app as the review page saves it: a score from 1
+	 * to 10 for every criterion, or a conflict of interest without scores. A note replaces theirs and none keeps it;
+	 * their bookmark stays as it is.
+	 * @return the application with every assessment, theirs included
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException as {@link #assess} refuses
+	 */
+	@Transactional
+	public SubmittedApplication scoreOf(Actor actor, UUID id, Map<UUID, Integer> scores, @Nullable String note,
+			boolean conflict) {
+		identity.requireOperator(actor);
+		ReviewApplicationResponse.@Nullable Assessment mine = application(actor, id).mine();
+		assess(actor, id, new SaveAssessmentRequest(conflict ? Map.of() : scores,
+				note != null ? note : mine == null ? null : mine.note(), conflict, mine != null && mine.bookmarked()));
+		return applicationOf(actor, id);
+	}
+
+	/**
 	 * Keeps the caller's assessment of an application on the version it was submitted as last. It changes until the
 	 * outcomes are released.
 	 * @throws ProposalException when there is no such submitted application, the caller does not review its program,

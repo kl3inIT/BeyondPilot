@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.proposal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -47,13 +48,16 @@ class ReviewAccess {
 	Reviewing of(Actor actor, UUID programId) {
 		Person person = identity.person(actor);
 		@Nullable UUID organizationId = organizations.membershipOf(actor).map(Membership::organizationId).orElse(null);
+		Optional<ProposalReviewer> invited = reviewers.findOpen(programId, person.email())
+			.filter(found -> found.isActiveAt(Instant.now()));
 		if (identity.isOperator(actor)) {
+			// An operator who was also invited as a judge joins as one: the invitation reads as accepted, and their
+			// scores count among the judges'.
+			invited.ifPresent(reviewer -> join(reviewer, person));
 			return new Reviewing(person, true, organizationId);
 		}
-		ProposalReviewer reviewer = reviewers.findOpen(programId, person.email())
-			.filter(found -> found.isActiveAt(Instant.now()))
-			.orElseThrow(() -> new ProposalException(ProposalErrorCode.REVIEW_NOT_ALLOWED,
-					"Account " + actor.accountId() + " does not review program " + programId));
+		ProposalReviewer reviewer = invited.orElseThrow(() -> new ProposalException(
+				ProposalErrorCode.REVIEW_NOT_ALLOWED, "Account " + actor.accountId() + " does not review program " + programId));
 		join(reviewer, person);
 		return new Reviewing(person, false, organizationId);
 	}

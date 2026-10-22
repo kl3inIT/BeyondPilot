@@ -29,7 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * The operators' tools that decide (BEY-232): {@code decide_record} approves or sends back what waits for review,
  * {@code decide_application} decides on an application to a program, {@code decide_proposal} on a proposal a use
- * case received. Each calls the service the admin screen calls, with the caller as the actor, so the operator role,
+ * case received, and {@code score_application} saves the operator's own scores of an application (BEY-239). Each calls the service the admin screen calls, with the caller as the actor, so the operator role,
  * the state the record must be in, the audit record and the emails stay the service's. One record per call, so that
  * the app asks the operator before each decision.
  */
@@ -38,6 +38,13 @@ class DecisionTools {
 
 	/** The longest message a person reads with a decision, as the admin screen takes it. */
 	private static final int MAX_MESSAGE = 1000;
+
+	/** The longest private note on an assessment, as the review page takes it. */
+	private static final int MAX_NOTE = 2000;
+
+	private static final int LOWEST_SCORE = 1;
+
+	private static final int HIGHEST_SCORE = 10;
 
 	private static final List<String> AREAS = List.of("solutions", "talent", "deployments");
 
@@ -314,6 +321,115 @@ class DecisionTools {
 				return refused(refused, "Read it with get_proposal; only a sent proposal is decided.");
 			}
 		});
+	}
+
+	SyncToolSpecification scoreApplication() {
+		Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("application", Map.of("type", "string", "description",
+				"The submitted application, an id list_applications or get_application returned."));
+		properties.put("scores", Map.of("type", "object", "additionalProperties", Map.of("type", "integer",
+				"minimum", LOWEST_SCORE, "maximum", HIGHEST_SCORE), "description",
+				"A score from 1 to 10 for every one of the program's criteria, keyed by the criterion's name as "
+						+ "get_application lists it (or its id). Leave it out only with conflict."));
+		properties.put("conflict", Map.of("type", "boolean", "description",
+				"True when the operator knows the applicant and steps back: no scores are kept, and the "
+						+ "application counts as done for them without counting as a score."));
+		properties.put("note", Map.of("type", "string", "maxLength", MAX_NOTE, "description",
+				"The operator's private note, which other operators read and judges never do. It replaces their "
+						+ "note; leave it out to keep the note they have."));
+		Map<String, Object> schema = Map.of("type", "object", "properties", properties, "required",
+				List.of("application"), "additionalProperties", false);
+		Tool tool = Tool.builder("score_application", schema)
+			.title("Score an application as a judge")
+			.description("Save the operator's own scores of one submitted application to a program, as they would "
+					+ "on its review page: a score from 1 to 10 for every criterion of the program, or a declared "
+					+ "conflict of interest. Saving again replaces their scores; the same scores again change "
+					+ "nothing. Nobody is told, and judges never read another person's scores. Once a program's "
+					+ "outcomes are released only its shortlisted applications are still scored. Use it only for "
+					+ "scores the operator gave in this conversation, one application per call, after reading it with "
+					+ "get_application for the criteria. The answer gives the operator's scores, the average across "
+					+ "everyone who scored it and the admin page." + WRITTEN_BY_PEOPLE)
+			.annotations(DECIDES_QUIETLY)
+			.build();
+		return new SyncToolSpecification(tool, (context, request) -> {
+			Map<String, Object> arguments = request.arguments() == null ? Map.of() : request.arguments();
+			UUID id = uuid(string(arguments, "application"));
+			if (id == null) {
+				return error("Name the application with an id list_applications returned.");
+			}
+			boolean conflict = Boolean.TRUE.equals(arguments.get("conflict"));
+			String note = text(string(arguments, "note"));
+			if (note != null && note.length() > MAX_NOTE) {
+				return error("Keep the note to " + MAX_NOTE + " characters.");
+			}
+			Actor actor = actor(context.get(CallLog.CALLER));
+			try {
+				SubmittedApplication before = reviews.applicationOf(actor, id);
+				Map<UUID, Integer> scores = new LinkedHashMap<>();
+				if (!conflict) {
+					String wrong = scoresOf(arguments.get("scores"), before.criteria(), scores);
+					if (wrong != null) {
+						return error(wrong);
+					}
+				}
+				SubmittedApplication after = reviews.scoreOf(actor, id, scores, note, conflict);
+				String name = after.solution().name() + " · " + after.program().name();
+				String path = "/admin/programs/" + after.program().id() + "/applications/" + id;
+				CallLog.read("application", id, name, path);
+				Map<String, Object> result = new LinkedHashMap<>();
+				result.put("kind", "application");
+				result.put("id", id.toString());
+				result.put("name", name);
+				result.put("conflict", conflict);
+				Map<String, Object> mine = new LinkedHashMap<>();
+				after.criteria().forEach(criterion -> {
+					if (scores.containsKey(criterion.id())) {
+						mine.put(criterion.name(), scores.get(criterion.id()));
+					}
+				});
+				result.put("yourScores", mine);
+				result.put("averageOfEveryone", after.averageScore());
+				result.put("assessments", after.assessments().size());
+				result.put("told", "Nobody.");
+				result.put("url", callers.site() + path);
+				return CallToolResult.builder().addTextContent(json.writeValueAsString(result)).isError(false).build();
+			}
+			catch (BusinessException refused) {
+				return refused(refused, "Read it with get_application; only a submitted application is scored, and "
+						+ "once the program's outcomes are released only a shortlisted one.");
+			}
+		});
+	}
+
+	/**
+	 * Reads the scores the app gave into {@code scores}, by criterion; what is wrong with them otherwise, naming the
+	 * criteria, so that the app asks the operator again.
+	 */
+	private static @Nullable String scoresOf(@Nullable Object given, List<SubmittedApplication.Criterion> criteria,
+			Map<UUID, Integer> scores) {
+		String names = String.join(", ", criteria.stream().map(SubmittedApplication.Criterion::name).toList());
+		if (!(given instanceof Map<?, ?> byName) || byName.isEmpty()) {
+			return "Give a score from 1 to 10 for every criterion: " + names + ". Or set conflict to step back.";
+		}
+		for (Map.Entry<?, ?> entry : byName.entrySet()) {
+			String key = String.valueOf(entry.getKey()).strip();
+			SubmittedApplication.Criterion criterion = criteria.stream()
+				.filter(one -> one.name().equalsIgnoreCase(key) || one.id().toString().equalsIgnoreCase(key))
+				.findFirst()
+				.orElse(null);
+			if (criterion == null) {
+				return "There is no criterion \"" + key + "\". The criteria are: " + names + ".";
+			}
+			if (!(entry.getValue() instanceof Number number) || number.doubleValue() != Math.rint(number.doubleValue())
+					|| number.intValue() < LOWEST_SCORE || number.intValue() > HIGHEST_SCORE) {
+				return "Score \"" + criterion.name() + "\" with a whole number from 1 to 10.";
+			}
+			scores.put(criterion.id(), number.intValue());
+		}
+		if (scores.size() != criteria.size()) {
+			return "Every criterion needs a score: " + names + ".";
+		}
+		return null;
 	}
 
 	/** The answer to a decision made: the record, its state before and after, who was told, its admin page. */

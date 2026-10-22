@@ -6751,7 +6751,8 @@
       "scores": {
         "title": "Điểm của giám khảo",
         "average": "trung bình {value}",
-        "none": "Chưa giám khảo nào khác chấm đơn này.",
+        "none": "Chưa giám khảo nào chấm đơn này.",
+        "you": "{name} (bạn)",
         "conflict": "Đã khai xung đột",
         "role": {
           "operator": "GenAI Fund",

@@ -839,6 +839,95 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(auditOf(form.programId())).contains("proposal.decide");
 	}
 
+	@Test
+	void anOperatorInvitedAsAJudgeJoinsWhenTheyOpenTheReviewAndScoresAsOne() {
+		Form form = program("operator-judge", true, Instant.now().plus(Duration.ofDays(10)));
+		List<String> ids = criteriaOf(form, "Practical impact");
+		Applicant applicant = applicant(form, "scored@operator-judge.test", "Scored Builder");
+		String reviewers = REVIEW + form.programId() + "/reviewers";
+		post(operator, reviewers, Map.of("email", "operator@proposal.test")).expectStatus().isOk();
+		assertThat(JsonPath.<List<String>>read(body(get(operator, reviewers).expectStatus().isOk()),
+				"$.items[*].status")).containsExactly("invited");
+
+		// Opening the review is accepting the invitation, for an operator as for anyone else.
+		String one = API + "/review/applications/" + applicant.id();
+		get(operator, one).expectStatus().isOk();
+		put(operator, one + "/assessment", scores(Map.of(ids.getFirst(), 8))).expectStatus().isOk();
+		String judges = body(get(operator, reviewers).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(judges, "$.items[*].status")).containsExactly("active");
+		assertThat(JsonPath.<List<String>>read(judges, "$.items[*].role")).containsExactly("reviewer");
+		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[*].assessed")).containsExactly(1);
+		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.mine.role"))
+			.isEqualTo("reviewer");
+	}
+
+	@Test
+	void anOperatorsAppScoresAnApplicationByTheNamesOfItsCriteria() {
+		Form form = program("scored-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact", "Credible execution");
+		Applicant applicant = applicant(form, "scored@scored-mcp.test", "Scored Builder");
+		Applicant other = applicant(form, "other@scored-mcp.test", "Other Builder");
+		McpSyncClient app = operatorApp();
+		String one = API + "/review/applications/" + applicant.id();
+		put(operator, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.", "conflict", false,
+				"bookmarked", true)).expectStatus().isOk();
+
+		// Every criterion by its name, in any case; the note and the bookmark the operator had stay.
+		String scored = call(app, "score_application", Map.of("application", applicant.id().toString(), "scores",
+				Map.of("practical impact", 8, "Credible execution", 6)));
+		assertThat(JsonPath.<Map<String, Integer>>read(scored, "$.yourScores"))
+			.containsExactly(Map.entry("Practical impact", 8), Map.entry("Credible execution", 6));
+		assertThat(JsonPath.<Double>read(scored, "$.averageOfEveryone")).isEqualTo(7.0);
+		assertThat(JsonPath.<String>read(scored, "$.url"))
+			.endsWith("/admin/programs/" + form.programId() + "/applications/" + applicant.id());
+		String mine = body(get(operator, one).expectStatus().isOk());
+		assertThat(JsonPath.<Double>read(mine, "$.mine.average")).isEqualTo(7.0);
+		assertThat(JsonPath.<String>read(mine, "$.mine.note")).isEqualTo("Strong demo.");
+		assertThat(JsonPath.<Boolean>read(mine, "$.mine.bookmarked")).isTrue();
+
+		// A criterion left out or misnamed, or a score off the scale, is asked again with the criteria named.
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 8)))).contains("Every criterion needs a score")
+			.contains("Credible execution");
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 8, "Execution", 6)))).contains("no criterion \"Execution\"");
+		// A score off the scale is refused, by the tool's schema before it reaches the review, and nothing is kept.
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 11, "Credible execution", 6)))).isNotBlank();
+		assertThat(JsonPath.<Object>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.mine")).isNull();
+
+		// A conflict keeps no score, and counts the application as done without counting it as a score.
+		String stepped = call(app, "score_application",
+				Map.of("application", other.id().toString(), "conflict", true, "note", "I advised them."));
+		assertThat(JsonPath.<Boolean>read(stepped, "$.conflict")).isTrue();
+		assertThat(JsonPath.<Boolean>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.mine.conflict")).isTrue();
+
+		// Once the outcomes are released, only the shortlist is still scored.
+		shortlist(form, applicant.id());
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(other.id()), "not_selected"))
+			.expectStatus()
+			.isOk();
+		close(form);
+		post(operator, REVIEW + form.programId() + "/release", emails()).expectStatus().isOk();
+		call(app, "score_application", Map.of("application", applicant.id().toString(), "scores",
+				Map.of("Practical impact", 9, "Credible execution", 9)));
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 9, "Credible execution", 9)))).contains("PROPOSAL_RELEASED");
+		app.closeGracefully();
+	}
+
+	/** The text of a call to score_application that the tool refused. */
+	private static String toolError(McpSyncClient app, Map<String, Object> arguments) {
+		CallToolResult result = app.callTool(
+				McpSchema.CallToolRequest.builder("score_application").arguments(arguments).build());
+		assertThat(result.isError()).isTrue();
+		return ((TextContent) result.content().getFirst()).text();
+	}
+
 	/** An app connected to the operators' server by the operator, initialized. */
 	private McpSyncClient operatorApp() {
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
