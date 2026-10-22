@@ -343,7 +343,7 @@
     "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
     "IDENTITY_ACCOUNT_DISABLED": "This account has been disabled, so it can no longer be used. Ask GenAI Fund if you need it back.",
     "IDENTITY_OPERATOR_REQUIRED": "You are no longer an operator.",
-    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Submitting shares it with the program's partners and judges. Turn on sharing with program partners in Settings first.",
+    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Submitting shares it with the partners and judges of the program, or with the organization behind the use case. Turn on sharing with program partners in Settings first.",
     "IDENTITY_ACCOUNT_NOT_FOUND": "This account no longer exists.",
     "IDENTITY_APP_HOST_INVALID": "Enter a host name such as app.example.com.",
     "IDENTITY_APP_HOST_NOT_FOUND": "This host is no longer in the list. Reload the page.",
@@ -604,7 +604,7 @@
   "Consent": {
     "metaTitle": "Your personal data",
     "title": "Your personal data on BeyondPilot",
-    "lead": "To use BeyondPilot, confirm that you have read and agree to our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>, and choose how we may collect, process and share your personal data for the purposes in <text>the consent text</text>.",
+    "lead": "To use BeyondPilot, confirm that you have read and agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>, and choose how we may collect, process and share your personal data for the purposes in <text>the consent text</text>.",
     "summary": "Accept all turns on",
     "later": "You can change any of these later in Settings.",
     "acceptAll": "Accept all",
@@ -7305,7 +7305,9 @@
         },
         {
           "heading": "What we collect",
-          "body": ["We collect only what the platform needs to work:"],
+          "body": [
+            "We collect only what the platform needs to work:"
+          ],
           "items": [
             "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
             "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
@@ -7446,7 +7448,9 @@
         },
         {
           "heading": "Acceptable use",
-          "body": ["Do not:"],
+          "body": [
+            "Do not:"
+          ],
           "items": [
             "publish false information or impersonate anyone;",
             "send spam or unsolicited commercial messages through the platform;",

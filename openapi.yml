@@ -17455,7 +17455,9 @@ components:
         needed:
           type: boolean
           description: True while the caller has not agreed to the platform purpose
-            of the current version; every other path refuses them until they do.
+            of the current version. The web sends them to the consent step from every
+            page and the MCP servers refuse their tokens; the API itself still answers
+            them.
         purposes:
           type: array
           description: "Every purpose, in the order the text lists them."
@@ -21090,7 +21092,9 @@ components:
         consentNeeded:
           type: boolean
           description: True until the person agrees to the platform purpose of the
-            current consent text; every other signed-in path refuses them until then.
+            current consent text. The web sends them to the consent step from every
+            page and the MCP servers refuse their tokens; the API itself still answers
+            them.
         country:
           type:
           - string

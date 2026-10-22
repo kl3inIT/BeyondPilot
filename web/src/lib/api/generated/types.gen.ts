@@ -1379,7 +1379,7 @@ export type Consent = {
      */
     locale: string;
     /**
-     * True while the caller has not agreed to the platform purpose of the current version; every other path refuses them until they do.
+     * True while the caller has not agreed to the platform purpose of the current version. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.
      */
     needed: boolean;
     /**
@@ -3441,7 +3441,7 @@ export type McpToolSwitch = {
  */
 export type Me = {
     /**
-     * True until the person agrees to the platform purpose of the current consent text; every other signed-in path refuses them until then.
+     * True until the person agrees to the platform purpose of the current consent text. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.
      */
     consentNeeded: boolean;
     /**

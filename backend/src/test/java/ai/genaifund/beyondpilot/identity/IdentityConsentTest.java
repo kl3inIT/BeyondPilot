@@ -3,7 +3,9 @@ package ai.genaifund.beyondpilot.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -164,7 +166,9 @@ class IdentityConsentTest {
 		put(leaver, Map.of("platform", false, "partners", true, "ai", false, "updates", false, "source", "settings"))
 			.expectStatus()
 			.isOk();
-		assertThat(mail.latestSubjectTo("confirmed@consent.test")).isEqualTo(WITHDRAWN);
+		// Sent once the withdrawal is recorded, so that a failure to send never undoes it.
+		await().atMost(Duration.ofSeconds(10))
+			.untilAsserted(() -> assertThat(mail.latestSubjectTo("confirmed@consent.test")).isEqualTo(WITHDRAWN));
 		assertThat(mail.latestTextTo("confirmed@consent.test")).contains("team@beyondpilot.ai")
 			.containsPattern("https?://[^/ ]+/consent");
 

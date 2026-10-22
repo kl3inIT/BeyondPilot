@@ -288,7 +288,7 @@ public class SearchDocumentRepository {
 				update search_document
 				set embedding = cast(:embedding as vector), embedding_model = :model, embedded_hash = content_hash,
 				    embedding_attempts = 0, embedding_next_attempt_at = null, embedding_error = null
-				where kind = :kind and item_id = :itemId and content_hash = :hash
+				where kind = :kind and item_id = :itemId and content_hash = :hash and embeddable
 				""")
 			.param("embedding", vector(embedding))
 			.param("model", model)

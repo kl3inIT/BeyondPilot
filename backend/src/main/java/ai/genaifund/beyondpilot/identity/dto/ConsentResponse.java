@@ -14,7 +14,7 @@ public record ConsentResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The full consent text, in Markdown.") String text,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "True while the caller has not agreed to the platform purpose of the current version; every other path refuses them until they do.") boolean needed,
+				description = "True while the caller has not agreed to the platform purpose of the current version. The web sends them to the consent step from every page and the MCP servers refuse their tokens; the API itself still answers them.") boolean needed,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Every purpose, in the order the text lists them.") List<Purpose> purposes) {
 

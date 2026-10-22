@@ -30,7 +30,7 @@ No new module. Consent belongs to the account: it starts at sign-in, the account
 
 The modules that act on a choice (`proposal` for `partners`; `talent`, `search` and `matching` for `ai`) already depend on `identity`, so no dependency edge is added. A separate `consent` module would have needed a new edge from each of them, for one table and one rule.
 
-`Consents` publishes `ConsentChanged` for every choice it records. `notification` listens to it, as it listens to `SignInCodeRequested`, because `identity` cannot depend on `notification`; `talent` listens to it to have its profile indexed again.
+`Consents` publishes `ConsentChanged` for every choice it records. `notification` handles it after the choice commits, so that a failure to send never undoes a withdrawal (`identity` cannot depend on `notification`); `talent` listens to it to have its profile indexed again.
 
 ## Decisions
 

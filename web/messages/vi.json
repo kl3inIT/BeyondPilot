@@ -343,7 +343,7 @@
     "AI_BUSY": "Đang có quá nhiều model được dùng cùng lúc. Thử lại sau ít phút.",
     "IDENTITY_ACCOUNT_DISABLED": "Tài khoản này đã bị khóa nên không dùng được nữa. Hãy liên hệ GenAI Fund nếu bạn cần dùng lại.",
     "IDENTITY_OPERATOR_REQUIRED": "Bạn không còn là operator.",
-    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Khi nộp, hồ sơ sẽ được chia sẻ với đối tác và giám khảo của chương trình. Hãy bật chia sẻ với đối tác chương trình trong Cài đặt trước.",
+    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Khi nộp, hồ sơ sẽ được chia sẻ với đối tác và giám khảo của chương trình, hoặc với tổ chức đăng use case. Hãy bật chia sẻ với đối tác chương trình trong Cài đặt trước.",
     "IDENTITY_ACCOUNT_NOT_FOUND": "Tài khoản này không còn tồn tại.",
     "IDENTITY_APP_HOST_INVALID": "Nhập tên host, ví dụ app.example.com.",
     "IDENTITY_APP_HOST_NOT_FOUND": "Host này không còn trong danh sách. Hãy tải lại trang.",
@@ -7305,7 +7305,9 @@
         },
         {
           "heading": "Chúng tôi thu thập gì",
-          "body": ["Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"],
+          "body": [
+            "Chúng tôi chỉ thu thập những gì nền tảng cần để hoạt động:"
+          ],
           "items": [
             "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
             "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
@@ -7446,7 +7448,9 @@
         },
         {
           "heading": "Sử dụng hợp lệ",
-          "body": ["Không được:"],
+          "body": [
+            "Không được:"
+          ],
           "items": [
             "đăng thông tin sai hoặc mạo danh người khác;",
             "gửi thư rác hoặc tin nhắn thương mại không được yêu cầu qua nền tảng;",

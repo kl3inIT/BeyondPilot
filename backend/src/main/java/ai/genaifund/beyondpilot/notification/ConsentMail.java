@@ -6,12 +6,14 @@ import ai.genaifund.beyondpilot.identity.ConsentChanged;
 import ai.genaifund.beyondpilot.identity.ConsentPurpose;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
-import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
 /**
- * Confirms by email a withdrawal of the consent to use the platform, queued in the transaction that recorded it. Other
- * choices take effect at once and the screen says so; this one locks the account, so the person keeps a record of it.
+ * Confirms by email a withdrawal of the consent to use the platform, once it is recorded: a failure here never undoes
+ * the withdrawal. Other choices take effect at once and the screen says so; this one locks the account, so the person
+ * keeps a record of it. The choice is read again, so a person who has agreed again by the time this runs is not
+ * emailed.
  */
 @Component
 class ConsentMail {
@@ -25,9 +27,10 @@ class ConsentMail {
 		this.identity = identity;
 	}
 
-	@EventListener
+	@ApplicationModuleListener
 	void on(ConsentChanged changed) {
-		if (changed.purpose() != ConsentPurpose.PLATFORM || !changed.withdrawal()) {
+		if (changed.purpose() != ConsentPurpose.PLATFORM || !changed.withdrawal()
+				|| !identity.declined(changed.accountId(), ConsentPurpose.PLATFORM)) {
 			return;
 		}
 		Person person = identity.people(List.of(changed.accountId())).get(changed.accountId());
