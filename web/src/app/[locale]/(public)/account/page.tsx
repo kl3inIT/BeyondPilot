@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AccountPage } from "@/features/identity/account-page";
-import { requireAccount } from "@/lib/auth/session";
+import { getMyConsent } from "@/lib/api/generated";
+import { requireAccount, sessionRequest } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
 export async function generateMetadata({
@@ -18,6 +19,7 @@ export default async function AccountRoute({ params }: PageProps<"/[locale]/acco
   const { locale } = await params;
   setRequestLocale(locale);
   const account = await requireAccount(siteRoutes.account);
+  const { data: consent } = await getMyConsent(await sessionRequest());
 
-  return <AccountPage account={account} />;
+  return <AccountPage account={account} consent={consent} />;
 }

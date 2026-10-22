@@ -9,6 +9,7 @@ export const siteRoutes = {
   organizations: "/organizations",
   talent: "/talent",
   signIn: "/sign-in",
+  consent: "/consent",
   getStarted: "/get-started",
   publishUseCase: "/use-cases/new",
   talentProfile: "/workspace/talent",

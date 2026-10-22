@@ -570,7 +570,6 @@
     "title": "Đăng nhập BeyondPilot",
     "lead": "Một tài khoản để ứng tuyển chương trình, đăng giải pháp và đăng bài toán.",
     "returnLead": "Sau khi đăng nhập, bạn sẽ tiếp tục tới trang vừa mở.",
-    "legal": "Khi tiếp tục, bạn đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách quyền riêng tư</privacy>.",
     "google": "Tiếp tục với Google",
     "or": "hoặc",
     "emailLabel": "Email",
@@ -599,6 +598,62 @@
         "locked": "Bạn đã nhập sai quá nhiều lần. Gửi mã mới để thử lại.",
         "disabled": "Tài khoản này đã bị khóa nên không đăng nhập được.",
         "failed": "Chưa kiểm tra được mã. Bạn thử lại sau ít phút."
+      }
+    }
+  },
+  "Consent": {
+    "metaTitle": "Dữ liệu cá nhân của bạn",
+    "title": "Dữ liệu cá nhân của bạn trên BeyondPilot",
+    "lead": "Để dùng BeyondPilot, hãy xác nhận bạn đã đọc và đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách quyền riêng tư</privacy>, và chọn cách chúng tôi được thu thập, xử lý và chia sẻ dữ liệu cá nhân của bạn cho các mục đích trong <text>văn bản đồng ý</text>.",
+    "summary": "Đồng ý tất cả sẽ bật",
+    "later": "Bạn có thể đổi bất kỳ mục nào sau này trong Cài đặt.",
+    "acceptAll": "Đồng ý tất cả",
+    "choose": "Chọn từng mục",
+    "signOut": "Đăng xuất",
+    "failed": "Lựa chọn của bạn chưa được lưu. Hãy thử lại.",
+    "required": {
+      "platform": "Bắt buộc",
+      "apply": "Cần để ứng tuyển",
+      "none": "Không bắt buộc"
+    },
+    "purposes": {
+      "platform": {
+        "short": "Sử dụng nền tảng",
+        "without": "Cần để dùng BeyondPilot."
+      },
+      "partners": {
+        "short": "Chia sẻ với đối tác chương trình",
+        "without": "Doanh nghiệp đối tác, giám khảo và mentor đọc hồ sơ ứng tuyển của bạn. Nếu không đồng ý, bạn vẫn dùng được BeyondPilot nhưng không ứng tuyển được vào chương trình."
+      },
+      "ai": {
+        "short": "AI gợi ý và đánh giá",
+        "without": "Nếu không đồng ý, hồ sơ của bạn vẫn hiển thị nhưng AI không gợi ý nó, và chỉ con người xem xét hồ sơ ứng tuyển của bạn."
+      },
+      "updates": {
+        "short": "Tin tức và bản tin",
+        "without": "Bạn vẫn nhận email về tài khoản và hồ sơ ứng tuyển."
+      }
+    },
+    "dialog": {
+      "title": "BeyondPilot – Đồng ý xử lý dữ liệu cá nhân",
+      "version": "Phiên bản {version}",
+      "choices": "Lựa chọn của bạn",
+      "save": "Lưu lựa chọn",
+      "platformMissing": "Hãy tick ô đầu tiên để dùng nền tảng. Các ô còn lại tùy bạn."
+    },
+    "settings": {
+      "title": "Quyền riêng tư và sự đồng ý",
+      "agreed": "Phiên bản {version}, đồng ý ngày {date} ·",
+      "read": "Đọc văn bản đồng ý",
+      "requests": "Để nhận bản sao, sửa hoặc xóa dữ liệu của bạn, gửi email tới <mail>team@beyondpilot.ai</mail>.",
+      "turnedOn": "Đã bật {purpose}.",
+      "turnedOff": "Đã tắt {purpose}.",
+      "withdraw": {
+        "title": "Rút lại sự đồng ý sử dụng nền tảng?",
+        "description": "Tài khoản của bạn sẽ bị khóa ngay, và bạn cần đồng ý lại để dùng BeyondPilot.",
+        "note": "Chúng tôi gửi email xác nhận và thực hiện trong 15 ngày. Việc này không xóa dữ liệu của bạn.",
+        "keep": "Giữ tài khoản",
+        "confirm": "Rút lại và khóa"
       }
     }
   },
@@ -7245,7 +7300,7 @@
         {
           "heading": "Chúng tôi là ai",
           "body": [
-            "BeyondPilot vận hành website và ứng dụng web tại beyondpilot.ai. Mọi câu hỏi hoặc yêu cầu về quyền riêng tư, vui lòng gửi tới team@beyondpilot.ai."
+            "BeyondPilot do GenAI Fund tài trợ và vận hành thông qua GenAI Technology Development Pte. Ltd., đơn vị chịu trách nhiệm về dữ liệu cá nhân của bạn. Đơn vị này vận hành website và ứng dụng web tại beyondpilot.ai. Mọi câu hỏi hoặc yêu cầu về quyền riêng tư, vui lòng gửi tới team@beyondpilot.ai."
           ]
         },
         {
@@ -7270,9 +7325,15 @@
           ]
         },
         {
+          "heading": "Sự đồng ý của bạn",
+          "body": [
+            "Trước khi bạn dùng nền tảng, chúng tôi xin bạn đồng ý với cách chúng tôi dùng dữ liệu cá nhân, theo từng mục đích: sử dụng nền tảng (bắt buộc), chia sẻ với đối tác, giám khảo và mentor của chương trình (cần để ứng tuyển), AI gợi ý và đánh giá (không bắt buộc), nhận tin tức và bản tin (không bắt buộc). Chúng tôi lưu lại mỗi lựa chọn cùng phiên bản văn bản bạn đã đồng ý. Bạn có thể đổi bất kỳ lựa chọn nào trong Cài đặt; thay đổi có hiệu lực ngay và không ảnh hưởng tới những gì đã thực hiện trước đó. Rút lại sự đồng ý sử dụng nền tảng sẽ khóa tài khoản cho tới khi bạn đồng ý lại."
+          ]
+        },
+        {
           "heading": "Tính năng AI",
           "body": [
-            "Tìm kiếm và ghép nối dùng mô hình AI để đọc nội dung công khai của hồ sơ, giải pháp, deck và use case. Nội dung đó chỉ được gửi tới nhà cung cấp AI (OpenAI, trực tiếp hoặc qua OpenRouter) để tạo kết quả tìm kiếm và giải thích ghép nối. Chúng tôi không dùng dữ liệu của bạn để huấn luyện AI, và điều khoản API của các nhà cung cấp cũng không cho phép việc đó."
+            "Tìm kiếm và ghép nối dùng mô hình AI để đọc nội dung công khai của hồ sơ, giải pháp, deck và use case. Nội dung đó chỉ được gửi tới nhà cung cấp AI (OpenAI, trực tiếp hoặc qua OpenRouter) để tạo kết quả tìm kiếm và giải thích ghép nối. Chúng tôi không dùng dữ liệu của bạn để huấn luyện AI, và điều khoản API của các nhà cung cấp cũng không cho phép việc đó. Nếu bạn không đồng ý dùng AI, hồ sơ talent của bạn không được gửi tới nhà cung cấp AI và AI không đánh giá hồ sơ ứng tuyển hay đề xuất của bạn; con người vẫn xem xét chúng."
           ]
         },
         {
@@ -7305,13 +7366,13 @@
         {
           "heading": "Lưu giữ bao lâu",
           "body": [
-            "Chúng tôi lưu dữ liệu khi tài khoản còn hoạt động. Khi bạn xóa tài khoản hoặc yêu cầu, chúng tôi xóa hoặc ẩn danh dữ liệu cá nhân trong 30 ngày, trừ phần phải giữ vì lý do pháp lý, bảo mật hoặc kiểm toán. Bài nộp vào chương trình có thể được giữ trong hồ sơ của chương trình đó."
+            "Chúng tôi lưu dữ liệu khi tài khoản còn hoạt động. Khi bạn yêu cầu xóa, chúng tôi xóa hoặc ẩn danh dữ liệu cá nhân trong 20 ngày, trừ phần phải giữ vì lý do pháp lý, bảo mật hoặc kiểm toán. Bài nộp vào chương trình có thể được giữ trong hồ sơ của chương trình đó."
           ]
         },
         {
           "heading": "Lựa chọn và quyền của bạn",
           "body": [
-            "Bạn xem và sửa được phần lớn dữ liệu trong tài khoản. Bạn cũng có thể yêu cầu nhận bản sao, sửa, xóa hoặc ngừng xử lý dữ liệu bằng cách gửi email tới team@beyondpilot.ai. Chúng tôi phản hồi trong 30 ngày."
+            "Bạn xem và sửa được phần lớn dữ liệu trong tài khoản, và đổi các lựa chọn đồng ý trong Cài đặt. Bạn cũng có thể yêu cầu nhận bản sao, sửa, xóa, hạn chế hoặc ngừng xử lý, hoặc phản đối việc xử lý dữ liệu bằng cách gửi email tới team@beyondpilot.ai. Chúng tôi xác nhận mọi yêu cầu trong 2 ngày làm việc và thực hiện trong thời hạn Luật Bảo vệ dữ liệu cá nhân (Luật 91/2025/QH15) và Nghị định 356/2025/NĐ-CP quy định: 10 ngày để cung cấp bản sao hoặc sửa, 15 ngày để ngừng hoặc hạn chế, 20 ngày để xóa."
           ]
         },
         {

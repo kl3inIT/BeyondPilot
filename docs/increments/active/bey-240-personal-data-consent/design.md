@@ -10,7 +10,7 @@ Two parts are separate issues: anonymising a person's data when they ask for del
 - **Read the full text.** The text GenAI Fund wrote, in a dialog: who we are, what data, why, who it is shared with, how long, the person's rights, and the four boxes.
 - **Change a choice.** Settings (`/account`) gains a section "Privacy and consent": a switch for each purpose, the version and date agreed, the way to read the text again, and the address for other requests. Turning an optional purpose off or on takes effect at once, with Undo.
 - **Withdraw the required consent.** Asked once, because it locks the account: every page leads back to `/consent` and the person's AI apps are refused. The person gets an email confirming the withdrawal, which is their record of it now that they cannot sign in to see it. Agreeing again unlocks the account. Their data is not deleted; deletion is a separate request (BEY-242).
-- **Apply only with the partner purpose.** Submitting an application to a program or a proposal to a use case needs "Share with program partners" on; without it the form says why and offers to turn it on.
+- **Apply only with the partner purpose.** Submitting an application to a program or sending a proposal to a use case needs "Share with program partners" on; without it the form shows why, by its failure code, and says to turn it on in Settings.
 - **Stay out of AI.** With "AI suggestions and evaluation" declined, the person's talent profile is not sent to the embedding provider for meaning search, and no AI evaluation is made of the applications and proposals they submitted. Their profile stays listed and found by its words, and people still review their applications.
 
 ## The purposes
@@ -68,11 +68,11 @@ The exact contract is `openapi.yml`.
 | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `/consent`               | The step: summary, Accept all, Choose one by one (dialog with the full text and boxes), Sign out. `?returnTo=` |
 | `/account`               | The section "Privacy and consent" under the contact details                                                  |
-| Every signed-in page     | Redirects to `/consent?returnTo=` while `consentNeeded`, except `/consent`, `/privacy` and `/terms`; the redirect is the gate |
-| Application and proposal forms | Without `partners`, say why submitting needs it and offer to turn it on                                |
+| Every signed-in page     | Redirects to `/consent?returnTo=` while `consentNeeded`, except `/consent`, `/privacy` and `/terms`: on the server for a page that needs an account (`requireAccount`), and from the site header on every other page (`ConsentRedirect`) |
+| Application and proposal forms | Without `partners`, the refusal `IDENTITY_PARTNERS_CONSENT_REQUIRED` says to turn it on in Settings |
 | `/privacy`, sign-in form | The privacy text updated; the sign-in line removed                                                           |
 
-Composed from `Button` (actions), `Badge`, `Checkbox`, `Field`, `Switch`, `Dialog`, `AlertDialog` and the toast with Undo.
+Composed from `Button` and `TextButton` (actions), `Badge`, `Checkbox`, `Field`, `Switch`, `Dialog`, `ConfirmDialog` and the toast with Undo. The dialog renders the served Markdown with `react-markdown` and takes each box's words from the text's own list of boxes, so a person ticks the words of the version recorded with their choice.
 
 ## Data
 
