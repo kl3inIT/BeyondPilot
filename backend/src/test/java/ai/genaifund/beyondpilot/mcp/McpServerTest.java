@@ -821,7 +821,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(30);
+			.isEqualTo(31);
 
 		switchTool("user", "fetch", false);
 		try {

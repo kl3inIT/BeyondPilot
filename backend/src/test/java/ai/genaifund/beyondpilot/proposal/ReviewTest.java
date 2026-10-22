@@ -891,8 +891,12 @@ class ReviewTest extends ApplicationsHttpTest {
 			.contains("Credible execution");
 		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
 				Map.of("Practical impact", 8, "Execution", 6)))).contains("no criterion \"Execution\"");
+		// A score off the scale is refused, by the tool's schema before it reaches the review, and nothing is kept.
 		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
-				Map.of("Practical impact", 11, "Credible execution", 6)))).contains("from 1 to 10");
+				Map.of("Practical impact", 11, "Credible execution", 6)))).isNotBlank();
+		assertThat(JsonPath.<Object>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.mine")).isNull();
 
 		// A conflict keeps no score, and counts the application as done without counting it as a score.
 		String stepped = call(app, "score_application",
