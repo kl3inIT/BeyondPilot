@@ -1,4 +1,10 @@
-import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import {
+  createLoader,
+  createSerializer,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+} from "nuqs/server";
 
 import type { ReviewApplicationItem } from "@/lib/api/generated";
 import { listSort, sortParam, type ListSort } from "@/lib/list-sort";
@@ -40,6 +46,17 @@ export const reviewSearch = {
 export const loadReviewSearch = createLoader(reviewSearch);
 
 export type ReviewSearch = Awaited<ReturnType<typeof loadReviewSearch>>;
+
+/** The search as the query of an address, such as `?tab=shortlisted`; empty when it is the default. */
+export const reviewAddress = createSerializer(reviewSearch);
+
+/**
+ * The search an application keeps from the list it was opened in, without the page: going on from
+ * one application to the next stays in that list's tab, filters and order.
+ */
+export function listQuery(search: ReviewSearch) {
+  return reviewAddress({ ...search, page: 1 });
+}
 
 type Tab = (typeof tabs)[number];
 
@@ -105,17 +122,20 @@ function compare(
  * The applications the search selects in its order, the page of them to show, and how many each
  * tab holds whatever the search. Applications that compare equal keep the order they were
  * submitted in.
+ * @param keep an application listed whatever the search, in its place in the order: the one on
+ *   show, which a decision can move out of its tab
  */
 export function listApplications(
   items: ReviewApplicationItem[],
   search: ReviewSearch,
   operator: boolean,
   released = false,
+  keep?: string,
 ) {
   const fallback = defaultReviewSort(items, operator);
   const keys = operator ? reviewSortKeys : reviewSortKeys.filter((key) => key !== "score");
   const sort = listSort(search.sort, keys, fallback);
-  const { shown, counts } = narrowApplications(items, search, released);
+  const { shown, counts } = narrowApplications(items, search, released, keep);
   const ordered = [...shown].sort(
     (a, b) => compare(a, b, sort) || a.submittedAt.localeCompare(b.submittedAt),
   );
@@ -132,11 +152,33 @@ export function listApplications(
   };
 }
 
+/**
+ * Where an application stands in the list the search makes, kept in it, and its neighbours there:
+ * what Previous, Next and Save and next open.
+ */
+export function neighbours(
+  items: ReviewApplicationItem[],
+  search: ReviewSearch,
+  operator: boolean,
+  released: boolean,
+  currentId: string,
+) {
+  const { ordered } = listApplications(items, search, operator, released, currentId);
+  const index = ordered.findIndex((item) => item.id === currentId);
+  return {
+    position: index + 1,
+    total: ordered.length,
+    previousId: index > 0 ? ordered[index - 1].id : null,
+    nextId: index >= 0 && index + 1 < ordered.length ? ordered[index + 1].id : null,
+  };
+}
+
 /** The applications the search selects, and how many each tab holds whatever the search. */
 function narrowApplications(
   items: ReviewApplicationItem[],
   search: ReviewSearch,
   released: boolean,
+  keep?: string,
 ) {
   const counts = Object.fromEntries(
     tabs.map((tab) => [tab, items.filter((item) => inTab(item, tab, released)).length]),
@@ -144,17 +186,18 @@ function narrowApplications(
   const text = folded(search.q.trim());
   const shown = items.filter(
     (item) =>
-      inTab(item, search.tab, released) &&
-      (!text ||
-        folded(item.solutionName).includes(text) ||
-        folded(item.organizationName).includes(text) ||
-        // An operator finds an applicant by part of their email, such as its domain.
-        folded(item.email ?? "").includes(text)) &&
-      (!search.choice || item.choice === search.choice) &&
-      (!search.kind ||
-        (search.kind === "company"
-          ? !["independent_builder", "builder_team"].includes(item.organizationType)
-          : item.organizationType === search.kind)),
+      item.id === keep ||
+      (inTab(item, search.tab, released) &&
+        (!text ||
+          folded(item.solutionName).includes(text) ||
+          folded(item.organizationName).includes(text) ||
+          // An operator finds an applicant by part of their email, such as its domain.
+          folded(item.email ?? "").includes(text)) &&
+        (!search.choice || item.choice === search.choice) &&
+        (!search.kind ||
+          (search.kind === "company"
+            ? !["independent_builder", "builder_team"].includes(item.organizationType)
+            : item.organizationType === search.kind))),
   );
   return { shown, counts };
 }

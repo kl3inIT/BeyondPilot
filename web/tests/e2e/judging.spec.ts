@@ -111,9 +111,15 @@ test.describe("judging applications", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const calls = await recordWrites(page);
-    await page.goto(`${admin}/applications/${plainCoverId}`);
+    // Opened from the list sorted by when each was submitted, it stands in that order, and going
+    // on keeps the list's order: Renew in a Minute, submitted after it.
+    await page.goto(`${admin}/applications/${plainCoverId}?sort=submitted`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Plain Cover");
     await expect(page.getByText("2 of 3")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Next application" })).toHaveAttribute(
+      "href",
+      /a0000000-0000-4000-8000-000000000003\?sort=submitted$/,
+    );
     // An answer of several choices reads as the choices, one a line.
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     // The deck opens full screen in the page, every page of it, instead of downloading; the download
