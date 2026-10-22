@@ -70,9 +70,6 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
               : "warning",
       };
     }
-    if (item.mine === "conflict") {
-      return { label: t("mine.conflict"), variant: "outline" };
-    }
     return item.average == null
       ? { label: t("mine.none"), variant: "outline" }
       : { label: t("average", { value: scoreText(item.average, total) }), variant: "info" };

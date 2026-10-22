@@ -38,7 +38,7 @@ public record ProgramScoresResponse(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					allowableValues = { "under_review", "shortlisted", "not_selected" }) String reviewStatus,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					description = "Each scorer who scored it or stepped back from it; a scorer missing here has not.") List<Cell> scores,
+					description = "Each scorer who scored it; a scorer missing here has not.") List<Cell> scores,
 			@Schema(types = { "number", "null" },
 					description = "The mean of every scorer's score, as the applications list reads it; null until one scores it.") @Nullable Double average,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many scored it.") int scored,
@@ -46,11 +46,10 @@ public record ProgramScoresResponse(
 					description = "The highest scorer's score less the lowest; null under two scores.") @Nullable Double spread) {
 	}
 
-	/** A scorer's answer on an application: their mean over the criteria, or a conflict without a score. */
+	/** A scorer's score of an application: their mean over the criteria. */
 	@Schema(name = "ProgramScoresCell")
 	public record Cell(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID accountId,
-			@Schema(types = { "number", "null" }) @Nullable Double score,
-			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean conflict) {
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) double score) {
 	}
 
 }

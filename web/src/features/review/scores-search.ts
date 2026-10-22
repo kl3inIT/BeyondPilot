@@ -28,8 +28,7 @@ export function scorerKey(accountId: string) {
 export type ScorerSummary = {
   scorer: ProgramScorer;
   scored: number;
-  conflicts: number;
-  /** The applications a judge has neither scored nor stepped back from; none for GenAI Fund. */
+  /** The applications a judge has not scored yet; none for GenAI Fund. */
   waiting: number | null;
   /** The mean of their scores, one decimal; null until they score one. */
   mean: number | null;
@@ -100,11 +99,10 @@ export function scoresTable(data: ProgramScores, search: ScoresSearch) {
     const cells = shown.flatMap((row) =>
       row.scores.filter((cell) => cell.accountId === scorer.accountId),
     );
-    const scores = cells.flatMap((cell) => (cell.score == null ? [] : [cell.score]));
+    const scores = cells.map((cell) => cell.score);
     return {
       scorer,
       scored: scores.length,
-      conflicts: cells.filter((cell) => cell.conflict).length,
       waiting:
         scorer.role === "reviewer"
           ? shown.filter((row) => !row.scores.some((cell) => cell.accountId === scorer.accountId))

@@ -472,7 +472,7 @@
     "PROPOSAL_REVIEWER_INVITED": "Địa chỉ này đã được mời chấm chương trình.",
     "PROPOSAL_REVIEWER_NOT_FOUND": "Giám khảo này không còn trong danh sách. Hãy tải lại trang.",
     "PROPOSAL_REVIEWER_JOINED": "Giám khảo này đã đăng nhập; không còn lời mời nào để gửi lại.",
-    "PROPOSAL_ASSESSMENT_INVALID": "Hãy chấm mọi tiêu chí từ 1 đến 10, hoặc không chấm tiêu chí nào để chỉ lưu ghi chú, hoặc khai xung đột lợi ích.",
+    "PROPOSAL_ASSESSMENT_INVALID": "Hãy chấm mọi tiêu chí từ 1 đến 10, hoặc không chấm tiêu chí nào để chỉ lưu ghi chú.",
     "PROPOSAL_RELEASED": "Kết quả của chương trình đã được công bố, nên việc chấm không còn thay đổi được.",
     "PROPOSAL_OUTCOMES_NOT_READY": "Kết quả chỉ được công bố khi đã hết hạn nộp và mọi đơn đều có quyết định.",
     "PROPOSAL_USE_CASE_NOT_FOUND": "Không có use case này.",
@@ -6698,7 +6698,6 @@
         "not_selected": "Không được chọn"
       },
       "mine": {
-        "conflict": "Xung đột",
         "none": "Chưa chấm"
       },
       "average": "{value}",
@@ -6753,7 +6752,6 @@
         "average": "trung bình {value}",
         "none": "Chưa giám khảo nào chấm đơn này.",
         "you": "{name} (bạn)",
-        "conflict": "Đã khai xung đột",
         "role": {
           "operator": "GenAI Fund",
           "reviewer": "Giám khảo"
@@ -6774,7 +6772,6 @@
     "assessment": {
       "title": "Đánh giá của bạn · phiên bản {version}",
       "earlierVersion": "Bạn đã chấm phiên bản {version}. Người nộp đã nộp lại sau đó; hãy xem phần thay đổi và lưu lại.",
-      "conflictDeclared": "Bạn đã khai xung đột lợi ích với người nộp này, nên điểm của bạn không được tính. Chấm bên dưới để rút lại.",
       "noCriteria": "Chỉ chấm được khi GenAI Fund đã đặt tiêu chí chấm.",
       "criteria": "Tiêu chí, 1 (thấp nhất) đến 10 (cao nhất)",
       "average": "Trung bình {value}",
@@ -6792,9 +6789,7 @@
       "skip": "Bỏ qua",
       "saveAndNext": "Lưu và sang đơn tiếp",
       "save": "Lưu",
-      "conflict": "Tôi có xung đột lợi ích với người nộp này",
       "saved": "Đã lưu đánh giá.",
-      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
       "incomplete": "Còn {count} tiêu chí chưa chấm. Chấm đủ thì mới lưu được.",
       "bar": {
         "progress": "Đã chấm {scored}/{total} tiêu chí",
@@ -6958,7 +6953,7 @@
         "invited": "Đã mời",
         "lapsed": "Lời mời hết hạn"
       },
-      "assessed": "{done}/{total} đơn đã xong{conflicts, plural, =0 {} other { · # xung đột}}",
+      "assessed": "{done}/{total} đơn đã chấm",
       "note": "Lời mời có hiệu lực 7 ngày. Giám khảo không bao giờ thấy điểm của nhau.",
       "invite": {
         "open": "Mời giám khảo",
@@ -7058,7 +7053,6 @@
     },
     "scores": {
       "metaTitle": "Bảng điểm",
-      "lead": "Điểm của mỗi giám khảo là trung bình các tiêu chí, trên thang {scale}. Chênh lệch từ {wide} điểm trở lên giữa giám khảo cao nhất và thấp nhất được đánh dấu: nên bàn những đơn đó trước.",
       "search": "Tìm theo giải pháp hoặc tổ chức",
       "view": {
         "label": "So sánh",
@@ -7072,7 +7066,6 @@
         "spread": "Chênh lệch",
         "judge": "Giám khảo",
         "role": "Vai trò",
-        "conflicts": "Xung đột",
         "waiting": "Chưa chấm",
         "mean": "Trung bình của họ"
       },
@@ -7080,8 +7073,8 @@
         "operator": "GenAI Fund",
         "reviewer": "Giám khảo"
       },
-      "conflict": "Xung đột",
       "wide": "Giám khảo chấm vênh nhau",
+      "spreadHint": "Điểm của giám khảo cao nhất trừ thấp nhất. ⚠ khi từ {wide} trở lên.",
       "noMatch": {
         "title": "Không có đơn shortlist nào khớp",
         "clear": "Xóa tìm kiếm"

@@ -166,7 +166,7 @@ public class ReviewService {
 					proposal.isShortlisted(),
 					reviewing.operator() ? average(all, points) : mine == null ? null : score(mine, points),
 					reviewing.operator() ? (int) all.stream().filter(ProposalAssessment::isScored).count() : null,
-					mine == null ? "none" : mine.isConflict() ? "conflict" : mine.isScored() ? "scored" : "noted",
+					mine == null ? "none" : mine.isScored() ? "scored" : "noted",
 					mine != null && mine.isBookmarked(), reviewing.owns(proposal)));
 		}
 		return new ReviewApplicationsResponse(head, items,
@@ -353,12 +353,9 @@ public class ReviewService {
 			List<ProgramScoresResponse.Cell> cells = new ArrayList<>();
 			List<Double> given = new ArrayList<>();
 			for (ProposalAssessment assessment : all) {
-				if (!assessment.isScored() && !assessment.isConflict()) {
-					continue;
-				}
 				Double score = score(assessment, scoring.points());
-				cells.add(new ProgramScoresResponse.Cell(assessment.getAccountId(), score, assessment.isConflict()));
 				if (score != null) {
+					cells.add(new ProgramScoresResponse.Cell(assessment.getAccountId(), score));
 					given.add(score);
 				}
 			}
@@ -372,7 +369,7 @@ public class ReviewService {
 
 	/**
 	 * Every scorer's scores of a program's submitted applications as a spreadsheet, one line for each scorer and
-	 * application they scored, stepped back from or wrote a note on, with each criterion's score. It holds the
+	 * application they scored or wrote a note on, with each criterion's score. It holds the
 	 * scorers' addresses, so the download is recorded on the program.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when the program takes no applications
@@ -401,14 +398,14 @@ public class ReviewService {
 			scoring.byProposal()
 				.getOrDefault(proposal.getId(), List.of())
 				.stream()
-				.filter(assessment -> assessment.isScored() || assessment.isConflict() || hasNote(assessment))
+				.filter(assessment -> assessment.isScored() || hasNote(assessment))
 				.filter(assessment -> scorers.containsKey(assessment.getAccountId()))
 				.sorted(Comparator.comparing(assessment -> order.get(assessment.getAccountId())))
 				.forEach(assessment -> lines.add(new ScoreLine(proposal.getId(), snapshot.organization().name(),
 						snapshot.solution().name(), proposal.getReviewStatus(),
 						Objects.requireNonNull(scorers.get(assessment.getAccountId())),
-						assessment.isConflict() ? Map.of() : json.readValue(assessment.getScores(), SCORES),
-						score(assessment, scoring.points()), assessment.isConflict(), assessment.getNote(),
+						json.readValue(assessment.getScores(), SCORES), score(assessment, scoring.points()),
+						assessment.getNote(),
 						assessment.getVersionNumber(), assessment.getSavedAt())));
 		}
 		Spreadsheet<ScoreLine> sheet = Spreadsheet.<ScoreLine>of("Scores")
@@ -425,7 +422,6 @@ public class ReviewService {
 			sheet = sheet.count(criterion.name(), line -> line.scores().get(criterion.id()));
 		}
 		sheet = sheet.decimal("Score", ScoreLine::score)
-			.yesNo("Conflict", ScoreLine::conflict)
 			.paragraph("Note", ScoreLine::note)
 			.count("Version scored", ScoreLine::version)
 			.time("Saved at", ScoreLine::savedAt);
@@ -463,7 +459,7 @@ public class ReviewService {
 		for (ProposalAssessment assessment : assessments
 			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
 			byProposal.computeIfAbsent(assessment.getProposalId(), id -> new ArrayList<>()).add(assessment);
-			if (assessment.isScored() || assessment.isConflict()) {
+			if (assessment.isScored()) {
 				counted.add(assessment.getAccountId());
 			}
 		}
@@ -496,7 +492,7 @@ public class ReviewService {
 
 	/** One scorer's answer on one application as the scores download lists it. */
 	private record ScoreLine(UUID id, String organization, String solution, String reviewStatus,
-			ProgramScoresResponse.Scorer scorer, Map<UUID, Integer> scores, @Nullable Double score, boolean conflict,
+			ProgramScoresResponse.Scorer scorer, Map<UUID, Integer> scores, @Nullable Double score,
 			@Nullable String note, int version, Instant savedAt) {
 	}
 
@@ -746,19 +742,17 @@ public class ReviewService {
 
 	/**
 	 * An operator's own assessment of an application, saved from their app as the review page saves it: a score from 1
-	 * to 10 for every criterion, or a conflict of interest without scores. A note replaces theirs and none keeps it;
-	 * their bookmark stays as it is.
+	 * to 10 for every criterion. A note replaces theirs and none keeps it; their bookmark stays as it is.
 	 * @return the application with every assessment, theirs included
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException as {@link #assess} refuses
 	 */
 	@Transactional
-	public SubmittedApplication scoreOf(Actor actor, UUID id, Map<UUID, Integer> scores, @Nullable String note,
-			boolean conflict) {
+	public SubmittedApplication scoreOf(Actor actor, UUID id, Map<UUID, Integer> scores, @Nullable String note) {
 		identity.requireOperator(actor);
 		ReviewApplicationResponse.@Nullable Assessment mine = application(actor, id).mine();
-		assess(actor, id, new SaveAssessmentRequest(conflict ? Map.of() : scores,
-				note != null ? note : mine == null ? null : mine.note(), conflict, mine != null && mine.bookmarked()));
+		assess(actor, id, new SaveAssessmentRequest(scores, note != null ? note : mine == null ? null : mine.note(),
+				mine != null && mine.bookmarked()));
 		return applicationOf(actor, id);
 	}
 
@@ -784,7 +778,7 @@ public class ReviewService {
 		}
 		Map<UUID, Integer> scores = new LinkedHashMap<>();
 		// No scores keep the note and the bookmark alone, for a judge who scores after hearing every pitch.
-		if (!request.conflict() && !request.scores().isEmpty()) {
+		if (!request.scores().isEmpty()) {
 			Set<UUID> expected = new HashSet<>();
 			criteria.forEach(criterion -> expected.add(criterion.id()));
 			if (!request.scores().keySet().equals(expected)) {
@@ -803,13 +797,11 @@ public class ReviewService {
 			.orElseGet(() -> new ProposalAssessment(id, reviewing.accountId()));
 		String note = request.note();
 		assessment.write(proposal.getSubmissions(), json.writeValueAsString(scores),
-				note == null || note.isBlank() ? null : note.strip(), request.conflict(), request.bookmarked(),
-				Instant.now());
+				note == null || note.isBlank() ? null : note.strip(), request.bookmarked(), Instant.now());
 		assessments.saveAndFlush(assessment);
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.assessment.saved")
 			.addKeyValue("proposal_id", id)
-			.addKeyValue("conflict", request.conflict())
 			.log("Assessment saved");
 		return view(form, reviewing, proposal);
 	}
@@ -990,10 +982,9 @@ public class ReviewService {
 		return points;
 	}
 
-	/** The mean of every judge's own score, leaving out conflicts; null when nobody scored. */
+	/** The mean of every judge's own score; null when nobody scored. */
 	@Nullable Double average(Collection<ProposalAssessment> all, Map<UUID, Integer> points) {
 		OptionalDouble mean = all.stream()
-			.filter(assessment -> !assessment.isConflict())
 			.map(assessment -> score(assessment, points))
 			.filter(Objects::nonNull)
 			.mapToDouble(Double::doubleValue)
@@ -1029,7 +1020,7 @@ public class ReviewService {
 
 	private static SubmittedApplication.Assessment assessment(ReviewApplicationResponse.Assessment assessment) {
 		return new SubmittedApplication.Assessment(assessment.reviewer(), assessment.role(), assessment.scores(),
-				assessment.average(), assessment.note(), assessment.conflict(), assessment.version());
+				assessment.average(), assessment.note(), assessment.version());
 	}
 
 	private ReviewApplicationResponse view(ApplicationForm form, Reviewing reviewing, Proposal proposal) {
@@ -1086,18 +1077,14 @@ public class ReviewService {
 			String role, Map<UUID, Integer> points) {
 		return new ReviewApplicationResponse.Assessment(person == null ? "" : person.label(), role,
 				json.readValue(assessment.getScores(), SCORES), score(assessment, points), assessment.getNote(),
-				assessment.isConflict(), assessment.isBookmarked(), assessment.getVersionNumber(),
-				assessment.getSavedAt());
+				assessment.isBookmarked(), assessment.getVersionNumber(), assessment.getSavedAt());
 	}
 
 	/**
 	 * One person's score: the points their scores give when the criteria have points, otherwise the mean of their
-	 * scores; null for a conflict or a note without scores.
+	 * scores; null for a note without scores.
 	 */
 	private @Nullable Double score(ProposalAssessment assessment, Map<UUID, Integer> points) {
-		if (assessment.isConflict()) {
-			return null;
-		}
 		Map<UUID, Integer> scores = json.readValue(assessment.getScores(), SCORES);
 		if (scores.isEmpty()) {
 			return null;

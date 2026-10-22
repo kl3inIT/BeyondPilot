@@ -42,7 +42,7 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 | `proposal_version` (V13)                           | One row per submission: `(proposal_id, number)`, `submitted_at`, `snapshot jsonb`                                                                                                                                                                                                                                                                                                                                                                                          |
 | `review_criterion` (V17)                           | A program's criteria in order: `program_id`, `position` (unique per program), `name`, `description`                                                                                                                                                                                                                                                                                                                                                                        |
 | `proposal_reviewer` (V17)                          | A judge invited by address: `program_id`, `email`, `account_id` (set on joining), `invited_by_account_id`, `invited_at`, `expires_at`, `joined_at`, `removed_at`. An address is unique per program, case-insensitively, among rows not removed                                                                                                                                                                                                                             |
-| `proposal_assessment` (V17)                        | One per application and person, keyed `(proposal_id, account_id)`: `version_number`, `scores jsonb` (by criterion identifier), `note`, `conflict`, `saved_at`                                                                                                                                                                                                                                                                                                              |
+| `proposal_assessment` (V17)                        | One per application and person, keyed `(proposal_id, account_id)`: `version_number`, `scores jsonb` (by criterion identifier), `note`, `bookmarked`, `saved_at`; `conflict` dropped in V111                                                                                                                                                                                                                                                                                |
 | `proposal_review_decision` (V17)                   | Every change of a decision: `proposal_id`, `account_id`, `from_status`, `to_status`, `reason`, `decided_at`                                                                                                                                                                                                                                                                                                                                                                |
 | `proposal_release` (V17)                           | One row per released program, keyed `program_id`: `released_at`, `released_by_account_id`, and the subject and message sent to each group                                                                                                                                                                                                                                                                                                                                  |
 | `proposal_release_draft` (V72)                     | One row per program whose release emails an operator has written, keyed `program_id`: the subject and message of each group as last written, `updated_by_account_id` and `updated_at`. Removed by the release                                                                                                                                                                                                                                                              |
@@ -222,7 +222,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **What a judge reads.** Their own assessment and its mean; never anyone else's score, an average across judges, the
   decision or the decision history.
 - **What an operator reads.** Every assessment with its author, role (`reviewer` for a joined judge, `operator`
-  otherwise), scores, note, conflict and version; the average; the decision; and the history of submissions and
+  otherwise), scores, note and version; the average; the decision; and the history of submissions and
   decisions with reason and who decided.
 - **Files.** `GET /review/applications/{id}/files/{fileId}` serves a file only when the last submission's snapshot
   holds it as the deck or a file answer, to anyone who reviews the program; otherwise `PROPOSAL_APPLICATION_NOT_FOUND`.
@@ -238,18 +238,19 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   (`PROPOSAL_RELEASED`). The program must have criteria (`PROPOSAL_NO_CRITERIA`).
 - **Scores.** Every criterion, and only those, from 1 to 10 (`PROPOSAL_ASSESSMENT_INVALID`), with an optional note of
   at most 2000 characters.
-- **Conflict.** A reviewer who declares a conflict saves no scores; the assessment counts as assessed but is left out
-  of the average and of the `scored` count.
+- **No conflict of interest.** A reviewer scores an application or leaves it; there is nothing to declare. The
+  declaration was removed on 22 October 2026 at Kai's request (BEY-244); V111 deleted the conflicts that held nothing
+  else and dropped the column.
 - **Version.** Each save records the submission number it was made on, so a score made before the applicant submitted
   again shows the earlier version.
 - **Averages.** An assessment's mean is the mean of its scores; an application's average is the mean of those means,
-  conflicts left out. Both are rounded to one decimal.
+  a note alone left out. Both are rounded to one decimal.
 - **Every scorer side by side.** `GET …/scores`, for operators only, lists the scorers (the operators who scored, then
   the judges who joined in the order they were invited, and a removed judge whose score still counts) and each
-  submitted application with every scorer's mean or conflict, the average, the `scored` count and the `spread`: the
+  submitted application with every scorer's mean, the average, the `scored` count and the `spread`: the
   highest scorer's mean less the lowest, with two scores or more. `scale` is 10, or the criteria's points together. The
   Scores tab marks a spread of a fifth of the scale or more. `POST …/scores/export` writes one line for each scorer
-  and application they scored, stepped back from or wrote a note on, with each criterion's score, recorded as
+  and application they scored or wrote a note on, with each criterion's score, recorded as
   `proposal.scores_export` (BEY-241).
 
 ### Decisions

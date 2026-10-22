@@ -1,6 +1,6 @@
 # Scores: a program's judging read side by side
 
-Status: approved by Đạt on 22 October 2026; built. Revised the same day after the first screens on staging (decisions 8 to 10). Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
+Status: approved by Đạt on 22 October 2026; built. Revised the same day after the first screens on staging (decisions 8 to 10). The conflict of interest it showed was removed the same day ([BEY-244](https://linear.app/beyondpilot/issue/BEY-244)): what follows about a conflict no longer holds. Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
 
 ## Why
 

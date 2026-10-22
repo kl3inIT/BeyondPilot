@@ -49,10 +49,9 @@ async function ReviewApplicationPage({ review, base, queue, search }: ReviewAppl
         nextId: review.nextId,
       };
   const nextId = judging ? judging.nextId : place.nextId;
-  // An operator reads their own score among the judges', first, once it is a score or a step back:
-  // a note or a bookmark alone stays in their panel.
-  const own =
-    review.mine && (review.mine.average != null || review.mine.conflict) ? review.mine : null;
+  // An operator reads their own score among the judges', first, once it is a score: a note or a
+  // bookmark alone stays in their panel.
+  const own = review.mine && review.mine.average != null ? review.mine : null;
   const scored = [
     ...(own ? [{ ...own, own: true }] : []),
     ...review.others.map((other) => ({ ...other, own: false })),
@@ -174,9 +173,7 @@ async function ReviewApplicationPage({ review, base, queue, search }: ReviewAppl
                           {other.own ? t("scores.you", { name: other.reviewer }) : other.reviewer}
                         </span>
                         <span className="tabular-nums">
-                          {other.conflict
-                            ? t("scores.conflict")
-                            : t("scores.average", { value: scoreText(other.average ?? 0, total) })}
+                          {t("scores.average", { value: scoreText(other.average ?? 0, total) })}
                         </span>
                       </span>
                       <span className="text-muted-foreground">
@@ -190,15 +187,13 @@ async function ReviewApplicationPage({ review, base, queue, search }: ReviewAppl
                           .filter(Boolean)
                           .join(" · ")}
                       </span>
-                      {!other.conflict && (
-                        <span className="text-muted-foreground">
-                          {/* In the order the program lists its criteria. */}
-                          {head.criteria
-                            .filter((criterion) => other.scores[criterion.id] !== undefined)
-                            .map((criterion) => `${criterion.name} ${other.scores[criterion.id]}`)
-                            .join(" · ")}
-                        </span>
-                      )}
+                      <span className="text-muted-foreground">
+                        {/* In the order the program lists its criteria. */}
+                        {head.criteria
+                          .filter((criterion) => other.scores[criterion.id] !== undefined)
+                          .map((criterion) => `${criterion.name} ${other.scores[criterion.id]}`)
+                          .join(" · ")}
+                      </span>
                       {other.note && <span className="whitespace-pre-line">{other.note}</span>}
                     </li>
                   ))}

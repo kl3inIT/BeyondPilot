@@ -217,7 +217,6 @@ test.describe("judging applications", () => {
       body: {
         scores: { [criteria[0].id]: 4, [criteria[1].id]: 3 },
         note: "Clear on consent.",
-        conflict: false,
         bookmarked: false,
       },
     });
@@ -268,9 +267,8 @@ test.describe("judging applications", () => {
       "href",
       /a0000000-0000-4000-8000-000000000001$/,
     );
-    await expect(
-      page.getByRole("button", { name: "I have a conflict with this applicant" }),
-    ).toBeVisible();
+    // A reviewer scores or passes over an application: there is no conflict to declare.
+    await expect(page.getByRole("button", { name: /conflict/i })).toHaveCount(0);
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 
@@ -303,13 +301,13 @@ test.describe("judging applications", () => {
     await expect(table.getByRole("row").nth(2)).toContainText("Renew in a Minute");
     await expect(table).not.toContainText("Plain Cover");
 
-    // Judges 3.5 apart are marked, with who gave the highest and the lowest; a step back reads Conflict.
+    // Judges 3.5 apart are marked, with who gave the highest and the lowest; one not scored reads —.
     const claim = table.getByRole("row", { name: /Claim Copilot/ });
     await expect(claim).toContainText("4.3");
     await expect(claim).toContainText("Judges far apart");
     await expect(claim).toContainText("6.0highest on this application");
     await expect(claim).toContainText("2.5lowest on this application");
-    await expect(table.getByRole("row", { name: /Renew in a Minute/ })).toContainText("Conflict");
+    await expect(table.getByRole("row", { name: /Renew in a Minute/ })).toContainText("—");
 
     // An application opens to go on through the shortlist, the highest mean first.
     await expect(claim.getByRole("link", { name: "Claim Copilot" })).toHaveAttribute(
@@ -341,8 +339,7 @@ test.describe("judging applications", () => {
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Edit criteria" })).toHaveCount(0);
     await expect(page.getByText("thu.pham@tasco.example")).toBeVisible();
-    // A step back for a conflict is done, and named, so it is not read as a score.
-    await expect(page.getByText("2 of 3 applications done · 1 conflict")).toBeVisible();
+    await expect(page.getByText("2 of 3 applications scored")).toBeVisible();
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 

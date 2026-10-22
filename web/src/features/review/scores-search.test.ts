@@ -29,8 +29,8 @@ const data: ProgramScores = {
       organization: "Radar Co",
       reviewStatus: "shortlisted",
       scores: [
-        { accountId: "a1", score: 5, conflict: false },
-        { accountId: "a2", score: 9, conflict: false },
+        { accountId: "a1", score: 5 },
+        { accountId: "a2", score: 9 },
       ],
       average: 7,
       scored: 2,
@@ -42,9 +42,8 @@ const data: ProgramScores = {
       organization: "Lens Ltd",
       reviewStatus: "shortlisted",
       scores: [
-        { accountId: "a1", score: null, conflict: true },
-        { accountId: "a2", score: 8, conflict: false },
-        { accountId: "a3", score: 8.4, conflict: false },
+        { accountId: "a2", score: 8 },
+        { accountId: "a3", score: 8.4 },
       ],
       average: 8.2,
       scored: 2,
@@ -56,7 +55,7 @@ const data: ProgramScores = {
       organization: "Flow",
       reviewStatus: "not_selected",
       // GenAI Fund's own screening of an application it did not shortlist.
-      scores: [{ accountId: "a4", score: 4, conflict: false }],
+      scores: [{ accountId: "a4", score: 4 }],
       average: 4,
       scored: 1,
       spread: null,
@@ -104,9 +103,9 @@ describe("scoresTable", () => {
 
   it("sums up each scorer's work over the shortlist", () => {
     const [minh, first, second] = scoresTable(data, search()).judges;
-    expect(minh).toMatchObject({ scored: 1, conflicts: 0, waiting: null, mean: 8.4 });
-    expect(first).toMatchObject({ scored: 1, conflicts: 1, waiting: 0, mean: 5 });
-    expect(second).toMatchObject({ scored: 2, conflicts: 0, waiting: 0, mean: 8.5 });
+    expect(minh).toMatchObject({ scored: 1, waiting: null, mean: 8.4 });
+    expect(first).toMatchObject({ scored: 1, waiting: 1, mean: 5 });
+    expect(second).toMatchObject({ scored: 2, waiting: 0, mean: 8.5 });
   });
 
   it("marks a spread of a fifth of the scale as wide", () => {

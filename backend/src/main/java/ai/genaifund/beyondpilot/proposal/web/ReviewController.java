@@ -119,7 +119,7 @@ class ReviewController {
 	@Operation(operationId = "exportProgramScores", summary = "Download every scorer's scores of a program's applications",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200",
-			description = "One row for each scorer and application, with each criterion's score, the note and whether it was a conflict. The download is recorded.",
+			description = "One row for each scorer and application, with each criterion's score and the note. The download is recorded.",
 			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
 					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
 	@ApiResponse(responseCode = "400", description = "The download would hold too many rows.",
