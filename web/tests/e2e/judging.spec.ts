@@ -291,33 +291,33 @@ test.describe("judging applications", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto(`${admin}/scores`);
 
-    // The shortlist leads, each scorer a column; judges 3.5 apart on one application are marked.
+    // Only the shortlist, which judges score, the highest mean first, each scorer a column.
     await expect(
       page.getByRole("navigation", { name: "Program" }).getByRole("link", { name: "Scores" }),
     ).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table");
     await expect(table.getByRole("columnheader", { name: /Minh Tran/ })).toBeVisible();
     await expect(table.getByRole("columnheader", { name: /Lan Vu/ })).toBeVisible();
+    await expect(table.getByRole("row")).toHaveCount(3);
+    await expect(table.getByRole("row").nth(1)).toContainText("Claim Copilot");
+    await expect(table.getByRole("row").nth(2)).toContainText("Renew in a Minute");
+    await expect(table).not.toContainText("Plain Cover");
+
+    // Judges 3.5 apart are marked, with who gave the highest and the lowest; a step back reads Conflict.
     const claim = table.getByRole("row", { name: /Claim Copilot/ });
     await expect(claim).toContainText("4.3");
     await expect(claim).toContainText("Judges far apart");
-    await expect(table.getByRole("row")).toHaveCount(2);
+    await expect(claim).toContainText("6.0highest on this application");
+    await expect(claim).toContainText("2.5lowest on this application");
+    await expect(table.getByRole("row", { name: /Renew in a Minute/ })).toContainText("Conflict");
 
-    // Every application, the highest mean first; a step back reads Conflict, and none scored last.
-    await page.getByRole("tab", { name: /^All/ }).click();
-    await expect(table.getByRole("row")).toHaveCount(4);
-    await expect(table.getByRole("row").nth(1)).toContainText("Claim Copilot");
-    await expect(table.getByRole("row").nth(2)).toContainText("Renew in a Minute");
-    await expect(table.getByRole("row").nth(2)).toContainText("Conflict");
-    await expect(table.getByRole("row").nth(3)).toContainText("Plain Cover");
-
-    // An application opens in the Applications list's order, the tab kept.
+    // An application opens to go on through the shortlist, the highest mean first.
     await expect(claim.getByRole("link", { name: "Claim Copilot" })).toHaveAttribute(
       "href",
-      /\/applications\/a0000000-0000-4000-8000-000000000001\?sort=-score$/,
+      /\/applications\/a0000000-0000-4000-8000-000000000001\?tab=shortlisted&sort=-score$/,
     );
 
-    // By judge: each scorer's work and mean over the applications kept.
+    // By judge: each scorer's work and mean over the shortlist.
     await page.getByRole("button", { name: "By judge" }).click();
     await expect(page).toHaveURL(/view=judges/);
     const lan = page.getByRole("row", { name: /Lan Vu/ });

@@ -44,6 +44,13 @@ function DataTable({
         // Below 768px the column of a row's menu stays at the end of the frame, above its fade, on
         // the ground of its row, with a shadow while other columns hide under it.
         "max-md:[&_[data-pinned]]:sticky max-md:[&_[data-pinned]]:right-0 max-md:[&_[data-pinned]]:z-10 max-md:data-more-end:[&_[data-pinned]]:shadow-md max-md:[&_td[data-pinned]]:bg-background max-md:[&_th[data-pinned]]:bg-muted max-md:[&_tr[data-state=selected]_td[data-pinned]]:bg-muted",
+        // The columns a wide table keeps at its start (`pin` of DataTableView): the first, 14rem, at
+        // every width; the next three, 6rem each, from 768px, the third ending them with a rule.
+        "[&_[data-pin]]:z-10 [&_td[data-pin]]:bg-background [&_th[data-pin]]:bg-muted [&_tr[data-state=selected]_td[data-pin]]:bg-muted",
+        "[&_[data-pin='0']]:sticky [&_[data-pin='0']]:left-0 [&_[data-pin='0']]:w-56 [&_[data-pin='0']]:max-w-56 [&_[data-pin='0']]:min-w-56",
+        "[&_[data-pin='1']]:w-24 [&_[data-pin='1']]:min-w-24 md:[&_[data-pin='1']]:sticky md:[&_[data-pin='1']]:left-56",
+        "[&_[data-pin='2']]:w-24 [&_[data-pin='2']]:min-w-24 md:[&_[data-pin='2']]:sticky md:[&_[data-pin='2']]:left-80",
+        "[&_[data-pin='3']]:w-24 [&_[data-pin='3']]:min-w-24 md:[&_[data-pin='3']]:sticky md:[&_[data-pin='3']]:left-104 md:[&_[data-pin='3']]:border-r",
         className,
       )}
     >

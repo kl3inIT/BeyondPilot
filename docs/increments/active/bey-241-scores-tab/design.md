@@ -1,6 +1,6 @@
 # Scores: a program's judging read side by side
 
-Status: approved by Đạt on 22 October 2026; built. Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
+Status: approved by Đạt on 22 October 2026; built. Revised the same day after the first screens on staging (decisions 8 to 10). Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
 
 ## Why
 
@@ -16,12 +16,12 @@ At the Tasco deliberation on 22 October, Kai asked how to see every judge's scor
 
 ## What the tab shows
 
-| Part                     | Holds                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| By application (default) | A row per submitted application the filter keeps: its solution and organization, GenAI Fund's decision, then a column per scorer with their mean on that application, Conflict, or a dash when they have not scored it; then the mean across scorers, how many scored it, and the spread. Sorted by the mean by default, by any column on its header |
-| By judge                 | A row per scorer: name and role (judge or GenAI Fund), applications scored, stepped back from, still to score among the shortlist, and their mean over the applications they scored                                                                                                                                                                  |
-| Filter                   | Shortlisted (default), All, Not selected, To decide; the search of Applications by solution or organization                                                                                                                                                                                                                                          |
-| Export                   | CSV or Excel, of the applications the filter keeps: one line per scorer and application, with each criterion's score, the scorer's mean, the note, conflict, the version scored and when                                                                                                                                                             |
+| Part                     | Holds                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| By application (default) | A row per shortlisted application the search keeps: its solution and organization, the mean across scorers, the spread and how many scored it, kept in view; then a column per scorer with their mean on that application, Conflict, or a dash when they have not scored it. Sorted by the mean by default, by any column on its header |
+| By judge                 | A row per scorer: name and role (judge or GenAI Fund), applications scored, stepped back from, still to score among the shortlist, and their mean over the applications they scored                                                                                                                                                     |
+| Filter                   | The search of Applications by solution or organization; only the shortlist is listed (decision 8)                                                                                                                                                                                                                                       |
+| Export                   | CSV or Excel, of the applications the filter keeps: one line per scorer and application, with each criterion's score, the scorer's mean, the note, conflict, the version scored and when                                                                                                                                                |
 
 ## Decisions
 
@@ -32,6 +32,9 @@ At the Tasco deliberation on 22 October, Kai asked how to see every judge's scor
 5. **No normalization.** With two to five judges a judge's own spread rests on a handful of scores; By judge shows each judge's mean instead, so a strict judge is visible without rescaling anyone's scores.
 6. **One endpoint for the tab and one for its export.** `GET /api/proposal/review/programs/{programId}/scores` returns the scorers and a row per submitted application with each scorer's mean or conflict, the mean, the count and the spread; the web filters, sorts and switches views as Applications does. `POST …/scores/export?format=` takes the applications the filter keeps, as the applications export does, and is recorded on the program. Operator only.
 7. **No schema change.** Everything is read from `proposal_assessment`, the criteria and the judges the program has.
+8. **Only the shortlist.** Judges score only the shortlisted applications (BEY-213): at Tasco on 22 October all 45 scores were on the 10 shortlisted of 49 submitted. The decision tabs and the Decision column of the first version therefore showed empty columns, and are gone; the search stays. An operator who scored no shortlisted application gets no column. Đạt, 22 October.
+9. **The numbers to deliberate on lead.** The application, the average, the spread and the count come first and stay in view while the scorers' columns scroll under them, so that ten scorers (Tasco at its fullest: nine judges invited and GenAI Fund) read as well as three. On a phone only the application stays. The other products read keep the ranking table to the mean and the count and show who gave what elsewhere; the matrix keeps both, with the ranking first. `DataTableView` gained `pin` for this.
+10. **Who pulls an application up or down.** On a row whose spread is marked, the highest and the lowest scorer's cells are tinted, with words for a screen reader.
 
 ## Built where
 
