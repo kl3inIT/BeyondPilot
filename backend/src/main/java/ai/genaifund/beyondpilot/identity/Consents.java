@@ -15,6 +15,7 @@ import ai.genaifund.beyondpilot.identity.persistence.ConsentRecordRepository.Cho
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,12 +40,16 @@ public class Consents {
 
 	private final IdentityService identity;
 
+	private final ApplicationEventPublisher events;
+
 	private final String text;
 
-	Consents(ConsentRecordRepository records, ConsentChoices choices, IdentityService identity) {
+	Consents(ConsentRecordRepository records, ConsentChoices choices, IdentityService identity,
+			ApplicationEventPublisher events) {
 		this.records = records;
 		this.choices = choices;
 		this.identity = identity;
+		this.events = events;
 		this.text = read("consent/v" + VERSION + "." + LOCALE + ".md");
 	}
 
@@ -73,6 +78,8 @@ public class Consents {
 			Choice current = before.get(purpose);
 			if (current == null || current.granted() != granted) {
 				records.insert(actor.accountId(), purpose.key(), granted, VERSION, LOCALE, request.source(), requestId);
+				events.publishEvent(new ConsentChanged(actor.accountId(), purpose, granted,
+						current != null && current.granted() && !granted));
 				LOG.atInfo()
 					.addKeyValue("event", "identity.consent.recorded")
 					.addKeyValue("account_id", actor.accountId())

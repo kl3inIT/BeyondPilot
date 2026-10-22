@@ -215,10 +215,13 @@ public class UseCaseProposals {
 	 * Sends the proposal as it was saved: it is checked again, and the sender's name, country and number must be given.
 	 * @throws ProposalException when the caller has no such proposal, it was sent, the use case no longer takes
 	 * proposals, or it lacks what a proposal needs; the code says what
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller has not agreed to share their data
+	 * with program partners
 	 */
 	@Transactional
 	public UseCaseProposalFormResponse send(Actor actor, UUID id) {
 		identity.requireActive(actor);
+		identity.requirePartnersConsent(actor);
 		UseCaseProposal proposal = proposals.findForUpdate(id).orElseThrow(() -> notFound(id));
 		Membership membership = organizations.membershipOf(actor)
 			.filter(found -> found.organizationId().equals(proposal.getOrganizationId()))

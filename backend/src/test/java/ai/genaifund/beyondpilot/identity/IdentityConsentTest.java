@@ -33,6 +33,8 @@ class IdentityConsentTest {
 
 	private static final String CONSENT = "/api/identity/consent";
 
+	private static final String WITHDRAWN = "You withdrew your consent to use BeyondPilot";
+
 	@LocalServerPort
 	private int port;
 
@@ -146,6 +148,53 @@ class IdentityConsentTest {
 			.expectBody()
 			.jsonPath("$.needed")
 			.isEqualTo(true);
+	}
+
+	@Test
+	void withdrawingThePlatformPurposeIsConfirmedByEmailAndARefusalAtFirstIsNot() {
+		String leaver = TestSignIn.sessionWithoutConsent(client, mail, "confirmed@consent.test");
+		put(leaver, Map.of("platform", true, "partners", true, "ai", true, "updates", true, "source", "accept_all"))
+			.expectStatus()
+			.isOk();
+		put(leaver, Map.of("platform", true, "partners", true, "ai", false, "updates", false, "source", "settings"))
+			.expectStatus()
+			.isOk();
+		assertThat(mail.subjectsTo("confirmed@consent.test")).doesNotContain(WITHDRAWN);
+
+		put(leaver, Map.of("platform", false, "partners", true, "ai", false, "updates", false, "source", "settings"))
+			.expectStatus()
+			.isOk();
+		assertThat(mail.latestSubjectTo("confirmed@consent.test")).isEqualTo(WITHDRAWN);
+		assertThat(mail.latestTextTo("confirmed@consent.test")).contains("team@beyondpilot.ai")
+			.containsPattern("https?://[^/ ]+/consent");
+
+		String refuser = TestSignIn.sessionWithoutConsent(client, mail, "never@consent.test");
+		put(refuser, Map.of("platform", false, "partners", false, "ai", false, "updates", false, "source", "choose"))
+			.expectStatus()
+			.isOk();
+		assertThat(mail.subjectsTo("never@consent.test")).doesNotContain(WITHDRAWN);
+	}
+
+	@Test
+	void submittingNeedsThePartnersPurpose() {
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "private@consent.test");
+		put(session, Map.of("platform", true, "partners", false, "ai", true, "updates", true, "source", "choose"))
+			.expectStatus()
+			.isOk();
+
+		for (String path : List.of("/api/proposal/applications/" + UUID.randomUUID() + "/submit",
+				"/api/proposal/use-case-proposals/" + UUID.randomUUID() + "/send")) {
+			client.post()
+				.uri(path)
+				.cookie(TestSignIn.SESSION_COOKIE, session)
+				.header(TestSignIn.CSRF_HEADER, "1")
+				.exchange()
+				.expectStatus()
+				.isForbidden()
+				.expectBody()
+				.jsonPath("$.code")
+				.isEqualTo("IDENTITY_PARTNERS_CONSENT_REQUIRED");
+		}
 	}
 
 	@Test

@@ -343,6 +343,7 @@
     "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
     "IDENTITY_ACCOUNT_DISABLED": "This account has been disabled, so it can no longer be used. Ask GenAI Fund if you need it back.",
     "IDENTITY_OPERATOR_REQUIRED": "You are no longer an operator.",
+    "IDENTITY_PARTNERS_CONSENT_REQUIRED": "Submitting shares it with the program's partners and judges. Turn on sharing with program partners in Settings first.",
     "IDENTITY_ACCOUNT_NOT_FOUND": "This account no longer exists.",
     "IDENTITY_APP_HOST_INVALID": "Enter a host name such as app.example.com.",
     "IDENTITY_APP_HOST_NOT_FOUND": "This host is no longer in the list. Reload the page.",
@@ -3189,6 +3190,7 @@
       },
       "groups": {
         "sign_in": "Sign-in",
+        "account": "Account",
         "organizations": "Organizations",
         "applications": "Programs and applications",
         "solutions": "Solutions",
@@ -3200,6 +3202,10 @@
         "sign_in_code": {
           "name": "Sign-in code",
           "description": "Sent each time someone asks for a code to sign in with their address."
+        },
+        "consent_withdrawn": {
+          "name": "Consent withdrawn",
+          "description": "Sent to the person when they withdraw their consent to use the platform, which locks their account until they agree again."
         },
         "organization_invitation": {
           "name": "Organization invitation",

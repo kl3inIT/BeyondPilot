@@ -18,6 +18,7 @@ export const emailStatuses = [
 /** Every kind of email, in the order the screens group them. */
 export const emailKinds = [
   "sign_in_code",
+  "consent_withdrawn",
   "organization_invitation",
   "organization_approved",
   "organization_refused",

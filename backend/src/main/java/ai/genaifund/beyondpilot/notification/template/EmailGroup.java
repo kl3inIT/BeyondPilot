@@ -5,6 +5,8 @@ public enum EmailGroup {
 
 	SIGN_IN("sign_in"),
 
+	ACCOUNT("account"),
+
 	ORGANIZATIONS("organizations"),
 
 	APPLICATIONS("applications"),

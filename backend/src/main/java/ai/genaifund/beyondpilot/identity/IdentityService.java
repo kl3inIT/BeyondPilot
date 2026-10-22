@@ -126,6 +126,30 @@ public class IdentityService {
 		active(actor);
 	}
 
+	/**
+	 * Refuses a person who has not agreed to share their data with program partners, for a module about to send their
+	 * application or proposal to a program's partners and judges.
+	 * @throws IdentityException when the latest choice for that purpose is not an agreement
+	 */
+	@Transactional(readOnly = true)
+	public void requirePartnersConsent(Actor actor) {
+		var choice = consents.of(actor.accountId()).get(ConsentPurpose.PARTNERS);
+		if (choice == null || !choice.granted()) {
+			throw new IdentityException(IdentityErrorCode.PARTNERS_CONSENT_REQUIRED,
+					"Submission without the partners consent by account " + actor.accountId());
+		}
+	}
+
+	/**
+	 * Whether the person's latest choice for the purpose is a refusal. A person who has not answered yet has not
+	 * declined: an account from before the consent keeps what it had until it answers at its next sign-in (BEY-240).
+	 */
+	@Transactional(readOnly = true)
+	public boolean declined(UUID accountId, ConsentPurpose purpose) {
+		var choice = consents.of(accountId).get(purpose);
+		return choice != null && !choice.granted();
+	}
+
 	/** Whether the caller is GenAI Fund staff now, whatever they were when they signed in. */
 	@Transactional(readOnly = true)
 	public boolean isOperator(Actor actor) {
