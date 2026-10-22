@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { ApiError } from "@/lib/api/client";
 import {
+  getProgramScores,
   getRelease,
   getReviewApplication,
   getReviewCriteria,
@@ -11,6 +12,7 @@ import {
   listReviewers,
   listReviewPrograms,
   type ProgramDrafts,
+  type ProgramScores,
   type ReviewDraft,
   type Release,
   type ReviewApplication,
@@ -54,6 +56,15 @@ export async function judgesAnyProgram(): Promise<boolean> {
 /** A program's submitted applications as the caller reviews them. Server only. */
 export async function readReviewApplications(programId: string): Promise<ReviewApplications> {
   const { data } = await listReviewApplications({
+    ...(await sessionRequest()),
+    path: { programId },
+  }).catch(notFoundWhenRefused);
+  return data;
+}
+
+/** Every scorer's score of a program's applications, for an operator. Server only. */
+export async function readProgramScores(programId: string): Promise<ProgramScores> {
+  const { data } = await getProgramScores({
     ...(await sessionRequest()),
     path: { programId },
   }).catch(notFoundWhenRefused);

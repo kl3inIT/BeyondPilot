@@ -274,6 +274,12 @@ public enum AuditAction {
 	 */
 	PROPOSAL_REVIEWERS_EXPORT("proposal.reviewers_export", "count"),
 
+	/**
+	 * An operator downloaded every scorer's scores of a program's applications; the resource is the program.
+	 * {@code count} is how many lines the download holds.
+	 */
+	PROPOSAL_SCORES_EXPORT("proposal.scores_export", "count"),
+
 	/** An operator decided on an application. {@code decision} is {@code shortlisted} or {@code not_selected}. */
 	PROPOSAL_DECIDE("proposal.decide", "decision"),
 

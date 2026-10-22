@@ -3,10 +3,12 @@ package ai.genaifund.beyondpilot.proposal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +32,7 @@ import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ContactDetails;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramScoresResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
@@ -329,6 +332,174 @@ public class ReviewService {
 		return file;
 	}
 
+	/**
+	 * Every scorer's score of each submitted application of a program side by side, for GenAI Fund to deliberate:
+	 * the operators who scored, then the judges in the order they were invited. A cell is the scorer's mean over the
+	 * criteria, the same score the applications list averages, so the two never disagree.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional
+	public ProgramScoresResponse scores(Actor actor, UUID programId) {
+		access.operator(actor);
+		Scoring scoring = scoring(actor, setup.form(programId), null);
+		List<ProgramScoresResponse.Row> rows = new ArrayList<>();
+		for (Proposal proposal : scoring.submitted()) {
+			Snapshot snapshot = scoring.snapshots().get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
+			if (snapshot == null) {
+				continue;
+			}
+			List<ProposalAssessment> all = scoring.byProposal().getOrDefault(proposal.getId(), List.of());
+			List<ProgramScoresResponse.Cell> cells = new ArrayList<>();
+			List<Double> given = new ArrayList<>();
+			for (ProposalAssessment assessment : all) {
+				if (!assessment.isScored() && !assessment.isConflict()) {
+					continue;
+				}
+				Double score = score(assessment, scoring.points());
+				cells.add(new ProgramScoresResponse.Cell(assessment.getAccountId(), score, assessment.isConflict()));
+				if (score != null) {
+					given.add(score);
+				}
+			}
+			Double spread = given.size() < 2 ? null : round(Collections.max(given) - Collections.min(given));
+			rows.add(new ProgramScoresResponse.Row(proposal.getId(), snapshot.solution().name(),
+					snapshot.organization().name(), proposal.getReviewStatus(), cells, average(all, scoring.points()),
+					(int) all.stream().filter(ProposalAssessment::isScored).count(), spread));
+		}
+		return new ProgramScoresResponse(scoring.scale(), scoring.scorers(), rows);
+	}
+
+	/**
+	 * Every scorer's scores of a program's submitted applications as a spreadsheet, one line for each scorer and
+	 * application they scored, stepped back from or wrote a note on, with each criterion's score. It holds the
+	 * scorers' addresses, so the download is recorded on the program.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile exportScores(Actor actor, UUID programId, ExportApplicationsRequest request,
+			SpreadsheetFormat format) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		List<UUID> asked = request.applicationIds();
+		Set<UUID> only = asked == null ? null : Set.copyOf(asked);
+		Scoring scoring = scoring(actor, form, only);
+		Map<UUID, Integer> order = new HashMap<>();
+		Map<UUID, ProgramScoresResponse.Scorer> scorers = new HashMap<>();
+		for (ProgramScoresResponse.Scorer scorer : scoring.scorers()) {
+			order.put(scorer.accountId(), order.size());
+			scorers.put(scorer.accountId(), scorer);
+		}
+		List<ScoreLine> lines = new ArrayList<>();
+		for (Proposal proposal : scoring.submitted()) {
+			Snapshot snapshot = scoring.snapshots().get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
+			if (snapshot == null) {
+				continue;
+			}
+			scoring.byProposal()
+				.getOrDefault(proposal.getId(), List.of())
+				.stream()
+				.filter(assessment -> assessment.isScored() || assessment.isConflict() || hasNote(assessment))
+				.filter(assessment -> scorers.containsKey(assessment.getAccountId()))
+				.sorted(Comparator.comparing(assessment -> order.get(assessment.getAccountId())))
+				.forEach(assessment -> lines.add(new ScoreLine(proposal.getId(), snapshot.organization().name(),
+						snapshot.solution().name(), proposal.getReviewStatus(),
+						Objects.requireNonNull(scorers.get(assessment.getAccountId())),
+						assessment.isConflict() ? Map.of() : json.readValue(assessment.getScores(), SCORES),
+						score(assessment, scoring.points()), assessment.isConflict(), assessment.getNote(),
+						assessment.getVersionNumber(), assessment.getSavedAt())));
+		}
+		Spreadsheet<ScoreLine> sheet = Spreadsheet.<ScoreLine>of("Scores")
+			.text("Application", ScoreLine::id)
+			.text("Organization", ScoreLine::organization)
+			.text("Solution", ScoreLine::solution)
+			.label("Review status", ScoreLine::reviewStatus)
+			.group("Scorer")
+			.text("Name", line -> line.scorer().name())
+			.email("Email", line -> line.scorer().email())
+			.text("Role", line -> "reviewer".equals(line.scorer().role()) ? "Judge" : "GenAI Fund")
+			.group("Scores");
+		for (CriterionResponse criterion : scoring.criteria()) {
+			sheet = sheet.count(criterion.name(), line -> line.scores().get(criterion.id()));
+		}
+		sheet = sheet.decimal("Score", ScoreLine::score)
+			.yesNo("Conflict", ScoreLine::conflict)
+			.paragraph("Note", ScoreLine::note)
+			.count("Version scored", ScoreLine::version)
+			.time("Saved at", ScoreLine::savedAt);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-scores", lines,
+				about(operator, only == null ? Map.of() : Map.of("Applications", "the ones the list showed")));
+		setup.record(AuditAction.PROPOSAL_SCORES_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.scores.exported")
+			.addKeyValue("program_id", programId)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Scores exported");
+		return file;
+	}
+
+	private static boolean hasNote(ProposalAssessment assessment) {
+		String note = assessment.getNote();
+		return note != null && !note.isBlank();
+	}
+
+	/**
+	 * What the scores of a program are read from: its criteria, its submitted applications (only these, when given)
+	 * with their assessments, and who scores them.
+	 */
+	private Scoring scoring(Actor actor, ApplicationForm form, @Nullable Set<UUID> only) {
+		UUID programId = form.programId();
+		List<CriterionResponse> criteria = head(form, access.of(actor, programId)).criteria();
+		Map<UUID, Integer> points = points(criteria);
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
+			.stream()
+			.filter(proposal -> only == null || only.contains(proposal.getId()))
+			.toList();
+		Map<UUID, List<ProposalAssessment>> byProposal = new HashMap<>();
+		Set<UUID> counted = new LinkedHashSet<>();
+		for (ProposalAssessment assessment : assessments
+			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
+			byProposal.computeIfAbsent(assessment.getProposalId(), id -> new ArrayList<>()).add(assessment);
+			if (assessment.isScored() || assessment.isConflict()) {
+				counted.add(assessment.getAccountId());
+			}
+		}
+		// The judges who joined and were not removed, as invited, then anyone whose score counts, a removed judge's too.
+		Set<UUID> judges = new HashSet<>(setup.judgesOf(programId));
+		Set<UUID> accounts = new LinkedHashSet<>(setup.joinedJudges(programId));
+		accounts.addAll(counted);
+		Map<UUID, Person> people = identity.people(accounts);
+		List<ProgramScoresResponse.Scorer> operators = new ArrayList<>();
+		List<ProgramScoresResponse.Scorer> reviewers = new ArrayList<>();
+		for (UUID accountId : accounts) {
+			Person person = people.get(accountId);
+			if (person == null) {
+				continue;
+			}
+			boolean judge = judges.contains(accountId);
+			(judge ? reviewers : operators).add(new ProgramScoresResponse.Scorer(accountId, person.label(),
+					person.email(), judge ? "reviewer" : "operator"));
+		}
+		List<ProgramScoresResponse.Scorer> scorers = new ArrayList<>(operators);
+		scorers.addAll(reviewers);
+		double scale = points.isEmpty() ? ReviewSetup.SCALE : points.values().stream().mapToInt(Integer::intValue).sum();
+		return new Scoring(criteria, points, scale, submitted, byProposal, snapshots(submitted), scorers);
+	}
+
+	private record Scoring(List<CriterionResponse> criteria, Map<UUID, Integer> points, double scale,
+			List<Proposal> submitted, Map<UUID, List<ProposalAssessment>> byProposal,
+			Map<VersionKey, Snapshot> snapshots, List<ProgramScoresResponse.Scorer> scorers) {
+	}
+
+	/** One scorer's answer on one application as the scores download lists it. */
+	private record ScoreLine(UUID id, String organization, String solution, String reviewStatus,
+			ProgramScoresResponse.Scorer scorer, Map<UUID, Integer> scores, @Nullable Double score, boolean conflict,
+			@Nullable String note, int version, Instant savedAt) {
+	}
+
 	private static Spreadsheet.About about(Operator operator, Map<String, String> narrowed) {
 		return new Spreadsheet.About(operator.label(), Instant.now(), narrowed);
 	}
@@ -571,6 +742,24 @@ public class ReviewService {
 					.map(event -> new SubmittedApplication.Event(event.kind(), event.at(), event.version(),
 							event.decision(), event.reason(), event.by()))
 					.toList());
+	}
+
+	/**
+	 * An operator's own assessment of an application, saved from their app as the review page saves it: a score from 1
+	 * to 10 for every criterion, or a conflict of interest without scores. A note replaces theirs and none keeps it;
+	 * their bookmark stays as it is.
+	 * @return the application with every assessment, theirs included
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException as {@link #assess} refuses
+	 */
+	@Transactional
+	public SubmittedApplication scoreOf(Actor actor, UUID id, Map<UUID, Integer> scores, @Nullable String note,
+			boolean conflict) {
+		identity.requireOperator(actor);
+		ReviewApplicationResponse.@Nullable Assessment mine = application(actor, id).mine();
+		assess(actor, id, new SaveAssessmentRequest(conflict ? Map.of() : scores,
+				note != null ? note : mine == null ? null : mine.note(), conflict, mine != null && mine.bookmarked()));
+		return applicationOf(actor, id);
 	}
 
 	/**

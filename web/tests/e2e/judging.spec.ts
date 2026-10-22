@@ -283,6 +283,50 @@ test.describe("judging applications", () => {
     await expect(page.getByRole("link", { name: "Back to Reviews" })).toBeVisible();
   });
 
+  test("an operator compares every judge's scores, the widest gaps marked, and by judge", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`${admin}/scores`);
+
+    // Only the shortlist, which judges score, the highest mean first, each scorer a column.
+    await expect(
+      page.getByRole("navigation", { name: "Program" }).getByRole("link", { name: "Scores" }),
+    ).toHaveAttribute("aria-current", "page");
+    const table = page.getByRole("table");
+    await expect(table.getByRole("columnheader", { name: /Minh Tran/ })).toBeVisible();
+    await expect(table.getByRole("columnheader", { name: /Lan Vu/ })).toBeVisible();
+    await expect(table.getByRole("row")).toHaveCount(3);
+    await expect(table.getByRole("row").nth(1)).toContainText("Claim Copilot");
+    await expect(table.getByRole("row").nth(2)).toContainText("Renew in a Minute");
+    await expect(table).not.toContainText("Plain Cover");
+
+    // Judges 3.5 apart are marked, with who gave the highest and the lowest; a step back reads Conflict.
+    const claim = table.getByRole("row", { name: /Claim Copilot/ });
+    await expect(claim).toContainText("4.3");
+    await expect(claim).toContainText("Judges far apart");
+    await expect(claim).toContainText("6.0highest on this application");
+    await expect(claim).toContainText("2.5lowest on this application");
+    await expect(table.getByRole("row", { name: /Renew in a Minute/ })).toContainText("Conflict");
+
+    // An application opens to go on through the shortlist, the highest mean first.
+    await expect(claim.getByRole("link", { name: "Claim Copilot" })).toHaveAttribute(
+      "href",
+      /\/applications\/a0000000-0000-4000-8000-000000000001\?tab=shortlisted&sort=-score$/,
+    );
+
+    // By judge: each scorer's work and mean over the shortlist.
+    await page.getByRole("button", { name: "By judge" }).click();
+    await expect(page).toHaveURL(/view=judges/);
+    const lan = page.getByRole("row", { name: /Lan Vu/ });
+    await expect(lan).toContainText("Judge");
+    await expect(lan).toContainText("6.0");
+    await settled(page);
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("an operator invites a judge and sees the criteria fixed once scored", async ({
     page,
     context,

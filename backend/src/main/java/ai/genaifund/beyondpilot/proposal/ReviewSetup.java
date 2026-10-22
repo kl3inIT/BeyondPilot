@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -313,6 +314,15 @@ public class ReviewSetup {
 		reviewers.flush();
 		record(AuditAction.PROPOSAL_REVIEWER_REMOVE, operator, form, Map.of("email", reviewer.getEmail()));
 		return reviewers(actor, programId);
+	}
+
+	/** The accounts of a program's judges who joined and were not removed, in the order they were invited. */
+	List<UUID> joinedJudges(UUID programId) {
+		return reviewers.findByProgramIdAndRemovedAtIsNullOrderByInvitedAt(programId)
+			.stream()
+			.map(ProposalReviewer::getAccountId)
+			.filter(Objects::nonNull)
+			.toList();
 	}
 
 	/** The accounts of the judges invited to a program who signed in, removed or not, for naming their role. */

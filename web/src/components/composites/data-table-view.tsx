@@ -61,6 +61,13 @@ type DataTableColumnMeta = {
   top?: boolean;
   /** Its first click sorts the largest or latest first, as for a score or a date. */
   descFirst?: boolean;
+  /**
+   * Kept at the start of the frame while the columns after it scroll under it, for a table wider
+   * than the screen whose first columns name and sum up each row: 0 is the first column, 14rem
+   * wide; 1, 2 and 3 follow it, 6rem each, from 768px only, so that a phone keeps room to scroll;
+   * 3 ends them with a rule.
+   */
+  pin?: 0 | 1 | 2 | 3;
 };
 
 /**
@@ -338,6 +345,7 @@ function DataTableView<TData extends RowData>({
                     data-pinned={
                       pinned && header.column.columnDef.meta?.width === "action" ? "" : undefined
                     }
+                    data-pin={header.column.columnDef.meta?.pin}
                     aria-sort={
                       direction === null ? undefined : direction ? "descending" : "ascending"
                     }
@@ -400,6 +408,7 @@ function DataTableView<TData extends RowData>({
                   data-pinned={
                     pinned && cell.column.columnDef.meta?.width === "action" ? "" : undefined
                   }
+                  data-pin={cell.column.columnDef.meta?.pin}
                 >
                   {drawn(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

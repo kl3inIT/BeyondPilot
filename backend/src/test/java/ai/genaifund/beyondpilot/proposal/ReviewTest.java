@@ -839,6 +839,95 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(auditOf(form.programId())).contains("proposal.decide");
 	}
 
+	@Test
+	void anOperatorInvitedAsAJudgeJoinsWhenTheyOpenTheReviewAndScoresAsOne() {
+		Form form = program("operator-judge", true, Instant.now().plus(Duration.ofDays(10)));
+		List<String> ids = criteriaOf(form, "Practical impact");
+		Applicant applicant = applicant(form, "scored@operator-judge.test", "Scored Builder");
+		String reviewers = REVIEW + form.programId() + "/reviewers";
+		post(operator, reviewers, Map.of("email", "operator@proposal.test")).expectStatus().isOk();
+		assertThat(JsonPath.<List<String>>read(body(get(operator, reviewers).expectStatus().isOk()),
+				"$.items[*].status")).containsExactly("invited");
+
+		// Opening the review is accepting the invitation, for an operator as for anyone else.
+		String one = API + "/review/applications/" + applicant.id();
+		get(operator, one).expectStatus().isOk();
+		put(operator, one + "/assessment", scores(Map.of(ids.getFirst(), 8))).expectStatus().isOk();
+		String judges = body(get(operator, reviewers).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(judges, "$.items[*].status")).containsExactly("active");
+		assertThat(JsonPath.<List<String>>read(judges, "$.items[*].role")).containsExactly("reviewer");
+		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[*].assessed")).containsExactly(1);
+		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.mine.role"))
+			.isEqualTo("reviewer");
+	}
+
+	@Test
+	void anOperatorsAppScoresAnApplicationByTheNamesOfItsCriteria() {
+		Form form = program("scored-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact", "Credible execution");
+		Applicant applicant = applicant(form, "scored@scored-mcp.test", "Scored Builder");
+		Applicant other = applicant(form, "other@scored-mcp.test", "Other Builder");
+		McpSyncClient app = operatorApp();
+		String one = API + "/review/applications/" + applicant.id();
+		put(operator, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.", "conflict", false,
+				"bookmarked", true)).expectStatus().isOk();
+
+		// Every criterion by its name, in any case; the note and the bookmark the operator had stay.
+		String scored = call(app, "score_application", Map.of("application", applicant.id().toString(), "scores",
+				Map.of("practical impact", 8, "Credible execution", 6)));
+		assertThat(JsonPath.<Map<String, Integer>>read(scored, "$.yourScores"))
+			.containsExactly(Map.entry("Practical impact", 8), Map.entry("Credible execution", 6));
+		assertThat(JsonPath.<Double>read(scored, "$.averageOfEveryone")).isEqualTo(7.0);
+		assertThat(JsonPath.<String>read(scored, "$.url"))
+			.endsWith("/admin/programs/" + form.programId() + "/applications/" + applicant.id());
+		String mine = body(get(operator, one).expectStatus().isOk());
+		assertThat(JsonPath.<Double>read(mine, "$.mine.average")).isEqualTo(7.0);
+		assertThat(JsonPath.<String>read(mine, "$.mine.note")).isEqualTo("Strong demo.");
+		assertThat(JsonPath.<Boolean>read(mine, "$.mine.bookmarked")).isTrue();
+
+		// A criterion left out or misnamed, or a score off the scale, is asked again with the criteria named.
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 8)))).contains("Every criterion needs a score")
+			.contains("Credible execution");
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 8, "Execution", 6)))).contains("no criterion \"Execution\"");
+		// A score off the scale is refused, by the tool's schema before it reaches the review, and nothing is kept.
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 11, "Credible execution", 6)))).isNotBlank();
+		assertThat(JsonPath.<Object>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.mine")).isNull();
+
+		// A conflict keeps no score, and counts the application as done without counting it as a score.
+		String stepped = call(app, "score_application",
+				Map.of("application", other.id().toString(), "conflict", true, "note", "I advised them."));
+		assertThat(JsonPath.<Boolean>read(stepped, "$.conflict")).isTrue();
+		assertThat(JsonPath.<Boolean>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.mine.conflict")).isTrue();
+
+		// Once the outcomes are released, only the shortlist is still scored.
+		shortlist(form, applicant.id());
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(other.id()), "not_selected"))
+			.expectStatus()
+			.isOk();
+		close(form);
+		post(operator, REVIEW + form.programId() + "/release", emails()).expectStatus().isOk();
+		call(app, "score_application", Map.of("application", applicant.id().toString(), "scores",
+				Map.of("Practical impact", 9, "Credible execution", 9)));
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "scores",
+				Map.of("Practical impact", 9, "Credible execution", 9)))).contains("PROPOSAL_RELEASED");
+		app.closeGracefully();
+	}
+
+	/** The text of a call to score_application that the tool refused. */
+	private static String toolError(McpSyncClient app, Map<String, Object> arguments) {
+		CallToolResult result = app.callTool(
+				McpSchema.CallToolRequest.builder("score_application").arguments(arguments).build());
+		assertThat(result.isError()).isTrue();
+		return ((TextContent) result.content().getFirst()).text();
+	}
+
 	/** An app connected to the operators' server by the operator, initialized. */
 	private McpSyncClient operatorApp() {
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
@@ -867,6 +956,84 @@ class ReviewTest extends ApplicationsHttpTest {
 		UUID solution = completeSolution(session, email, "Operator Desk");
 		submitted(session, email, form, solution);
 		return JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
+	}
+
+	@Test
+	void anOperatorReadsEveryScorersScoresSideBySideAndDownloadsThemOneLineEach() {
+		Form form = program("scores-side", true, Instant.now().plus(Duration.ofDays(10)));
+		List<String> ids = criteriaOf(form, "Practical impact", "Credible execution");
+		Applicant one = applicant(form, "one@scores-side.test", "First Scored");
+		Applicant two = applicant(form, "two@scores-side.test", "Second Scored");
+		Applicant three = applicant(form, "three@scores-side.test", "Never Scored");
+		shortlist(form, one.id(), two.id());
+		String strict = judge(form, "strict@scores-side.test");
+		String generous = judge(form, "generous@scores-side.test");
+		String idle = judge(form, "idle@scores-side.test");
+		String applications = REVIEW + form.programId() + "/applications";
+		get(idle, applications).expectStatus().isOk();
+		String first = API + "/review/applications/" + one.id() + "/assessment";
+		String second = API + "/review/applications/" + two.id() + "/assessment";
+		put(operator, first, scores(Map.of(ids.get(0), 8, ids.get(1), 8))).expectStatus().isOk();
+		put(generous, first, scores(Map.of(ids.get(0), 9, ids.get(1), 9))).expectStatus().isOk();
+		put(generous, second, scores(Map.of(ids.get(0), 6, ids.get(1), 6))).expectStatus().isOk();
+		put(strict, first, scores(Map.of(ids.get(0), 5, ids.get(1), 5))).expectStatus().isOk();
+		put(strict, second, Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)).expectStatus().isOk();
+
+		// Only GenAI Fund reads who gave what.
+		String path = REVIEW + form.programId() + "/scores";
+		get(strict, path).expectStatus().isForbidden();
+		post(strict, path + "/export", Map.of()).expectStatus().isForbidden();
+
+		// GenAI Fund who scored first, then the judges as invited, the one who has scored nothing too.
+		String read = body(get(operator, path).expectStatus().isOk());
+		assertThat(JsonPath.<Double>read(read, "$.scale")).isEqualTo(10.0);
+		assertThat(JsonPath.<List<String>>read(read, "$.scorers[*].email")).containsExactly("operator@proposal.test",
+				"strict@scores-side.test", "generous@scores-side.test", "idle@scores-side.test");
+		assertThat(JsonPath.<List<String>>read(read, "$.scorers[*].role")).containsExactly("operator", "reviewer",
+				"reviewer", "reviewer");
+		assertThat(JsonPath.<List<String>>read(read, "$.applications[*].id")).containsExactly(one.id().toString(),
+				two.id().toString(), three.id().toString());
+		// The average is the one the applications list reads; the spread is the highest less the lowest.
+		assertThat(JsonPath.<Double>read(body(get(operator, applications).expectStatus().isOk()),
+				"$.items[0].average")).isEqualTo(JsonPath.read(read, "$.applications[0].average"));
+		assertThat(JsonPath.<Double>read(read, "$.applications[0].average")).isEqualTo(7.3);
+		assertThat(JsonPath.<Integer>read(read, "$.applications[0].scored")).isEqualTo(3);
+		assertThat(JsonPath.<Double>read(read, "$.applications[0].spread")).isEqualTo(4.0);
+		assertThat(JsonPath.<List<Double>>read(read, "$.applications[0].scores[*].score")).containsExactlyInAnyOrder(8.0,
+				9.0, 5.0);
+		// A step back is answered without a score, and one score has no spread.
+		assertThat(JsonPath.<List<Boolean>>read(read, "$.applications[1].scores[*].conflict"))
+			.containsExactlyInAnyOrder(false, true);
+		assertThat(JsonPath.<Double>read(read, "$.applications[1].average")).isEqualTo(6.0);
+		assertThat(JsonPath.<Object>read(read, "$.applications[1].spread")).isNull();
+		assertThat(JsonPath.<List<Object>>read(read, "$.applications[2].scores")).isEmpty();
+		assertThat(JsonPath.<Object>read(read, "$.applications[2].average")).isNull();
+
+		// One line for each scorer and application, every criterion its own column.
+		String csv = new String(post(operator, path + "/export?format=csv", Map.of()).expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"scores-side-scores-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		List<String> lines = csv.lines().toList();
+		assertThat(lines.getFirst()).isEqualTo("﻿Application,Organization,Solution,Review status,Name,Email,Role,"
+				+ "Practical impact,Credible execution,Score,Conflict,Note,Version scored,Saved at");
+		assertThat(lines).hasSize(6);
+		assertThat(lines.get(1)).startsWith(one.id() + ",First Scored,").contains(",operator@proposal.test,");
+		assertThat(lines.get(2)).contains(",strict@scores-side.test,Judge,5,5,5.00,No,Clear on consent.,1,");
+		assertThat(lines.get(5)).startsWith(two.id() + ",").contains(",generous@scores-side.test,Judge,6,6,6.00,No,");
+		assertThat(lines.get(4)).contains(",strict@scores-side.test,Judge,,,,Yes,,1,");
+		String narrowed = new String(post(operator, path + "/export?format=csv",
+				Map.of("applicationIds", List.of(two.id()))).expectStatus()
+			.isOk()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(narrowed.lines().toList()).hasSize(3);
+		assertThat(auditOf(form.programId())).contains("proposal.scores_export");
 	}
 
 	/** Sets a program's criteria and answers their identifiers in order. */

@@ -1019,6 +1019,7 @@
         "settings": "Settings",
         "questions": "Questions",
         "applications": "Applications",
+        "scores": "Scores",
         "evaluations": "Evaluations",
         "reviewers": "Reviewers"
       },
@@ -1267,6 +1268,7 @@
           "reviewer_invite": "Invited a judge",
           "reviewer_remove": "Removed a judge",
           "reviewers_export": "Downloaded the reviewers",
+          "scores_export": "Downloaded the scores",
           "decide": "Decided on an application",
           "release": "Released the outcomes",
           "file_open": "Opened a file of an application",
@@ -1435,6 +1437,7 @@
           "reviewer_invite": "Invited a judge to <resource></resource>",
           "reviewer_remove": "Removed a judge from <resource></resource>",
           "reviewers_export": "Downloaded the reviewers of <resource></resource>",
+          "scores_export": "Downloaded the scores of <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
@@ -6748,7 +6751,8 @@
       "scores": {
         "title": "Judges' scores",
         "average": "{value} average",
-        "none": "No other judge has scored it yet.",
+        "none": "No judge has scored it yet.",
+        "you": "{name} (you)",
         "conflict": "Declared a conflict",
         "role": {
           "operator": "GenAI Fund",
@@ -7051,6 +7055,44 @@
         "lead": "Not submitted to {program} · started {started} · last saved {saved}",
         "note": "Not submitted yet, so it may still change. Judges never see drafts."
       }
+    },
+    "scores": {
+      "metaTitle": "Scores",
+      "lead": "Each judge's score is their mean over the criteria, out of {scale}. A spread of {wide} or more between the highest and lowest judge is marked: start the discussion there.",
+      "search": "Search by solution or organization",
+      "view": {
+        "label": "Compare",
+        "applications": "By application",
+        "judges": "By judge"
+      },
+      "columns": {
+        "application": "Application",
+        "average": "Average",
+        "scored": "Scored",
+        "spread": "Spread",
+        "judge": "Judge",
+        "role": "Role",
+        "conflicts": "Conflicts",
+        "waiting": "Not scored yet",
+        "mean": "Their mean"
+      },
+      "role": {
+        "operator": "GenAI Fund",
+        "reviewer": "Judge"
+      },
+      "conflict": "Conflict",
+      "wide": "Judges far apart",
+      "noMatch": {
+        "title": "No shortlisted application matches",
+        "clear": "Clear the search"
+      },
+      "empty": {
+        "title": "Nothing is shortlisted yet",
+        "description": "Judges score the shortlist: their scores show here once GenAI Fund shortlists applications."
+      },
+      "footer": "{shown} shortlisted · {scorers, plural, one {# scorer} other {# scorers}} · {scored} with a score",
+      "highest": "highest on this application",
+      "lowest": "lowest on this application"
     }
   },
   "Search": {

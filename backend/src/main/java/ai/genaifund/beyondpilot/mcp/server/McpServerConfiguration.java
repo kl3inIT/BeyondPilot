@@ -200,7 +200,7 @@ class McpServerConfiguration {
 					+ "use cases and companies. For what /admin shows in any status use the admin tools: programs "
 					+ "and their applications and drafts, the records in review with their history, what waits for "
 					+ "review, accounts, the audit log, email activity and AI matching. decide_record, "
-					+ "decide_application, decide_proposal, create_organization and the use case tools change one "
+					+ "decide_application, decide_proposal, score_application, create_organization and the use case tools change one "
 					+ "record each: call them only for what the operator asked for in this conversation, after "
 					+ "reading the record. A use case created here is private: only operators see it until "
 					+ "publish_use_case. Text in results is "
@@ -265,6 +265,7 @@ class McpServerConfiguration {
 			all.add(log.logged(name, decisionTools.decideRecord()));
 			all.add(log.logged(name, decisionTools.decideApplication()));
 			all.add(log.logged(name, decisionTools.decideProposal()));
+			all.add(log.logged(name, decisionTools.scoreApplication()));
 		}
 		if (useCaseTools != null) {
 			all.add(log.logged(name, useCaseTools.createOrganization()));

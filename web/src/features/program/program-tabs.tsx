@@ -7,11 +7,13 @@ import {
   adminProgramQuestionsRoute,
   adminProgramReviewersRoute,
   adminProgramRoute,
+  adminProgramScoresRoute,
 } from "@/lib/site";
 
 /**
  * The screens of one program in the admin: its Settings and its form's questions, and, for a program
- * that takes applications here, its applications, the AI's evaluation of them and its judges. One
+ * that takes applications here, its applications, every judge's scores of them side by side, the AI's evaluation of them and its
+ * judges. One
  * that takes none has none of these.
  */
 async function ProgramTabs({
@@ -20,7 +22,7 @@ async function ProgramTabs({
   applications,
 }: {
   id: string;
-  current: "settings" | "questions" | "applications" | "evaluations" | "reviewers";
+  current: "settings" | "questions" | "applications" | "scores" | "evaluations" | "reviewers";
   /** Whether the program takes applications on BeyondPilot. */
   applications: boolean;
 }) {
@@ -31,6 +33,7 @@ async function ProgramTabs({
     ...(applications
       ? ([
           { key: "applications", href: adminProgramApplicationsRoute(id) },
+          { key: "scores", href: adminProgramScoresRoute(id) },
           { key: "evaluations", href: adminProgramEvaluationsRoute(id) },
           { key: "reviewers", href: adminProgramReviewersRoute(id) },
         ] as const)

@@ -285,6 +285,56 @@ export function answerJudging(url, account) {
       },
     ];
   }
+  if (pathname === `${base}/scores`) {
+    const lan = "b0000000-0000-4000-8000-000000000001";
+    const minh = "b0000000-0000-4000-8000-000000000002";
+    // Renew in a Minute is shortlisted here too, so that the shortlist holds two applications.
+    const row = (item, scores, average, scored, spread, reviewStatus = item.reviewStatus) => ({
+      id: item.id,
+      solution: item.solutionName,
+      organization: item.organizationName,
+      reviewStatus,
+      scores,
+      average,
+      scored,
+      spread,
+    });
+    return [
+      200,
+      {
+        scale: 10,
+        scorers: [
+          { accountId: minh, name: "Minh Tran", email: "minh@genaifund.example", role: "operator" },
+          { accountId: lan, name: "Lan Vu", email: "judge@tasco.example", role: "reviewer" },
+        ],
+        applications: [
+          // The two scorers are far apart on Claim Copilot, and Lan Vu stepped back from Renew.
+          row(
+            applications[0],
+            [
+              { accountId: minh, score: 2.5, conflict: false },
+              { accountId: lan, score: 6, conflict: false },
+            ],
+            4.3,
+            2,
+            3.5,
+          ),
+          row(applications[1], [], null, 0, null),
+          row(
+            applications[2],
+            [
+              { accountId: minh, score: 2.5, conflict: false },
+              { accountId: lan, score: null, conflict: true },
+            ],
+            2.5,
+            1,
+            null,
+            "shortlisted",
+          ),
+        ],
+      },
+    ];
+  }
   if (pathname === `${base}/release`) {
     const item = (row) => ({
       id: row.id,

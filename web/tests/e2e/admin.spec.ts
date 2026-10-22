@@ -166,8 +166,14 @@ test.describe("admin", () => {
     // The choice is read on the server, so the page comes back collapsed rather than snapping shut.
     await page.reload();
     await expect(sidebar).toHaveAttribute("data-state", "collapsed");
-    await home.hover();
-    await expect(page.locator('[data-slot="tooltip-content"]')).toHaveText("Home");
+    // Right after the reload the page may still be hydrating: a hover then opens nothing, and the
+    // pointer resting on the link sends no new one. It leaves and comes back until the name shows.
+    const tooltip = page.locator('[data-slot="tooltip-content"]');
+    await expect(async () => {
+      await page.mouse.move(0, 0);
+      await home.hover();
+      await expect(tooltip).toHaveText("Home", { timeout: 1000 });
+    }).toPass();
     await expectNoSeriousA11yViolations(page);
   });
 
