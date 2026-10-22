@@ -6748,7 +6748,8 @@
       "scores": {
         "title": "Judges' scores",
         "average": "{value} average",
-        "none": "No other judge has scored it yet.",
+        "none": "No judge has scored it yet.",
+        "you": "{name} (you)",
         "conflict": "Declared a conflict",
         "role": {
           "operator": "GenAI Fund",

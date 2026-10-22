@@ -49,6 +49,14 @@ async function ReviewApplicationPage({ review, base, queue, search }: ReviewAppl
         nextId: review.nextId,
       };
   const nextId = judging ? judging.nextId : place.nextId;
+  // An operator reads their own score among the judges', first, once it is a score or a step back:
+  // a note or a bookmark alone stays in their panel.
+  const own =
+    review.mine && (review.mine.average != null || review.mine.conflict) ? review.mine : null;
+  const scored = [
+    ...(own ? [{ ...own, own: true }] : []),
+    ...review.others.map((other) => ({ ...other, own: false })),
+  ];
   const query = listQuery(search);
   const nextHref = nextId ? `${base}/${nextId}${query}` : null;
 
@@ -152,17 +160,19 @@ async function ReviewApplicationPage({ review, base, queue, search }: ReviewAppl
                   </span>
                 )}
               </div>
-              {review.others.length === 0 ? (
+              {scored.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("scores.none")}</p>
               ) : (
                 <ul className="flex flex-col divide-y">
-                  {review.others.map((other) => (
+                  {scored.map((other) => (
                     <li
                       key={`${other.reviewer}-${other.savedAt}`}
                       className="flex flex-col gap-1 py-2.5 text-sm"
                     >
                       <span className="flex items-center justify-between gap-3">
-                        <span className="font-medium">{other.reviewer}</span>
+                        <span className="font-medium">
+                          {other.own ? t("scores.you", { name: other.reviewer }) : other.reviewer}
+                        </span>
                         <span className="tabular-nums">
                           {other.conflict
                             ? t("scores.conflict")
