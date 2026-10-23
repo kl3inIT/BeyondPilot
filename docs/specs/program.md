@@ -212,17 +212,17 @@ start day comes before those, newest created first.
 Each change is recorded through `AuditTrail` in the transaction of the change, with the operator and the program
 (`resource type program`, its id and name) and no details ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)).
 
-| Command                         | Action                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Create                          | `program.create`                                                                           |
-| Save, and save of the questions | `program.update`                                                                           |
-| Publish                         | `program.publish`                                                                          |
-| Unpublish                       | `program.unpublish`                                                                        |
-| Feature                         | `program.feature`                                                                          |
-| Stop featuring                  | `program.unfeature`                                                                        |
-| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
-| Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                          |
-| Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                       |
+| Command                         | Action                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create                          | `program.create`                                                                              |
+| Save, and save of the questions | `program.update`                                                                              |
+| Publish                         | `program.publish`                                                                             |
+| Unpublish                       | `program.unpublish`                                                                           |
+| Feature                         | `program.feature`                                                                             |
+| Stop featuring                  | `program.unfeature`                                                                           |
+| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar`    |
+| Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                             |
+| Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                          |
 | Create an event on Luma (MCP)   | `program.luma_event_create`, with `event`; resource the program, or the Luma event until read |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
@@ -280,7 +280,7 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   for approval, the seats left and the waitlist, the questions, the hosts, the time zone, and the venue or the call with
   whether Luma keeps it for guests. Only events this environment names take registrations here
   (`beyondpilot.program.luma.registration-events`: an identifier each, or `*`; none by default, `*` in production, the
-  hidden test event on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
+  same on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
   when one is set ([Events created from BeyondPilot](#events-created-from-beyondpilot)); their page is `standard`, any
   other keeps Luma's. See [Registrations for Luma events](#registrations-for-luma-events).
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
