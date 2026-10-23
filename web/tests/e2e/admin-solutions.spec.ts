@@ -131,13 +131,25 @@ test.describe("admin solutions", () => {
     await page.goto("/admin/solutions");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
-    // Thousands of organizations hold a solution: the filter asks the server for them by name,
-    // accents aside, and names the one chosen after the page is read again.
+    // Thousands of organizations hold a solution: the filter asks the backend for them by the name
+    // typed, and names the one chosen once the page is read again.
+    const asked: (string | null)[] = [];
+    await page.route("**/api/solution/admin/solutions/organizations/with-solutions**", (route) => {
+      const q = new URL(route.request().url()).searchParams.get("q");
+      asked.push(q);
+      return route.fulfill({
+        json:
+          q === null || "pocket policy".includes(q.toLowerCase())
+            ? [{ id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", name: "Pocket Policy" }]
+            : [],
+      });
+    });
     const organization = page.getByRole("combobox", { name: "Organization" });
     await expect(organization).toHaveText("All organizations");
     await organization.click();
-    await page.getByRole("combobox", { name: "Search organizations" }).fill("pócket");
+    await page.getByRole("combobox", { name: "Search organizations" }).fill("pocket");
     await page.getByRole("option", { name: "Pocket Policy" }).click();
+    expect(asked).toContain("pocket");
     await expect(page).toHaveURL(/organizationId=8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03/);
     await expect(shownSolutions(page)).toHaveCount(5);
     await page.reload();
