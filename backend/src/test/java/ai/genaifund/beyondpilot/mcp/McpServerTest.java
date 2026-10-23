@@ -226,7 +226,7 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
+				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
 				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
@@ -509,7 +509,7 @@ class McpServerTest {
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
 			.containsExactly("search", "fetch", "list_applications", "get_application",
-					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
+					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
 					"get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
@@ -840,6 +840,53 @@ class McpServerTest {
 			.list()).containsSubsequence("use_case.create", "use_case.update", "use_case.publish", "use_case.send_back");
 	}
 
+	@Test
+	void anOperatorsAppCreatesAnEventOnBeyondPilotAloneAsADraftAndIsToldWhenNoLumaCalendarIsConnected() {
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+		McpSchema.ToolAnnotations hints = operatorTool(app, "create_event").annotations();
+		assertThat(hints.readOnlyHint()).isFalse();
+		assertThat(hints.destructiveHint()).isFalse();
+		assertThat(hints.openWorldHint()).isTrue();
+
+		Map<String, Object> event = new HashMap<>();
+		event.put("on_luma", false);
+		event.put("name", "Partner night " + word);
+		event.put("starts_at", "2099-11-20T18:30:00+07:00");
+		event.put("ends_at", "2099-11-20T21:00:00+07:00");
+		event.put("timezone", "Asia/Ho_Chi_Minh");
+		event.put("venue", "12 Lê Lợi, Quận 1");
+		event.put("city", "Ho Chi Minh City");
+		event.put("country", "Vietnam");
+		event.put("summary", "An evening with the partners of the fund.");
+		event.put("registration_url", "https://partner.test/night");
+		String created = text(call(app, "create_event", event));
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(created, "$.pageUrl")).endsWith("/programs/partner-night-" + word);
+		UUID id = UUID.fromString(JsonPath.read(created, "$.programId"));
+		assertThat(jdbc.sql("select type || ' ' || status || ' ' || page_kind || ' ' || external_url from program where id = :id")
+			.param("id", id)
+			.query(String.class)
+			.single()).isEqualTo("event draft external https://partner.test/night");
+		assertThat(jdbc.sql("select city || ' ' || to_char(starts_at at time zone 'UTC', 'HH24:MI') from program_event where program_id = :id")
+			.param("id", id)
+			.query(String.class)
+			.single()).isEqualTo("Ho Chi Minh City 11:30");
+
+		// The same name again takes the next address; a time already past, or no Luma calendar, is said back.
+		String again = text(call(app, "create_event", event));
+		assertThat(JsonPath.<String>read(again, "$.pageUrl")).endsWith("/programs/partner-night-" + word + "-2");
+		event.put("starts_at", "2020-01-01T10:00:00+07:00");
+		assertThat(((TextContent) call(app, "create_event", event).content().getFirst()).text()).contains("future");
+		CallToolResult noCalendar = call(app, "create_event",
+				Map.of("name", "Luma night " + word, "starts_at", "2099-11-21T18:30:00+07:00", "timezone",
+						"Asia/Ho_Chi_Minh"));
+		assertThat(noCalendar.isError()).isTrue();
+		assertThat(((TextContent) noCalendar.content().getFirst()).text()).contains("PROGRAM_LUMA_NOT_CONFIGURED");
+		app.closeGracefully();
+	}
+
 	private static McpSchema.Tool operatorTool(McpSyncClient app, String name) {
 		return app.listTools().tools().stream().filter(tool -> tool.name().equals(name)).findFirst().orElseThrow();
 	}
@@ -872,7 +919,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(31)
+			.isEqualTo(32)
 			.jsonPath("$.tools[?(@.name == 'search')].readOnly")
 			.value(readOnly -> assertThat(readOnly).isEqualTo(List.of(true, true)))
 			.jsonPath("$.tools[?(@.name == 'decide_proposal' || @.name == 'create_use_case')].readOnly")

@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program;
 
 import java.io.IOException;
 import java.net.URI;
+import java.text.Normalizer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -223,6 +224,20 @@ class LumaCalendar {
 		return finished(read, now, null);
 	}
 
+	/**
+	 * Brings one event of the calendar onto the site at once, as a read does, for an event just created from
+	 * BeyondPilot (BEY-250).
+	 * @return the program that holds it; empty when Luma has no such event
+	 */
+	synchronized Optional<UUID> bring(String key, String eventId) throws IOException {
+		Optional<LumaEvent> event = api.event(key, eventId);
+		if (event.isEmpty()) {
+			return Optional.empty();
+		}
+		take(event.get());
+		return programs.findByLumaEventId(eventId).map(Program::getId);
+	}
+
 	/** Records on the connection when the calendar was last read, or why it could not be. */
 	private Read finished(Read read, Instant now, @Nullable String error) {
 		transactions.executeWithoutResult(status -> connections.current().ifPresent(held -> held.read(now, error)));
@@ -259,7 +274,7 @@ class LumaCalendar {
 		Instant ends = event.endsAt() == null ? event.startsAt() : event.endsAt();
 		program.runBetween(LocalDate.ofInstant(event.startsAt(), event.zone()), LocalDate.ofInstant(ends, event.zone()));
 		// An event people register for here has its page here; any other keeps Luma's.
-		LumaForm form = event.form() != null && properties.registersHere(event.id()) ? event.form() : null;
+		LumaForm form = event.form() != null && properties.registersHere(event.id(), event.name()) ? event.form() : null;
 		program.registerAs(form == null ? null : form.json());
 		program.showAs(form == null ? PageKind.EXTERNAL : PageKind.STANDARD, event.page().toString());
 		program.schedule(program.getMilestones(),
@@ -363,14 +378,27 @@ class LumaCalendar {
 	 */
 	private String slug(LumaEvent event) {
 		String path = Objects.requireNonNullElse(event.page().getPath(), "");
-		String base = path.substring(path.lastIndexOf('/') + 1)
+		String base = slugOf(path.substring(path.lastIndexOf('/') + 1));
+		if (base.length() < 3) {
+			base = slugOf(event.id());
+		}
+		return freeSlug(base, programs);
+	}
+
+	/** Words as an address: lowercase letters and digits joined by single hyphens. */
+	static String slugOf(String words) {
+		return Normalizer.normalize(words, Normalizer.Form.NFD)
+			.replaceAll("\\p{M}+", "")
+			.replace('đ', 'd')
+			.replace('Đ', 'D')
 			.toLowerCase(Locale.ROOT)
 			.replaceAll("[^a-z0-9]+", "-")
 			.replaceAll("^-+|-+$", "");
-		if (base.length() < 3) {
-			base = event.id().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-");
-		}
-		base = trimSlug(base, MAX_SLUG);
+	}
+
+	/** The address, or the first one free after it with a number. */
+	static String freeSlug(String address, ProgramRepository programs) {
+		String base = trimSlug(address, MAX_SLUG);
 		String slug = base;
 		for (int n = 2; programs.existsBySlug(slug); n++) {
 			String suffix = "-" + n;

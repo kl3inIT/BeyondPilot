@@ -223,6 +223,7 @@ Each change is recorded through `AuditTrail` in the transaction of the change, w
 | Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
 | Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                          |
 | Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                       |
+| Create an event on Luma (MCP)   | `program.luma_event_create`, with `event`; resource the program, or the Luma event until read |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
 unpublish with the same actions and no actor.
@@ -279,8 +280,9 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   for approval, the seats left and the waitlist, the questions, the hosts, the time zone, and the venue or the call with
   whether Luma keeps it for guests. Only events this environment names take registrations here
   (`beyondpilot.program.luma.registration-events`: an identifier each, or `*`; none by default, `*` in production, the
-  hidden test event on staging); their page is `standard`, any other keeps Luma's. See
-  [Registrations for Luma events](#registrations-for-luma-events).
+  hidden test event on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
+  when one is set ([Events created from BeyondPilot](#events-created-from-beyondpilot)); their page is `standard`, any
+  other keeps Luma's. See [Registrations for Luma events](#registrations-for-luma-events).
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
   such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
   its Luma page. The **Luma** tab shows the calendar, the key's last four characters, whether the webhook exists, the
@@ -291,6 +293,31 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   (`program.luma.read_failed`) or "Luma refused the key". An event whose read, image or write fails is skipped and tried
   at the next read (`program.luma.event_failed`); the others go on. A read that changed something logs
   `program.luma.read` with its counts.
+
+## Events created from BeyondPilot
+
+An operator creates an event from the operators' MCP server with `create_event` (BEY-250;
+[design](../increments/active/bey-250-create-event-from-mcp/design.md)), through `EventCreation`, which first calls
+`IdentityService.requireOperator`. Either way the outcome is a draft nobody sees until an operator publishes it.
+
+- **On Luma** (`EventCreation.onLuma`, the default). With the connected calendar's key, `LumaApi.createEvent` sends
+  `POST /v1/events/create`: the event `private`, its name, start and end in its time zone, a free-text address (kept
+  for guests when asked) or a meeting link, the description, the capacity and waitlist, one free ticket type that
+  carries whether guests wait for approval, and the questions, each mapped to Luma's kind (`text`, multi-line `text`,
+  `select`, multiple `select`, `url`, `linkedin`, `agree-check`, `company`) with identifiers `bp-1`, `bp-2`…; a select
+  needs two options. Then `LumaCalendar.bring` reads that one event as the calendar read does, so its draft program with
+  its form exists at once; when that read fails the hourly read brings it, and the answer holds no program. Luma is
+  called outside any transaction; the creation is audited as `program.luma_event_create` in one of its own. No
+  connection is `PROGRAM_LUMA_NOT_CONFIGURED`, a refused key `PROGRAM_LUMA_KEY_REFUSED`, a refused event
+  `PROGRAM_LUMA_EVENT_REFUSED`, and Luma out of reach `PROGRAM_LUMA_UNREACHABLE`; nothing is written here then.
+- **Staging writes test events.** `beyondpilot.program.luma.created-name-prefix` (`BEYONDPILOT_PROGRAM_LUMA_CREATED_NAME_PREFIX`;
+  `[TEST] ` on staging, none by default and in production) starts the name of every event created, since staging's key
+  reaches the real calendar; such an event takes registrations here, as the configured test event does.
+- **On BeyondPilot alone** (`EventCreation.here`). A draft program of type `event` made as Admin › Programs › New makes
+  it, then saved with its summary, about (the description, then the venue and the meeting link), days in the event's
+  time zone and one program event; its page is `external` at the registration link when one is given, else
+  `standard`. Its address is the name as a slug, with `-2`, `-3`… when taken. The requests are validated as the admin
+  screen's are, and audited as `program.create` and `program.update`.
 
 ## Registrations for Luma events
 

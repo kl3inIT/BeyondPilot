@@ -178,7 +178,7 @@ public class EventRegistrations {
 	private LumaForm formOf(Program program) {
 		String eventId = program.getLumaEventId();
 		return LumaForm.parse(program.getLumaForm())
-			.filter(form -> eventId != null && properties.registersHere(eventId))
+			.filter(form -> eventId != null && properties.registersHere(eventId, program.getName()))
 			.orElseThrow(() -> new ProgramException(ProgramErrorCode.REGISTRATION_NOT_HERE,
 					"People register for " + program.getSlug() + " on Luma"));
 	}

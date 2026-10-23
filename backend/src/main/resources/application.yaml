@@ -121,6 +121,8 @@ beyondpilot:
       # The Luma events people may register for on BeyondPilot, by identifier, or * for all. None unless an
       # environment names them, so no environment adds a guest to a real event by mistake.
       registration-events: ${BEYONDPILOT_PROGRAM_LUMA_REGISTRATION_EVENTS:}
+      # What the name of an event created from BeyondPilot starts with on Luma; none unless an environment sets it.
+      created-name-prefix: ${BEYONDPILOT_PROGRAM_LUMA_CREATED_NAME_PREFIX:}
   ai:
     # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
     # search goes by keywords alone.

@@ -585,7 +585,7 @@ class UseCaseTools {
 				"url", callers.site() + path));
 	}
 
-	private static CallToolResult invalid(ConstraintViolationException invalid) {
+	static CallToolResult invalid(ConstraintViolationException invalid) {
 		List<String> problems = invalid.getConstraintViolations()
 			.stream()
 			.map(violation -> snake(violation.getPropertyPath().toString()) + ": " + violation.getMessage())

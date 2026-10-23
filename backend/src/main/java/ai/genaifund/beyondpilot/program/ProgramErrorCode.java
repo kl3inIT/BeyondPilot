@@ -65,6 +65,9 @@ public enum ProgramErrorCode implements ErrorCode {
 	LUMA_ENCRYPTION_KEY_MISSING("PROGRAM_LUMA_ENCRYPTION_KEY_MISSING", ErrorCategory.SERVICE_UNAVAILABLE,
 			"This environment cannot keep a Luma key yet. Ask the team to set its encryption key."),
 
+	LUMA_EVENT_REFUSED("PROGRAM_LUMA_EVENT_REFUSED", ErrorCategory.VALIDATION,
+			"Luma refused this event. Check its dates, place and questions, then try again."),
+
 	REGISTRATION_NOT_HERE("PROGRAM_REGISTRATION_NOT_HERE", ErrorCategory.NOT_FOUND,
 			"People register for this event on Luma, not here."),
 

@@ -19,16 +19,26 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param timeout how long one call may last, from sending to the last byte
  * @param registrationEvents the Luma events people may register for on BeyondPilot, by identifier, or {@code *} for
  * every event that allows it; none by default, so an environment that names none never adds a guest to a real event
+ * @param createdNamePrefix what the name of an event created from BeyondPilot starts with, as {@code [TEST] } on
+ * staging, whose key reaches the real calendar; people may register for such an event too (BEY-250). None by default
  */
 @ConfigurationProperties("beyondpilot.program.luma")
 public record LumaProperties(@DefaultValue("https://public-api.luma.com") URI api,
 		@DefaultValue("http://localhost:3000") URI siteUrl, @Nullable String encryptionKey,
 		@DefaultValue({ "images.lumacdn.com" }) Set<String> hosts, @DefaultValue("1h") Duration interval,
-		@DefaultValue("15s") Duration timeout, @Nullable Set<String> registrationEvents) {
+		@DefaultValue("15s") Duration timeout, @Nullable Set<String> registrationEvents,
+		@Nullable String createdNamePrefix) {
 
 	/** Whether people may register for the event on BeyondPilot in this environment. */
-	public boolean registersHere(String eventId) {
-		return registrationEvents != null && (registrationEvents.contains("*") || registrationEvents.contains(eventId));
+	public boolean registersHere(String eventId, String name) {
+		return registrationEvents != null && (registrationEvents.contains("*") || registrationEvents.contains(eventId))
+				|| createdNamePrefix != null && !createdNamePrefix.isBlank() && name.startsWith(createdNamePrefix);
+	}
+
+	/** The name an event created from BeyondPilot is given on Luma. */
+	public String createdName(String name) {
+		return createdNamePrefix == null || createdNamePrefix.isBlank() || name.startsWith(createdNamePrefix) ? name
+				: createdNamePrefix + name;
 	}
 
 }
