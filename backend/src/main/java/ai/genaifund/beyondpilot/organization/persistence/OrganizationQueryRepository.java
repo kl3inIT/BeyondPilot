@@ -32,7 +32,7 @@ public class OrganizationQueryRepository {
 			                   where r.organization_id = o.id and r.status = 'pending' and r.claim
 			                   order by r.created_at, r.id
 			                   limit 1) c on true
-			where (cast(:pattern as text) is null or lower(o.name) like :pattern escape '\\'
+			where (cast(:pattern as text) is null or unaccent(lower(o.name)) like unaccent(:pattern) escape '\\'
 			       or lower(o.email_domain) like :pattern escape '\\')
 			  and ((cast(:status as text) is null and o.status <> 'merged')
 			       or (:status = 'suspended' and o.suspended_at is not null and o.status <> 'merged')
@@ -74,7 +74,7 @@ public class OrganizationQueryRepository {
 	public List<Match> search(String text, int limit) {
 		return jdbc.sql(MATCHES + """
 				where o.status = 'active' and o.suspended_at is null and o.type <> 'independent_builder'
-				  and lower(o.name) like :pattern escape '\\'
+				  and unaccent(lower(o.name)) like unaccent(:pattern) escape '\\'
 				order by lower(o.name), o.id
 				limit :limit
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
@@ -82,13 +82,13 @@ public class OrganizationQueryRepository {
 
 	/**
 	 * The organizations not taken down, the ones that can have use cases, by name; at most {@code limit}.
-	 * @param text only those whose name contains it, ignoring case; every one when null
+	 * @param text only those whose name contains it, ignoring case and accents; every one when null
 	 */
 	public List<Name> activeOrganizations(@Nullable String text, int limit) {
 		return jdbc.sql("""
 				select id, slug, name, country, logo_file_id from organization
 				where status = 'active' and suspended_at is null
-				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
+				  and (cast(:pattern as text) is null or unaccent(lower(name)) like unaccent(:pattern) escape '\\')
 				order by lower(name), id
 				limit :limit
 				""")
@@ -99,9 +99,9 @@ public class OrganizationQueryRepository {
 			.list();
 	}
 
-	/** The organizations whose name contains the text, whatever their review says. */
+	/** The organizations whose name contains the text, ignoring case and accents, whatever their review says. */
 	public List<UUID> idsNamed(String text) {
-		return jdbc.sql("select id from organization where lower(name) like :pattern escape '\\'")
+		return jdbc.sql("select id from organization where unaccent(lower(name)) like unaccent(:pattern) escape '\\'")
 			.param("pattern", containing(text))
 			.query(UUID.class)
 			.list();

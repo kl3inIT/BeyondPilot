@@ -2203,7 +2203,9 @@
         },
         "organization": {
           "label": "Organization",
-          "all": "Organization"
+          "all": "Organization",
+          "search": "Search organizations",
+          "empty": "No organization matches."
         }
       },
       "status": {
@@ -4891,7 +4893,9 @@
       "adminSearch": "Search by solution or organization",
       "organization": {
         "label": "Organization",
-        "all": "All organizations"
+        "all": "All organizations",
+        "search": "Search organizations",
+        "empty": "No organization matches."
       },
       "industry": {
         "label": "Industry",
@@ -5679,6 +5683,8 @@
     "optional": "Optional",
     "required": "required",
     "noMatch": "Nothing matches.",
+    "searching": "Searching…",
+    "searchFailed": "The list could not be loaded. Type again to retry.",
     "steps": {
       "progress": "Step {step} of {count} · {name}",
       "all": "All steps"

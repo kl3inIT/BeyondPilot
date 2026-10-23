@@ -368,7 +368,7 @@ function AdminUseCaseForm() {
                     placeholder={t("organizationPlaceholder")}
                     description={t("organizationHint")}
                     options={organizations.options}
-                    onSearch={organizations.search}
+                    search={organizations.search}
                   />
                 )}
               </form.AppField>

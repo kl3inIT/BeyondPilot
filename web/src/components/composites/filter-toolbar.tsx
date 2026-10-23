@@ -1,10 +1,12 @@
 "use client";
 
 import { SearchIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useQueryStates, type UseQueryStatesKeysMap } from "nuqs";
 import { Fragment, useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useSearchedOptions } from "@/components/form/use-searched-options";
 import {
   Combobox,
   ComboboxCollection,
@@ -16,6 +18,7 @@ import {
   ComboboxLabel,
   ComboboxList,
   ComboboxSeparator,
+  ComboboxStatus,
   ComboboxTrigger,
   ComboboxValue,
 } from "@/components/ui/combobox";
@@ -67,6 +70,12 @@ type Filter = {
    * narrows the options as one types, with the words it shows empty and when nothing matches.
    */
   searchable?: { placeholder: string; empty: string };
+  /**
+   * For a list the server gives only a page of, such as the organizations: what is typed in the
+   * searchable select is asked of the server, and `options` holds only those already known, such as
+   * the one chosen, so that its name shows. Needs `searchable`.
+   */
+  find?: (text: string | undefined) => Promise<Option[]>;
 };
 
 function isGroup(entry: Option | OptionGroup): entry is OptionGroup {
@@ -296,6 +305,22 @@ function FilterToolbar({
               ...filter.options.filter((entry): entry is Option => !isGroup(entry)),
             ];
             const chosen = String(values[filter.key] ?? ALL);
+            const choose = (value: string) =>
+              setSearch({
+                [filter.key]: value === ALL && filter.all !== undefined ? null : value,
+                ...start,
+              });
+            if (filter.find && filter.searchable) {
+              return (
+                <SearchedFilter
+                  key={filter.key}
+                  filter={{ ...filter, find: filter.find, searchable: filter.searchable }}
+                  known={loose}
+                  chosen={chosen}
+                  onChoose={choose}
+                />
+              );
+            }
             if (filter.searchable) {
               const all = [...loose, ...groups.flatMap((group) => group.options)];
               // The options outside a group come first, in a group without a name.
@@ -420,6 +445,82 @@ function FilterToolbar({
         </Button>
       )}
     </div>
+  );
+}
+
+type SearchedFilterProps = {
+  filter: Filter & Required<Pick<Filter, "find" | "searchable">>;
+  /** The words for "off" and the options already known, the chosen one among them. */
+  known: Option[];
+  chosen: string;
+  onChoose: (value: string) => void;
+};
+
+/**
+ * A searchable select whose options the server finds as one types, asked only once it opens; the
+ * words for "off" stay first.
+ */
+function SearchedFilter({ filter, known, chosen, onChoose }: SearchedFilterProps) {
+  const t = useTranslations("Form");
+  const [open, setOpen] = useState(false);
+  const off = known.filter((option) => option.value === ALL);
+  const found = useSearchedOptions(open ? filter.find : null, chosen, known);
+  const items = [...off, ...found.options.filter((option) => option.value !== ALL)];
+  const { search } = found;
+
+  return (
+    <Combobox
+      items={items}
+      filter={null}
+      autoHighlight
+      open={open}
+      onOpenChange={setOpen}
+      value={items.find((item) => item.value === chosen) ?? null}
+      isItemEqualToValue={(item: Option, other: Option) => item.value === other.value}
+      itemToStringLabel={(item: Option) => item.label}
+      onInputValueChange={(text: string, { reason }: { reason: string }) =>
+        search.onSearch(text, reason)
+      }
+      onValueChange={(item: Option | null) => item && onChoose(item.value)}
+    >
+      <ComboboxTrigger
+        size="sm"
+        aria-label={filter.label}
+        className="flex-1 md:max-w-72 md:min-w-36 md:flex-none"
+      >
+        <span className="min-w-0 flex-1 truncate text-left">
+          <ComboboxValue />
+        </span>
+      </ComboboxTrigger>
+      <ComboboxContent className="md:w-80" aria-busy={search.searching || undefined}>
+        <ComboboxInput
+          showTrigger={false}
+          placeholder={filter.searchable.placeholder}
+          aria-label={filter.searchable.placeholder}
+        />
+        {/* Said to a screen reader as it changes: the list is still being asked for, or could not be. */}
+        <ComboboxStatus>
+          {search.searching ? (
+            <>
+              <Spinner />
+              {t("searching")}
+            </>
+          ) : search.failed ? (
+            t("searchFailed")
+          ) : null}
+        </ComboboxStatus>
+        <ComboboxEmpty>
+          {search.searching || search.failed ? null : filter.searchable.empty}
+        </ComboboxEmpty>
+        <ComboboxList aria-label={filter.label}>
+          {(item: Option) => (
+            <ComboboxItem key={item.value} value={item}>
+              {item.label}
+            </ComboboxItem>
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }
 

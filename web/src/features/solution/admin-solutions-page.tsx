@@ -145,7 +145,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       >
         <SolutionsAdminTabs current="solutions" />
       </AdminPageHeader>
-      <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
+      <SolutionsToolbar list="admin" organization={solutions.organization ?? null} />
 
       {/* Where the table is made to fit, the sender gives way first, then the organization joins */}
       {/* the solution. Below 768px the table scrolls and each keeps its column. */}

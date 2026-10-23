@@ -558,6 +558,14 @@ createServer((request, response) => {
           updatedAt: "2026-10-06T03:00:00Z",
         },
       ],
+      organizations: [
+        {
+          id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+          name: "Pocket Policy",
+          logoFileId: "0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10",
+        },
+        { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", name: "Tasco", logoFileId: null },
+      ],
       page: 1,
       pageSize: 25,
       total: 2,
