@@ -46,7 +46,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
  * account, protocol version, origin and rate that is refused. The call log keeps no arguments.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = { "beyondpilot.identity.operator-emails=operator@mcp.test",
+		properties = { "beyondpilot.identity.operator-emails=operator@mcp.test,unconsented-operator@mcp.test",
 				"beyondpilot.identity.oauth.issuer=http://localhost:3000",
 				"beyondpilot.mcp.calls-per-caller-per-minute=200" })
 @Import({ TestcontainersConfiguration.class, McpServerTest.Mail.class })
@@ -379,36 +379,48 @@ class McpServerTest {
 	}
 
 	@Test
-	void anAccountWithoutThePlatformConsentIsRefusedAndToldWhereToAgree() {
-		String person = TestSignIn.session(client, mail, "withdrawn-" + word + "@mcp.test");
-		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
-		assertThat(initialize(token, null, null)).isEqualTo(200);
+	void anAccountWithoutThePlatformConsentConnectsButEveryToolSaysWhereToAgreeUntilItDoes() {
+		String person = TestSignIn.session(client, mail, "unconsented-operator@mcp.test");
+		Map<String, String> tokens = Map.of("/mcp", TestAppConnection.connect(client, port, person, "mcp.read").access(),
+				"/mcp/operator", TestAppConnection.connect(client, port, person, "mcp.research").access());
+		consent(person, false);
 
+		// A refused token would only make the app fetch another and try again; a tool's answer reaches its person.
+		tokens.forEach((endpoint, token) -> {
+			McpSyncClient app = app(token, endpoint);
+			app.initialize();
+			assertThat(app.listTools().tools()).isNotEmpty();
+			CallToolResult refused = call(app, "search", Map.of("query", "anything"));
+			assertThat(refused.isError()).isTrue();
+			assertThat(((TextContent) refused.content().getFirst()).text()).contains(ISSUER + "/consent");
+			app.closeGracefully();
+		});
+
+		consent(person, true);
+		tokens.forEach((endpoint, token) -> {
+			McpSyncClient app = app(token, endpoint);
+			app.initialize();
+			assertThat(call(app, "search", Map.of("query", "anything")).isError()).isFalse();
+			app.closeGracefully();
+		});
+
+		List<String> outcomes = jdbc.sql("""
+				select c.server || ' ' || c.outcome from mcp_call c join identity_account a on a.id = c.account_id
+				where a.email = 'unconsented-operator@mcp.test' order by c.called_at
+				""").query(String.class).list();
+		assertThat(outcomes).containsExactlyInAnyOrder("user refused", "operator refused", "user ok", "operator ok");
+	}
+
+	private void consent(String session, boolean platform) {
 		client.put()
 			.uri("/api/identity/consent")
-			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.cookie(TestSignIn.SESSION_COOKIE, session)
 			.header(TestSignIn.CSRF_HEADER, "1")
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(Map.of("platform", false, "partners", true, "ai", true, "updates", true, "source", "settings"))
+			.body(Map.of("platform", platform, "partners", true, "ai", true, "updates", true, "source", "settings"))
 			.exchange()
 			.expectStatus()
 			.isOk();
-
-		client.post()
-			.uri("/mcp")
-			.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-			.header(HttpHeaders.ACCEPT, "application/json, text/event-stream")
-			.contentType(MediaType.APPLICATION_JSON)
-			.body("""
-					{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25",
-					 "capabilities":{},"clientInfo":{"name":"test","version":"1"}}}
-					""")
-			.exchange()
-			.expectStatus()
-			.isUnauthorized()
-			.expectHeader()
-			.value(HttpHeaders.WWW_AUTHENTICATE,
-					header -> assertThat(header).contains("invalid_token").contains(ISSUER + "/consent"));
 	}
 
 	@Test

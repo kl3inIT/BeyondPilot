@@ -12,8 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Who calls an MCP server. Every call is checked afresh, so nothing that changed since the token was issued is missed:
  * the token is for that server and carries its scope, its connection still stands (a revoke ends it at once), the
- * account is active and has agreed to the platform purpose of the current consent text, and for the operators' server
- * the account is an operator now.
+ * account is active, and for the operators' server the account is an operator now. Whether the account has agreed to
+ * the consent is asked per tool call instead ({@link #consentNeeded}).
  */
 @Service
 public class McpCallers {
@@ -75,15 +75,20 @@ public class McpCallers {
 		catch (IdentityException disabled) {
 			throw new McpCallRefused("The account is disabled", false);
 		}
-		// An app could otherwise be used without its person ever opening a page, where the consent is asked. Signing the
-		// app in again passes through that page.
-		if (consents.needed(accountId)) {
-			throw new McpCallRefused("Agree to the personal data consent at " + site() + "/consent first", false);
-		}
 		if (audience == McpAudience.OPERATOR && !identity.isOperator(actor)) {
 			throw new McpCallRefused("The account is no longer an operator", false);
 		}
 		return new McpCaller(accountId, clientId, connection);
+	}
+
+	/**
+	 * Whether the caller has yet to agree to the platform purpose of the current consent text, which the consent page
+	 * asks. Their token still works, so the app connects and lists the tools, and each tool answers with where to agree:
+	 * an app passes a tool's answer on to its person, whereas a refused token only makes it fetch another and try again.
+	 */
+	@Transactional(readOnly = true)
+	public boolean consentNeeded(McpCaller caller) {
+		return consents.needed(caller.accountId());
 	}
 
 }
