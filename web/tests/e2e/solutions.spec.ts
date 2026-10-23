@@ -108,7 +108,7 @@ test.describe("solutions directory", () => {
 
     await page.goto("/solutions/perks/cloud-credits");
     await expect(page.getByRole("heading", { level: 1, name: "Cloud credits" })).toBeVisible();
-    await expect(page.getByText("Teams on BeyondPilot")).toBeVisible();
+    await expect(page.getByText("Teams on BeyondPilot", { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sign in to get it" })).toHaveAttribute(
       "href",
       "/sign-in?returnTo=%2Fsolutions%2Fperks%2Fcloud-credits",

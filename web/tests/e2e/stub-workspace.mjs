@@ -332,6 +332,8 @@ export function answerWorkspace(url, session) {
     "/api/solution/mine",
     "/api/usecase/mine",
     "/api/talent/mine",
+    "/api/perk/claims",
+    "/api/perk/mine",
   ];
   if (!known.includes(pathname) && !pathname.startsWith("/api/solution/mine/")) {
     return undefined;
@@ -393,6 +395,10 @@ export function answerWorkspace(url, session) {
   if (pathname === "/api/usecase/mine") {
     // Anyone who belongs to an active organization may read its use cases; the stub has none.
     return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
+  }
+  if (pathname === "/api/perk/claims" || pathname === "/api/perk/mine") {
+    // The organization has got no perk and gives none.
+    return [200, []];
   }
   if (pathname === "/api/solution/mine") {
     // A person without an organization has no solutions, and is not refused.
