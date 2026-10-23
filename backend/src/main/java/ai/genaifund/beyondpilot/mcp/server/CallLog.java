@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.function.BiFunction;
 
 import ai.genaifund.beyondpilot.identity.McpCaller;
+import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.mcp.persistence.McpCallRepository;
 import io.modelcontextprotocol.common.McpTransportContext;
 import io.modelcontextprotocol.server.McpStatelessServerFeatures.SyncToolSpecification;
@@ -18,8 +19,8 @@ import org.springframework.stereotype.Component;
 /**
  * Records every tool call: who, through which app, which tool, how it ended, how long it took, and the one record it
  * read when it read one (BEY-222). Never the arguments or the result, which can hold what a person searched for or
- * read. A tool that breaks answers with a short error and is logged by its type only. The log is kept for the
- * retention and then deleted.
+ * read. A tool that breaks answers with a short error and is logged by its type only. A caller who has yet to agree to
+ * the personal data consent gets no tool run, only where to agree. The log is kept for the retention and then deleted.
  */
 @Component
 class CallLog {
@@ -51,9 +52,12 @@ class CallLog {
 
 	private final McpSettings settings;
 
-	CallLog(McpCallRepository calls, McpSettings settings) {
+	private final McpCallers callers;
+
+	CallLog(McpCallRepository calls, McpSettings settings, McpCallers callers) {
 		this.calls = calls;
 		this.settings = settings;
+		this.callers = callers;
 	}
 
 	/** The tool, logged on {@code server} ({@code user} or {@code operator}). */
@@ -65,6 +69,19 @@ class CallLog {
 			String outcome = "failed";
 			READ.remove();
 			try {
+				if (caller != null && callers.consentNeeded(caller)) {
+					outcome = "refused";
+					LOG.atInfo()
+						.addKeyValue("event", "mcp.call_refused")
+						.addKeyValue("server", server)
+						.addKeyValue("reason", "consent_needed")
+						.log("An MCP call was refused");
+					return CallToolResult.builder()
+						.addTextContent("Your BeyondPilot account has not agreed to the personal data consent yet. Agree at "
+								+ callers.site() + "/consent, then try again.")
+						.isError(true)
+						.build();
+				}
 				CallToolResult result = handler.apply(context, request);
 				outcome = Boolean.TRUE.equals(result.isError()) ? "refused" : "ok";
 				return result;

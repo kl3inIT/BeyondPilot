@@ -286,8 +286,8 @@ Decree 356/2025/ND-CP require (BEY-240; [design](../increments/active/bey-240-pe
   changes or that the person never answered, so the first answer records all four, a refusal included. Rows are never
   changed or deleted. A person's current choice for a purpose is their latest row for it.
 - **Needed.** An account whose latest `platform` choice is missing or a refusal has `consentNeeded` on `/me`. The web
-  sends it to `/consent` from every page; the MCP servers refuse its tokens with `invalid_token` and a reason naming
-  `/consent`. The API itself does not refuse it.
+  sends it to `/consent` from every page. Its MCP tokens still work, but every tool call answers an error result that
+  names `/consent` (`McpCallers.consentNeeded`), logged as `refused`. The API itself does not refuse it.
 - **Withdrawal.** Each recorded choice publishes `ConsentChanged`. A withdrawal of `platform` emails the person a
   confirmation (`consent_withdrawn`); no other choice is emailed, and nobody at GenAI Fund is.
 

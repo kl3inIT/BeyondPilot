@@ -27,8 +27,8 @@ const PRIVACY_ADDRESS = "team@beyondpilot.ai";
 
 /**
  * Privacy and consent in Settings (BEY-240): a switch for each purpose. Turning an optional one off
- * or on takes effect at once and offers Undo; withdrawing the consent to use the platform locks the
- * account, so it is asked once and then leads to the consent step. The full text can be read again
+ * or on takes effect at once and offers Undo; withdrawing the consent to use the platform stops the
+ * person using BeyondPilot until they agree again, so it is asked once and then leads to the consent step. The full text can be read again
  * and answered there.
  */
 function AccountConsent({ consent }: { consent: Consent }) {
