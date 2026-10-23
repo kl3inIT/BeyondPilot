@@ -12,6 +12,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -68,7 +69,10 @@ function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </div>
         {children}
-        {note && <p className="text-sm text-muted-foreground">{note}</p>}
+        {/* The note lines up with what is above it: the card when there is one, else the description. */}
+        {note && (
+          <p className={cn("text-sm text-muted-foreground", !children && "text-center")}>{note}</p>
+        )}
         <AlertDialogFooter variant="plain">
           <Button
             ref={cancel}
