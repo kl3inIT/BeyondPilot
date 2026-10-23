@@ -37,7 +37,6 @@ const solution: Solution = {
   logo: { fileId: "l1", fileName: "logo.png", sizeBytes: 20 },
   cover: { fileId: "c1", fileName: "cover.png", sizeBytes: 30 },
   images: [],
-  offers: [],
   status: "draft",
   decisionMessage: null,
   listed: true,

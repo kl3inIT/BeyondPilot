@@ -1,53 +1,58 @@
-import { ArrowUpRightIcon, BadgeCheckIcon, GiftIcon } from "lucide-react";
+import { BadgeCheckIcon, ChevronRightIcon, GiftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { PublicOffer } from "@/lib/api/generated";
+import { Link } from "@/i18n/navigation";
+import type { SolutionPerkLine } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
-import { OfferFold } from "./offer-fold";
+import { PerkFold } from "./perk-fold";
 
-/** An offer is claimed on another site: it opens beside this one and is told nothing of where it came from. */
-const outside = { target: "_blank", rel: "noopener noreferrer nofollow" } as const;
+/** A perk's page, where who may get it and how are read. */
+const pageOf = (perk: Pick<SolutionPerkLine, "slug">) => `${siteRoutes.perks}/${perk.slug}`;
 
-type OfferCornerProps = {
-  offers: PublicOffer[];
+/** What a perk is called on a card: its figure first, when it has one. */
+function named(perk: Pick<SolutionPerkLine, "title" | "value">) {
+  return perk.value ? `${perk.value} · ${perk.title}` : perk.title;
+}
+
+type PerkCornerProps = {
+  perks: SolutionPerkLine[];
   /** Where the control sits on the card. */
   className?: string;
 };
 
 /**
- * The gift in the corner of a solution's card. With one offer it is the link to where that offer is
- * claimed; with several it opens their list, each a link, since one press cannot lead to all of them.
+ * The gift in the corner of a solution's card. With one perk it opens that perk's page; with several
+ * it opens their list, each a link, since one press cannot lead to all of them.
  */
-function OfferCorner({ offers, className }: OfferCornerProps) {
-  const t = useTranslations("Solution.offers");
+function PerkCorner({ perks, className }: PerkCornerProps) {
+  const t = useTranslations("Solution.perks");
 
-  if (offers.length === 0) {
+  if (perks.length === 0) {
     return null;
   }
 
-  if (offers.length === 1) {
-    const [offer] = offers;
+  if (perks.length === 1) {
+    const [perk] = perks;
     return (
       <Tooltip>
-        {/* A link, not a button: it leaves for another site, and is announced as what it is. */}
         <TooltipTrigger
           render={
             <Button
-              href={offer.url}
-              {...outside}
+              href={pageOf(perk)}
               prominence="secondary"
               size="sm"
-              aria-label={t("claimNamed", { offer: offer.title })}
+              aria-label={t("openNamed", { perk: named(perk) })}
               className={className}
             >
               <GiftIcon aria-hidden="true" />
             </Button>
           }
         />
-        <TooltipContent side="left">{offer.title}</TooltipContent>
+        <TooltipContent side="left">{named(perk)}</TooltipContent>
       </Tooltip>
     );
   }
@@ -60,33 +65,37 @@ function OfferCorner({ offers, className }: OfferCornerProps) {
           <Button
             prominence="secondary"
             size="sm"
-            aria-label={t("several", { count: offers.length })}
+            aria-label={t("several", { count: perks.length })}
             className={className}
           >
             <GiftIcon aria-hidden="true" />
-            {offers.length}
+            {perks.length}
           </Button>
         }
       />
       <PopoverContent align="end">
-        <OfferLinks offers={offers} />
+        <PerkLinks perks={perks} />
       </PopoverContent>
     </Popover>
   );
 }
 
 /**
- * What an offer is called. One GenAI Fund arranged carries the mark the card gives to what GenAI
- * Fund says of a solution, with the words for those who do not see it; one the organization wrote
- * alone has none.
+ * What a perk is called. One GenAI Fund arranged carries the mark the card gives to what GenAI Fund
+ * says of a solution, with the words for those who do not see it; one the organization wrote alone
+ * has none.
  */
-function OfferTitle({ offer }: { offer: Pick<PublicOffer, "title" | "fromGenAiFund"> }) {
-  const t = useTranslations("Solution.offers");
+function PerkTitle({
+  perk,
+}: {
+  perk: Pick<SolutionPerkLine, "title" | "value" | "fromGenAiFund">;
+}) {
+  const t = useTranslations("Solution.perks");
 
   return (
     <>
-      {offer.title}
-      {offer.fromGenAiFund && (
+      {named(perk)}
+      {perk.fromGenAiFund && (
         <>
           {" "}
           <BadgeCheckIcon
@@ -100,28 +109,24 @@ function OfferTitle({ offer }: { offer: Pick<PublicOffer, "title" | "fromGenAiFu
   );
 }
 
-/** The offers as a list of links, each to where it is claimed. */
-function OfferLinks({ offers }: { offers: PublicOffer[] }) {
-  const t = useTranslations("Solution.offers");
-
+/** The perks as a list of links, each to its page. */
+function PerkLinks({ perks }: { perks: SolutionPerkLine[] }) {
   return (
     <ul className="flex flex-col gap-0.5">
-      {offers.map((offer) => (
-        <li key={offer.title}>
-          <a
-            href={offer.url}
-            {...outside}
+      {perks.map((perk) => (
+        <li key={perk.slug}>
+          <Link
+            href={pageOf(perk)}
             className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <span className="min-w-0 wrap-break-word">
-              <OfferTitle offer={offer} />
+              <PerkTitle perk={perk} />
             </span>
-            <ArrowUpRightIcon
+            <ChevronRightIcon
               className="size-4 shrink-0 text-muted-foreground"
               aria-hidden="true"
             />
-            <span className="sr-only">{t("newTab")}</span>
-          </a>
+          </Link>
         </li>
       ))}
     </ul>
@@ -129,14 +134,14 @@ function OfferLinks({ offers }: { offers: PublicOffer[] }) {
 }
 
 /**
- * The line a card says its offers in: the first by name, and how many more there are. It stands on a
+ * The line a card says its perks in: the first by name, and how many more there are. It stands on a
  * tint of its own, so a reader who scans the directory sees which solutions come with something. The
  * count opens the rest on hover, keyboard focus or a press, as the count of capabilities does.
  */
-function OfferLine({ offers }: { offers: PublicOffer[] }) {
-  const t = useTranslations("Solution.offers");
+function PerkLine({ perks }: { perks: SolutionPerkLine[] }) {
+  const t = useTranslations("Solution.perks");
 
-  if (offers.length === 0) {
+  if (perks.length === 0) {
     return null;
   }
 
@@ -144,8 +149,8 @@ function OfferLine({ offers }: { offers: PublicOffer[] }) {
     <p className="flex min-w-0 items-center gap-2 rounded-lg bg-lemon px-3 py-2 text-sm font-semibold text-lemon-foreground">
       <GiftIcon className="size-4 shrink-0" aria-hidden="true" />
       <span className="sr-only">{t("label")}</span>
-      <span className="truncate">{offers[0].title}</span>
-      {offers.length > 1 && (
+      <span className="truncate">{named(perks[0])}</span>
+      {perks.length > 1 && (
         <Popover>
           {/* Above the link that covers the card, so the pointer reaches it. */}
           <PopoverTrigger
@@ -156,15 +161,15 @@ function OfferLine({ offers }: { offers: PublicOffer[] }) {
               <button
                 type="button"
                 // The count of capabilities on the same card reads the same, so this one says what it counts.
-                aria-label={t("moreOffers", { count: offers.length - 1 })}
+                aria-label={t("morePerks", { count: perks.length - 1 })}
                 className="relative z-10 shrink-0 rounded-sm font-medium underline-offset-2 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               />
             }
           >
-            {t("more", { count: offers.length - 1 })}
+            {t("more", { count: perks.length - 1 })}
           </PopoverTrigger>
           <PopoverContent side="top" align="end" sideOffset={6}>
-            <OfferLinks offers={offers.slice(1)} />
+            <PerkLinks perks={perks.slice(1)} />
           </PopoverContent>
         </Popover>
       )}
@@ -172,40 +177,39 @@ function OfferLine({ offers }: { offers: PublicOffer[] }) {
   );
 }
 
-/** One offer as a row of a group: its name, and the action that claims it. */
-function OfferRow({ offer }: { offer: PublicOffer }) {
-  const t = useTranslations("Solution.offers");
+/** One perk as a row of a group: its name, and the way to its page. */
+function PerkRow({ perk }: { perk: SolutionPerkLine }) {
+  const t = useTranslations("Solution.perks");
 
   return (
     <li className="flex items-center gap-3 border-t py-2">
-      <span className="line-clamp-2 min-w-0 flex-1 text-sm wrap-anywhere">{offer.title}</span>
+      <span className="line-clamp-2 min-w-0 flex-1 text-sm wrap-anywhere">{named(perk)}</span>
       <Button
         prominence="secondary"
         size="sm"
-        href={offer.url}
-        {...outside}
-        aria-label={t("claimNamed", { offer: offer.title })}
+        href={pageOf(perk)}
+        aria-label={t("openNamed", { perk: named(perk) })}
       >
-        {t("claim")}
-        <ArrowUpRightIcon aria-hidden="true" />
+        {t("open")}
+        <ChevronRightIcon aria-hidden="true" />
       </Button>
     </li>
   );
 }
 
-type OfferPanelProps = {
-  offers: PublicOffer[];
-  /** The organization that gives the solution, which the offers it wrote alone come from. */
+type PerkPanelProps = {
+  perks: SolutionPerkLine[];
+  /** The organization that gives the solution, which the perks it wrote alone come from. */
   organization: string;
 };
 
 /**
- * The offers on a solution's page, in two groups by where they come from: the ones GenAI Fund
- * arranged, which it stands behind, and the ones the organization wrote alone. Every offer is listed,
+ * The perks on a solution's page, in two groups by where they come from: the ones GenAI Fund
+ * arranged, which it stands behind, and the ones the organization wrote alone. Every perk is listed,
  * one row each, and the heading folds them all away.
  */
-function OfferPanel({ offers, organization }: OfferPanelProps) {
-  const t = useTranslations("Solution.offers");
+function PerkPanel({ perks, organization }: PerkPanelProps) {
+  const t = useTranslations("Solution.perks");
   const groups = [
     {
       key: "fund",
@@ -215,38 +219,38 @@ function OfferPanel({ offers, organization }: OfferPanelProps) {
           {t("group.fund")}
         </>
       ),
-      offers: offers.filter((offer) => offer.fromGenAiFund),
+      perks: perks.filter((perk) => perk.fromGenAiFund),
     },
     {
       key: "own",
       heading: t("group.own", { organization }),
-      offers: offers.filter((offer) => !offer.fromGenAiFund),
+      perks: perks.filter((perk) => !perk.fromGenAiFund),
     },
-  ].filter((group) => group.offers.length > 0);
+  ].filter((group) => group.perks.length > 0);
 
   if (groups.length === 0) {
     return null;
   }
 
   return (
-    <OfferFold title={t("title")}>
+    <PerkFold title={t("title")}>
       {groups.map((group) => (
         <div key={group.key} className="flex flex-col gap-1">
           <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             <span className="flex min-w-0 items-center gap-1.5">{group.heading}</span>
             <span className="ml-auto font-medium tracking-normal normal-case">
-              {group.offers.length}
+              {group.perks.length}
             </span>
           </h3>
           <ul className="flex flex-col [&>li:first-child]:border-t-0 [&>li:first-child]:pt-1">
-            {group.offers.map((offer) => (
-              <OfferRow key={`${offer.url} ${offer.title}`} offer={offer} />
+            {group.perks.map((perk) => (
+              <PerkRow key={perk.slug} perk={perk} />
             ))}
           </ul>
         </div>
       ))}
-    </OfferFold>
+    </PerkFold>
   );
 }
 
-export { OfferCorner, OfferLine, OfferPanel, OfferTitle };
+export { PerkCorner, PerkLine, PerkPanel, PerkTitle };

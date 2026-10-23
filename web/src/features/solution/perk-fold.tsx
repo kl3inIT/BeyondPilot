@@ -5,25 +5,25 @@ import { useId } from "react";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-type OfferFoldProps = {
+type PerkFoldProps = {
   title: string;
-  /** The offers, drawn by the page. */
+  /** The perks, drawn by the page. */
   children: React.ReactNode;
 };
 
 /**
- * The offers of a solution's page under their heading: open at first, and folded from the heading,
+ * The perks of a solution's page under their heading: open at first, and folded from the heading,
  * as the parts of the page beside it are.
  */
-function OfferFold({ title, children }: OfferFoldProps) {
+function PerkFold({ title, children }: PerkFoldProps) {
   const contentId = useId();
 
   return (
     <Collapsible
       defaultOpen
-      render={<section aria-labelledby="solution-offers" className="flex flex-col" />}
+      render={<section aria-labelledby="solution-perks" className="flex flex-col" />}
     >
-      <h2 id="solution-offers" className="w-full">
+      <h2 id="solution-perks" className="w-full">
         <CollapsibleTrigger aria-controls={contentId} variant="section">
           <span className="flex min-w-0 items-center gap-2 text-base font-medium">
             <GiftIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
@@ -49,4 +49,4 @@ function OfferFold({ title, children }: OfferFoldProps) {
   );
 }
 
-export { OfferFold };
+export { PerkFold };

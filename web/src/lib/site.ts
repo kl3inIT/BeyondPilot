@@ -6,6 +6,7 @@ export const siteRoutes = {
   programs: "/programs",
   useCases: "/use-cases",
   solutions: "/solutions",
+  perks: "/solutions/perks",
   organizations: "/organizations",
   talent: "/talent",
   signIn: "/sign-in",
@@ -27,7 +28,7 @@ export const siteRoutes = {
   adminAuditLog: "/admin/audit-log",
   adminOrganizations: "/admin/organizations",
   adminSolutions: "/admin/solutions",
-  adminOffers: "/admin/solutions/offers",
+  adminPerks: "/admin/solutions/perks",
   adminTalent: "/admin/talent",
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",
@@ -54,6 +55,7 @@ export const siteRoutes = {
   reviews: "/reviews",
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
+  workspacePerks: "/workspace/organization/perks",
   workspaceUseCases: "/workspace/organization/use-cases",
 } as const;
 

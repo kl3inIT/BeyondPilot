@@ -65,7 +65,6 @@ async function fakeBackend(page: Page, joining: "joined" | "requested" = "joined
     logo: null,
     cover: null,
     images: [],
-    offers: [],
     status: "draft",
     decisionReason: null,
     decisionMessage: null,

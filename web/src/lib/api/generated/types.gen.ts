@@ -7124,7 +7124,10 @@ export type SolutionPerkLine = {
  */
 export type SolutionPerks = {
     perks: Array<SolutionPerkLine>;
-    solutionId: string;
+    /**
+     * The solution's address.
+     */
+    slug: string;
 };
 
 /**
@@ -13813,9 +13816,9 @@ export type ListSolutionPerksData = {
     path?: never;
     query: {
         /**
-         * The solutions, up to 100.
+         * The solutions' addresses, up to 100.
          */
-        ids: Array<string>;
+        slugs: Array<string>;
     };
     url: '/api/perk/solutions';
 };

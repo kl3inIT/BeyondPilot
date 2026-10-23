@@ -1,7 +1,6 @@
 package ai.genaifund.beyondpilot.perk.web;
 
 import java.util.List;
-import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
@@ -98,9 +97,9 @@ class PerksController {
 	@ApiResponse(responseCode = "200", description = "The perks of each solution that has any.")
 	@ApiResponse(responseCode = "400", description = "Too many solutions are named.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	List<SolutionPerksResponse> ofSolutions(
-			@Parameter(description = "The solutions, up to 100.") @RequestParam("ids") @Size(max = 100) List<UUID> ids) {
-		return catalog.ofSolutions(ids);
+	List<SolutionPerksResponse> ofSolutions(@Parameter(description = "The solutions' addresses, up to 100.") @RequestParam(
+			"slugs") @Size(max = 100) List<String> slugs) {
+		return catalog.ofSolutions(slugs);
 	}
 
 	@GetMapping(path = "/programs/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)

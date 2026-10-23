@@ -138,18 +138,18 @@ class PerkTest {
 		assertProblem(post(signIn("nobody@no-perks.test"), MINE, perk("Nobody's perk")), 403, "PERK_MEMBER_REQUIRED");
 		String founder = owner("founder@cassowary-perks.test", "Cassowary AI");
 		String neighbour = owner("founder@cassowary-neighbour.test", "Cassowary Neighbour");
-		UUID solution = solution(founder, "Cassowary Desk");
-		UUID theirs = solution(neighbour, "Neighbour Desk");
+		Created solution = solution(founder, "Cassowary Desk");
+		Created theirs = solution(neighbour, "Neighbour Desk");
 
 		Map<String, Object> pilot = perk("Cassowary pilot package");
 		pilot.put("audience", "everyone");
 		pilot.put("summary", "Six weeks of a pilot on your own claims.");
-		pilot.put("solutionIds", List.of(theirs));
+		pilot.put("solutionIds", List.of(theirs.id()));
 		assertProblem(post(founder, MINE, pilot), 400, "PERK_SOLUTION_NOT_USABLE");
 		// The form chooses among the organization's own solutions.
 		String options = body(get(founder, MINE + "/options").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(options, "$.solutions[*].id")).containsExactly(solution.toString());
-		pilot.put("solutionIds", List.of(solution));
+		assertThat(JsonPath.<List<String>>read(options, "$.solutions[*].id")).containsExactly(solution.id().toString());
+		pilot.put("solutionIds", List.of(solution.id()));
 		String draft = body(post(founder, MINE, pilot).expectStatus().isCreated());
 		UUID id = idOf(draft);
 		String slug = slugOf(draft);
@@ -159,7 +159,7 @@ class PerkTest {
 		// A draft is read by its keepers only.
 		assertThat(catalogue(null, false)).doesNotContain(slug);
 		assertProblem(client.get().uri(PERKS + "/" + slug).exchange(), 404, "PERK_NOT_FOUND");
-		assertThat(lines(solution)).isEmpty();
+		assertThat(lines(solution.slug())).isEmpty();
 		assertProblem(post(neighbour, MINE + "/" + id + "/publish", null), 404, "PERK_NOT_FOUND");
 
 		// Published, it is for anyone to read at once, with no review; a link for everyone is open to a visitor.
@@ -170,7 +170,7 @@ class PerkTest {
 		assertThat(JsonPath.<String>read(page, "$.card.standing")).isEqualTo("eligible");
 		assertThat(JsonPath.<String>read(page, "$.url")).isEqualTo("https://perks.example.test/cassowary-pilot-package");
 		// The card of the solution it goes with names it.
-		assertThat(lines(solution)).containsExactly("Cassowary pilot package");
+		assertThat(lines(solution.slug())).containsExactly("Cassowary pilot package");
 		assertThat(JsonPath.<List<String>>read(body(get(founder, MINE).expectStatus().isOk()), "$[*].state"))
 			.containsExactly("published");
 
@@ -178,9 +178,9 @@ class PerkTest {
 		post(founder, MINE + "/" + id + "/archive", null).expectStatus().isOk();
 		assertThat(catalogue(null, false)).doesNotContain(slug);
 		assertProblem(client.get().uri(PERKS + "/" + slug).exchange(), 404, "PERK_NOT_FOUND");
-		assertThat(lines(solution)).isEmpty();
+		assertThat(lines(solution.slug())).isEmpty();
 		post(founder, MINE + "/" + id + "/publish", null).expectStatus().isOk();
-		assertThat(lines(solution)).containsExactly("Cassowary pilot package");
+		assertThat(lines(solution.slug())).containsExactly("Cassowary pilot package");
 	}
 
 	@Test
@@ -479,9 +479,9 @@ class PerkTest {
 	}
 
 	/** The titles of the perks the solution's card shows. */
-	private List<String> lines(UUID solution) {
-		return JsonPath.read(body(client.get().uri("/api/perk/solutions?ids=" + solution).exchange().expectStatus().isOk()),
-				"$[?(@.solutionId == '" + solution + "')].perks[*].title");
+	private List<String> lines(String solution) {
+		return JsonPath.read(body(client.get().uri("/api/perk/solutions?slugs=" + solution).exchange().expectStatus().isOk()),
+				"$[?(@.slug == '" + solution + "')].perks[*].title");
 	}
 
 	private List<String> events(UUID perk) {
@@ -491,8 +491,13 @@ class PerkTest {
 				""").param(perk.toString()).query(String.class).list();
 	}
 
-	private UUID solution(String session, String name) {
-		return idOf(body(post(session, "/api/solution/mine", Map.of("name", name)).expectStatus().isCreated()));
+	/** A draft solution of the caller's organization: its identifier and its address. */
+	private Created solution(String session, String name) {
+		String created = body(post(session, "/api/solution/mine", Map.of("name", name)).expectStatus().isCreated());
+		return new Created(idOf(created), slugOf(created));
+	}
+
+	private record Created(UUID id, String slug) {
 	}
 
 	private static UUID idOf(String read) {

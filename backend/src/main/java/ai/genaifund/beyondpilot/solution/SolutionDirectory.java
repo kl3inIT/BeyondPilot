@@ -315,6 +315,20 @@ public class SolutionDirectory {
 			.toList());
 	}
 
+	/**
+	 * The solutions at these addresses, by address, for a module that reads what their cards show beside them; an
+	 * address no solution has is left out.
+	 */
+	@Transactional(readOnly = true)
+	public Map<String, UUID> idsAt(Collection<String> slugs) {
+		if (slugs.isEmpty()) {
+			return Map.of();
+		}
+		return solutions.findBySlugIn(slugs)
+			.stream()
+			.collect(Collectors.toMap(Solution::getSlug, Solution::getId));
+	}
+
 	/** Every solution of an organization, whatever its review, so search can take out those it no longer shows. */
 	@Transactional(readOnly = true)
 	public List<UUID> idsOf(UUID organizationId) {

@@ -429,6 +429,7 @@ test.describe("workspace organization", () => {
       "Members2",
       "Solutions4",
       "Use cases0",
+      "Perks",
     ]);
     await expect(tabs.getByRole("link", { name: "Profile" })).toHaveAttribute(
       "aria-current",

@@ -5,12 +5,12 @@ import { siteRoutes } from "@/lib/site";
 
 const tabs = [
   { key: "solutions", href: siteRoutes.adminSolutions },
-  { key: "offers", href: siteRoutes.adminOffers },
+  { key: "perks", href: siteRoutes.adminPerks },
 ] as const;
 
 /**
  * The pages of Admin › AI solutions: the solutions operators review, and every organization's
- * offers, which the solutions' cards show. The row links between them and is drawn on each.
+ * perks, which the catalogue and the solutions' cards show. The row links between them and is drawn on each.
  */
 function SolutionsAdminTabs({ current }: { current: (typeof tabs)[number]["key"] }) {
   const t = useTranslations("Admin.solutions");

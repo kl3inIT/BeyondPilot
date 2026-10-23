@@ -8337,15 +8337,14 @@ paths:
     get:
       operationId: listSolutionPerks
       parameters:
-      - description: "The solutions, up to 100."
+      - description: "The solutions' addresses, up to 100."
         in: query
-        name: ids
+        name: slugs
         required: true
         schema:
           type: array
           items:
             type: string
-            format: uuid
           maxItems: 100
           minItems: 0
       responses:
@@ -28919,12 +28918,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SolutionPerkLine"
-        solutionId:
+        slug:
           type: string
-          format: uuid
+          description: The solution's address.
       required:
       - perks
-      - solutionId
+      - slug
     SolutionReviewQueue:
       type: object
       description: "How many solutions or customer deployments wait for review now,\

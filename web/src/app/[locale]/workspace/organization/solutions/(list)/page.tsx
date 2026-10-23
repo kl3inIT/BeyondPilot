@@ -5,7 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { OrganizationSolutionsPage } from "@/features/solution/organization-solutions-page";
 import { loadOrganizationSolutionsSearch } from "@/features/solution/organization-solutions-search";
-import { readMyOffers, readMySolutions } from "@/features/solution/solution-queries";
+import { readMySolutions } from "@/features/solution/solution-queries";
 import { getPathname } from "@/i18n/navigation";
 import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
 import { requireAccount } from "@/lib/auth/session";
@@ -27,10 +27,9 @@ export default async function OrganizationSolutionsRoute({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAccount(siteRoutes.workspaceSolutions);
-  const [mine, solutions, offers, members, search] = await Promise.all([
+  const [mine, solutions, members, search] = await Promise.all([
     readMyOrganization(),
     readMySolutions(),
-    readMyOffers(),
     readMembers(),
     loadOrganizationSolutionsSearch(searchParams),
   ]);
@@ -45,7 +44,6 @@ export default async function OrganizationSolutionsRoute({
     <OrganizationSolutionsPage
       mine={{ ...mine, organization }}
       solutions={solutions}
-      offers={offers}
       members={members?.total ?? 0}
       useCases={useCases}
       search={search}

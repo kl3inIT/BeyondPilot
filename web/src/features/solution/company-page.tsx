@@ -129,7 +129,6 @@ const SOLUTIONS = "solutions";
 function CompanyPage({ organization, solutions, more, deployments }: CompanyPageProps) {
   const detail = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
-  const offers = useTranslations("Solution.offers");
   const lists = useTranslations("Lists");
   const type = useVocabulary("organizationType");
   const industry = useVocabulary("industry");
@@ -193,7 +192,7 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
                   >
                     {detail("company.visitWebsite")}
                     <ArrowUpRightIcon aria-hidden="true" />
-                    <span className="sr-only">{offers("newTab")}</span>
+                    <span className="sr-only">{detail("newTab")}</span>
                   </Button>
                 )}
               </div>
@@ -274,7 +273,7 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
                       <span className="truncate">
                         {website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
                       </span>
-                      <span className="sr-only">{offers("newTab")}</span>
+                      <span className="sr-only">{detail("newTab")}</span>
                     </TextButton>
                   </dd>
                 </div>

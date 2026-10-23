@@ -23,7 +23,6 @@ import { CodeCombobox } from "./code-combobox";
 import { CustomerDeploymentsEditor } from "./customer-deployments-editor";
 import { DeckUpload } from "./deck-upload";
 import { GalleryUpload, ImageUpload } from "./image-upload";
-import { OfferPicker } from "./offer-picker";
 import { deployments, focusAreas, industries, languages, maturities } from "./solution-codes";
 import type { SolutionForm } from "./solution-editor-form";
 import {
@@ -108,16 +107,8 @@ function about(field: keyof SolutionDraft, error: string | undefined, hint: bool
   return [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(" ") || undefined;
 }
 
-type BasicsStepProps = StepProps & {
-  solutionId: string;
-  /** The solution's organization, which gives its offers. */
-  organizationId: string;
-  /** True for an operator, who marks a new offer GenAI Fund arranged; a member's is their organization's. */
-  operator: boolean;
-};
-
-/** Step 1: what the solution is, how far it has come, what it is built with and what it comes with. */
-function BasicsStep({ form, errorOf, solutionId, organizationId, operator }: BasicsStepProps) {
+/** Step 1: what the solution is, how far it has come and what it is built with. */
+function BasicsStep({ form, errorOf }: StepProps) {
   const t = useTranslations("Solution.editor");
   const maturity = useVocabulary("maturity");
 
@@ -228,26 +219,6 @@ function BasicsStep({ form, errorOf, solutionId, organizationId, operator }: Bas
               maxLength={limits.builtWithName}
               removeLabel={(name) => t("fields.removeTag", { name })}
               aria-describedby={about("builtWith", undefined, true)}
-            />
-          </EditorField>
-        )}
-      </form.Field>
-      <form.Field name="solution.offers">
-        {(field) => (
-          <EditorField
-            field="offers"
-            label={t("fields.offers")}
-            optional={t("optional")}
-            hint={t("fields.offersHint", { max: limits.offers })}
-          >
-            <OfferPicker
-              id={fieldId("offers")}
-              solutionId={solutionId}
-              organizationId={organizationId}
-              value={field.state.value}
-              onValueChange={field.handleChange}
-              operator={operator}
-              aria-describedby={about("offers", undefined, true)}
             />
           </EditorField>
         )}

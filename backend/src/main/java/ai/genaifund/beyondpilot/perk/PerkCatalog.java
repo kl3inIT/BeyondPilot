@@ -142,12 +142,17 @@ public class PerkCatalog {
 				PerkAudience.placesLeft(perk, active, stock), shown, claim);
 	}
 
-	/** The open perks of each of these solutions, for their cards; a solution with none is left out. */
+	/**
+	 * The open perks of the solutions at these addresses, for their cards; a solution with none, and an address no
+	 * solution has, are left out.
+	 */
 	@Transactional(readOnly = true)
-	public List<SolutionPerksResponse> ofSolutions(Collection<UUID> solutionIds) {
-		return lines(solutionIds).entrySet()
+	public List<SolutionPerksResponse> ofSolutions(Collection<String> slugs) {
+		Map<UUID, String> slugOf = new LinkedHashMap<>();
+		solutions.idsAt(slugs).forEach((slug, id) -> slugOf.put(id, slug));
+		return lines(slugOf.keySet()).entrySet()
 			.stream()
-			.map(entry -> new SolutionPerksResponse(entry.getKey(),
+			.map(entry -> new SolutionPerksResponse(slugOf.get(entry.getKey()),
 					entry.getValue()
 						.stream()
 						.map(line -> new SolutionPerksResponse.Line(line.slug(), line.title(), line.value(),

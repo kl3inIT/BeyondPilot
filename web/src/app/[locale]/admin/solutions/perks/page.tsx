@@ -2,31 +2,28 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { AdminOffersPage } from "@/features/solution/admin-offers-page";
-import { loadAdminOffersSearch } from "@/features/solution/offers-search";
-import { readAdminOffers } from "@/features/solution/solution-queries";
+import { readAdminPerks } from "@/features/perk/perk-queries";
+import { AdminPerksPage } from "@/features/perk/perk-record";
 import { ApiError } from "@/lib/api/client";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/[locale]/admin/solutions/offers">): Promise<Metadata> {
+}: PageProps<"/[locale]/admin/solutions/perks">): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Admin.offers" });
+  const t = await getTranslations({ locale, namespace: "Perk.manage" });
 
   return { title: t("metaTitle"), robots: { index: false } };
 }
 
-export default async function AdminOffersRoute({
+export default async function AdminPerksRoute({
   params,
-  searchParams,
-}: PageProps<"/[locale]/admin/solutions/offers">) {
+}: PageProps<"/[locale]/admin/solutions/perks">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireRole("operator", siteRoutes.adminOffers);
-  const search = await loadAdminOffersSearch(searchParams);
-  const offers = await readAdminOffers().catch((error: unknown) => {
+  await requireRole("operator", siteRoutes.adminPerks);
+  const perks = await readAdminPerks().catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
       notFound();
@@ -34,5 +31,5 @@ export default async function AdminOffersRoute({
     throw error;
   });
 
-  return <AdminOffersPage offers={offers} search={search} />;
+  return <AdminPerksPage perks={perks} />;
 }

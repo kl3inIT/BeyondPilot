@@ -19,7 +19,7 @@ import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
 import { OrganizationTabs } from "./organization-tabs";
 
-type OrganizationTab = "profile" | "members" | "solutions" | "useCases";
+type OrganizationTab = "profile" | "members" | "solutions" | "useCases" | "perks";
 
 type OrganizationFrameProps = {
   /** The caller's membership; the frame is drawn only for a person who belongs to an organization. */
@@ -36,7 +36,7 @@ type OrganizationFrameProps = {
 /**
  * What every page of My organization shares: the organization's name and what it is, the notices
  * about it, and the tabs. The tabs follow the organization's role: only a provider has solutions,
- * only an enterprise that is not taken down has use cases.
+ * only an enterprise that is not taken down has use cases. Every organization gets and gives perks.
  */
 function OrganizationFrame({ mine, current, counts, children }: OrganizationFrameProps) {
   const t = useTranslations("Organization");
@@ -73,6 +73,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             count: counts.useCases,
           },
         ]),
+    { key: "perks", href: siteRoutes.workspacePerks, label: t("tabs.perks") },
   ];
   const host = websiteHost(organization.website);
   const country = organization.country && countryName(organization.country);
