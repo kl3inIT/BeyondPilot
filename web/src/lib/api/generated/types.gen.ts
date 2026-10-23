@@ -3432,6 +3432,10 @@ export type McpToolSwitch = {
      */
     enabled: boolean;
     name: string;
+    /**
+     * Whether the tool only reads; false for one that changes records, as its MCP annotations tell apps.
+     */
+    readOnly: boolean;
     server: 'user' | 'operator';
     title?: string | null;
 };

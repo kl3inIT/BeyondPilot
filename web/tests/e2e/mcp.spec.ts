@@ -132,6 +132,18 @@ test.describe("MCP", () => {
       switched.push([new URL(route.request().url()).pathname, route.request().postDataJSON()]);
       await route.fulfill({ status: 204 });
     });
+    // A tool says whether it only reads or changes records, as its MCP annotations tell apps.
+    const operatorTools = page.getByRole("region", { name: "Operators' server" });
+    await expect(
+      operatorTools
+        .getByRole("listitem")
+        .filter({ has: page.getByText("decide_proposal", { exact: true }) }),
+    ).toContainText("Changes records");
+    await expect(
+      operatorTools
+        .getByRole("listitem")
+        .filter({ has: page.getByText("search", { exact: true }) }),
+    ).toContainText("Reads");
     const user = page.getByRole("region", { name: "User server" });
     await expect(user.getByRole("switch", { name: "Turn fetch on or off" })).not.toBeChecked();
     await user.getByRole("switch", { name: "Turn fetch on or off" }).click();

@@ -23,6 +23,8 @@ public record McpSettingsResponse(
 			@Schema(types = { "string", "null" }) @Nullable String title,
 			@Schema(types = { "string", "null" }) @Nullable String description,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "Whether the tool only reads; false for one that changes records, as its MCP annotations tell apps.") boolean readOnly,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "Whether the server lists it and takes calls to it.") boolean enabled) {
 	}
 

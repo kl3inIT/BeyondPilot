@@ -192,7 +192,11 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">{tool.name}</span>
-                      <Badge variant="outline">{t("reads")}</Badge>
+                      {tool.readOnly ? (
+                        <Badge variant="outline">{t("reads")}</Badge>
+                      ) : (
+                        <Badge variant="warning">{t("changes")}</Badge>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {tool.name === "search"

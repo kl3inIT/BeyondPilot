@@ -15,6 +15,7 @@ import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.mcp.dto.McpSettingsResponse;
 import ai.genaifund.beyondpilot.mcp.server.McpSwitches;
+import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,10 +50,16 @@ public class McpAdministration {
 		List<McpSettingsResponse.ToolSwitch> tools = Stream.of(McpAudience.OPERATOR, McpAudience.USER)
 			.flatMap(server -> switches.tools(server).stream())
 			.map(tool -> new McpSettingsResponse.ToolSwitch(serverName(tool.server()), tool.tool().tool().name(),
-					tool.tool().tool().title(), tool.tool().tool().description(), tool.on()))
+					tool.tool().tool().title(), tool.tool().tool().description(), readOnly(tool.tool().tool()),
+					tool.on()))
 			.toList();
 		return new McpSettingsResponse(callers.address(McpAudience.OPERATOR), callers.address(McpAudience.USER),
 				switches.isUserServerOn(), tools);
+	}
+
+	/** What the tool's annotations tell apps: a tool that does not say it only reads is taken to change records. */
+	private static boolean readOnly(McpSchema.Tool tool) {
+		return tool.annotations() != null && Boolean.TRUE.equals(tool.annotations().readOnlyHint());
 	}
 
 	@Transactional

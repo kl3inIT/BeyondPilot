@@ -866,7 +866,11 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(31);
+			.isEqualTo(31)
+			.jsonPath("$.tools[?(@.name == 'search')].readOnly")
+			.value(readOnly -> assertThat(readOnly).isEqualTo(List.of(true, true)))
+			.jsonPath("$.tools[?(@.name == 'decide_proposal' || @.name == 'create_use_case')].readOnly")
+			.value(readOnly -> assertThat(readOnly).isEqualTo(List.of(false, false)));
 
 		switchTool("user", "fetch", false);
 		try {
