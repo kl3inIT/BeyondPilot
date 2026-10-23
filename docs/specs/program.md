@@ -310,7 +310,7 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
   `pending_approval` when GenAI Fund approves each guest, `approved` otherwise. A second registration of the person is
   refused (`PROGRAM_REGISTRATION_EXISTS`), as is one for an event that takes no more (`PROGRAM_REGISTRATION_CLOSED`).
 - **Sending.** `RegistrationSender` sends it after the commit, and every minute any that is due
-  (`beyondpilot.program.luma.send-interval`): `POST /v1/events/guests/add` with that status and `send_email: false`,
+  (`beyondpilot.program.luma.send-interval`): the event is read again and the status worked out anew from it (one that now takes no registration stops), then `POST /v1/events/guests/add` with that status and `send_email: false`,
   then the guest is read by address (`GET /v1/events/guests/get`), a few times since Luma adds in the background, and
   its identifier, status and check-in address are kept. An attempt that fails waits 1, 5 and 15 minutes, then 1, 3 and 6
   hours, then stops; an address Luma skips (unsubscribed, removed or blocked) and answers Luma refuses stop at once. Each

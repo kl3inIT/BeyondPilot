@@ -128,7 +128,16 @@ class RegistrationSender {
 			return;
 		}
 		try {
-			LumaGuest.Status asked = LumaGuest.Status.valueOf(sending.status().toUpperCase(Locale.ROOT));
+			// The status is worked out again from the event as it is now: the registration may have been kept
+			// while Luma could not be read, or the host may have turned approval on or filled the event since.
+			Optional<LumaGuest.Status> current = api.event(key, sending.eventId())
+				.map(event -> event.form())
+				.flatMap(form -> form == null ? Optional.empty() : form.statusOnAdding());
+			if (current.isEmpty()) {
+				stop(id, "The event takes no more registrations");
+				return;
+			}
+			LumaGuest.Status asked = current.get();
 			if (api.addGuest(key, sending.eventId(), sending.email(), sending.name(), answers(sending.answers()),
 					asked)) {
 				stop(id, "Luma skipped this address: it unsubscribed from the calendar, or was removed or blocked");
