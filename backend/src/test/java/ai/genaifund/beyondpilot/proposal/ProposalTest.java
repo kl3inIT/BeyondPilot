@@ -208,9 +208,15 @@ class ProposalTest extends ApplicationsHttpTest {
 		// A team that is just them leaves for a company; nobody is then offered to join the team left empty.
 		String an = TestSignIn.session(client, mail, "an@alone.test");
 		post(an, form.path() + "/organization",
-				Map.of("kind", "team", "name", "Quiet Harbor", "country", "VN", "teamSize", "2_9"))
+				Map.of("kind", "team", "name", "Quiet Harbour", "country", "VN", "teamSize", "10_49"))
 			.expectStatus()
 			.isOk();
+		// Renamed without a size, it keeps its own.
+		String harbor = body(post(an, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Quiet Harbor", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(harbor, "$.organization.teamSize")).isEqualTo("10_49");
 		String finder = "/api/organization/organizations?q=harbor";
 		String other = TestSignIn.session(client, mail, "finder@alone.test");
 		assertThat(JsonPath.<List<String>>read(body(get(other, finder).expectStatus().isOk()), "$.items[*].name"))
