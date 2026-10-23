@@ -38,6 +38,7 @@ On 23 October 2026, with Đạt's agreement, a private event "[TEST] BeyondPilot
 - **No validation by Luma.** An add without a required answer, and one with an option the select does not offer, were both accepted and stored as sent. An unknown question id refused the whole add with 400 "The event has no registration question with ID nope."
 - **Again.** Adding the same email again with another answer kept the guest and its first answers; no second guest.
 - **Decision.** `guests/update-status` to `declined` with `send_email: false` answered `{}` and the guest read back `declined`.
+- **No email.** Đạt found no email from Luma in the `team@beyondpilot.ai` mailbox for any of the five guests, added and declined with `send_email: false`.
 
 ## How others do it
 
