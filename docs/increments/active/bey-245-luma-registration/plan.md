@@ -14,5 +14,5 @@ Design: [design.md](design.md). Tracked in Linear as BEY-245. Each slice is one 
 ## Needed from Đạt
 
 - Accept the invitation of `team@beyondpilot.ai` as an admin of the calendar on Luma.
-- A hidden test event on the calendar with approval required and one question of each kind, a `terms` question included, before slice 2 is checked on staging.
+- The test event exists: "[TEST] BeyondPilot registration - do not join" (`evt-DCRVsSuHrK7voYF`), private, approval required, one question of each kind; made through the API on 23 October with Đạt's agreement. Staging registers only into it.
 - The API key, made in Luma › Settings › Developer and pasted in Admin on staging once slice 1 is there; never in chat.
