@@ -174,6 +174,11 @@ public class UseCaseQueryRepository {
 		return row.wasNull() ? null : value;
 	}
 
+	/** The organizations that hold a use case in any status, for the operators' list to filter by. */
+	public List<UUID> organizationIds() {
+		return jdbc.sql("select distinct organization_id from use_case order by organization_id").query(UUID.class).list();
+	}
+
 	/** How many use cases wait for GenAI Fund, over the whole system. */
 	public long inReview(Instant now) {
 		return jdbc.sql("select count(*) from use_case where status = 'in_review' and (closes_at is null or closes_at > :now)")

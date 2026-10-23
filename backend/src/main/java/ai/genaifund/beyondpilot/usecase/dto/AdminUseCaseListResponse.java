@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(name = "AdminUseCaseList", description = "One page of use cases, the newest first.")
 public record AdminUseCaseListResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<AdminUseCaseSummaryResponse> items,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Every organization that holds a use case, by name, whatever the filter.") List<UseCaseOrganizationResponse> organizations,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The page returned, counted from 1.") int page,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int pageSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

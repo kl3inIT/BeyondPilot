@@ -342,11 +342,14 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
 		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
 		assertThat(names(operator, ADMIN + "?q=harbour")).contains("Quay Desk", "Harbour Claims");
-		String all = body(get(operator, ADMIN).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].id"))
-			.contains(harbourOrganization.toString(), northwindOrganization.toString());
-		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].name"))
-			.contains("Harbour Analytics", "Northwind Claims");
+		// The filter finds the organizations that hold a submitted solution by name, accents and case aside.
+		String holding = body(get(operator, ADMIN + "/organizations/with-solutions?q=HARBOUR+ANALYTICS").expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(holding, "$[*].id")).containsExactly(harbourOrganization.toString());
+		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "/organizations/with-solutions?q=nórthwind")
+			.expectStatus()
+			.isOk()), "$[*].name")).containsExactly("Northwind Claims");
+		assertThat(JsonPath.<Object>read(body(get(operator, ADMIN).expectStatus().isOk()), "$.organization")).isNull();
 
 		String filteredByOrganization = body(get(operator, ADMIN + "?q=harbour&organizationId=" + harbourOrganization)
 			.expectStatus()
@@ -354,6 +357,7 @@ class SolutionTest {
 		assertThat(JsonPath.<List<String>>read(filteredByOrganization, "$.items[*].name"))
 			.containsExactly("Quay Desk");
 		assertThat(JsonPath.<Integer>read(filteredByOrganization, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(filteredByOrganization, "$.organization.name")).isEqualTo("Harbour Analytics");
 		assertThat(names(operator, ADMIN + "?q=harbour&organizationId=" + northwindOrganization))
 			.containsExactly("Harbour Claims");
 
@@ -1384,6 +1388,7 @@ class SolutionTest {
 
 		// The operator picks among the organizations not taken down: one that is taken down is not offered.
 		assertProblem(get(founder, ADMIN + "/organizations"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(get(founder, ADMIN + "/organizations/with-solutions"), 403, "IDENTITY_OPERATOR_REQUIRED");
 		// The list is cut at 50 by name, so the test asks by name rather than reading all of it.
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, ADMIN + "/organizations?q=Published Co").expectStatus().isOk()), "$[*].name"))

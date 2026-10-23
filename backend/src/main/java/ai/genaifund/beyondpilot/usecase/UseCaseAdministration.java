@@ -129,7 +129,7 @@ public class UseCaseAdministration {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		Instant now = Instant.now();
 		List<UUID> matching = text == null ? List.of()
-				: organizations.activeOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
+				: organizations.named(text);
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
 				request.status(), request.featured(), request.sort(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
@@ -138,7 +138,14 @@ public class UseCaseAdministration {
 			.map(row -> new AdminUseCaseSummaryResponse(row.id(), organization(row.organizationId(), names),
 					row.title(), row.status(), row.closesAt(), row.featuredAt(), row.updatedAt()))
 			.toList();
-		return new AdminUseCaseListResponse(items, page, size,
+		List<UseCaseOrganizationResponse> organizationOptions = organizations.names(useCaseList.organizationIds())
+			.values()
+			.stream()
+			.map(name -> new UseCaseOrganizationResponse(name.id(), name.name(), name.logoFileId()))
+			.sorted(Comparator.comparing(UseCaseOrganizationResponse::name, String.CASE_INSENSITIVE_ORDER)
+				.thenComparing(UseCaseOrganizationResponse::id))
+			.toList();
+		return new AdminUseCaseListResponse(items, organizationOptions, page, size,
 				useCaseList.count(text, matching, request.organizationId(), request.status(), request.featured(), now),
 				useCaseList.inReview(now));
 	}

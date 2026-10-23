@@ -575,6 +575,24 @@ export function answerReview(url, account) {
       ? [200, operatorDraft]
       : [404, { status: 404, code: "SOLUTION_NOT_FOUND" }];
   }
+  // The organization filter of the operators' list asks for those that hold a solution, by name.
+  if (url.pathname === "/api/solution/admin/solutions/organizations/with-solutions") {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, {}];
+    }
+    const plain = (text) =>
+      text
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toLowerCase();
+    const q = plain(url.searchParams.get("q") ?? "");
+    return [
+      200,
+      holding(lists["/api/solution/admin/solutions"].records).filter(({ name }) =>
+        plain(name).includes(q),
+      ),
+    ];
+  }
   const queue = queues[url.pathname];
   if (queue) {
     return account?.role === "operator" ? [200, queueOf(queue())] : [account ? 403 : 401, {}];
@@ -596,14 +614,9 @@ export function answerReview(url, account) {
       path === "/api/solution/admin/solutions"
         ? {
             ...found,
-            organizations: [
-              ...new Map(
-                records.map((record) => [
-                  record.organizationId,
-                  { id: record.organizationId, name: record.organizationName },
-                ]),
-              ).values(),
-            ].sort((left, right) => left.name.localeCompare(right.name)),
+            organization:
+              holding(records).find(({ id }) => id === url.searchParams.get("organizationId")) ??
+              null,
             awaitingReview: records.filter((record) => record.status === "in_review").length,
             deploymentsAwaitingReview: records
               .flatMap((record) => record.customerDeployments)
@@ -616,4 +629,16 @@ export function answerReview(url, account) {
     (candidate) => idOf(candidate) === url.pathname.slice(path.length + 1),
   );
   return record ? [200, record] : [404, { status: 404, code: "NOT_FOUND" }];
+}
+
+/** The organizations that hold one of these solutions, by name. */
+function holding(records) {
+  return [
+    ...new Map(
+      records.map((record) => [
+        record.organizationId,
+        { id: record.organizationId, name: record.organizationName },
+      ]),
+    ).values(),
+  ].sort((left, right) => left.name.localeCompare(right.name));
 }

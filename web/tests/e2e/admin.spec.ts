@@ -231,6 +231,21 @@ test.describe("admin", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("the organization filter offers the organizations that hold a use case, found by name", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/use-cases");
+
+    await page.getByRole("combobox", { name: "Organization" }).click();
+    await page.getByRole("combobox", { name: "Search organizations" }).fill("tas");
+    await expect(page.getByRole("option", { name: "Pocket Policy" })).toHaveCount(0);
+    await page.getByRole("option", { name: "Tasco" }).click();
+    await expect(page).toHaveURL(/organization=8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04/);
+  });
+
   test("a featured use case is marked, and an operator features one or stops from the list and the record", async ({
     page,
     context,
