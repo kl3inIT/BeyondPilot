@@ -251,8 +251,9 @@ class ProgramTools {
 					+ "registration form, linking to registration_url when given. Use it only for an event the "
 					+ "operator asked for in this conversation, with what they gave: leave out what they did not say "
 					+ "rather than invent it, and ask for the date, time and zone when they are not clear. A paid "
-					+ "event, a cover, or a Zoom link made by Luma are set on Luma. It is not undone here: an operator "
-					+ "deletes the draft in Admin › Programs, and the event on Luma. An operator publishes it: the "
+					+ "event, a cover, or a Zoom link made by Luma are set on Luma. It is not undone here, and BeyondPilot "
+					+ "deletes no program: the draft stays seen by operators alone until one publishes it, and the "
+					+ "event on Luma is deleted on Luma. An operator publishes it: the "
 					+ "program in Admin › Programs, and the event's visibility on Luma. The answer gives the admin "
 					+ "page, the page on BeyondPilot and, for an event on Luma, its page there.")
 			.annotations(CREATES_DRAFT)
