@@ -562,7 +562,8 @@ public class ProposalService {
 				person.email(), previous,
 				organization == null ? null
 						: new ApplyingOrganizationResponse(organization.id(), organization.name(), organization.type(),
-								organization.country(), organization.teamSize(), organization.active(),
+								organization.country(), organization.teamSize(), organization.website(),
+								organization.active(),
 								switchable(organization.id(), organization.type(), organization.active())),
 				offered);
 	}

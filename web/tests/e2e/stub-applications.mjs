@@ -173,6 +173,7 @@ const pocketPolicy = {
   type: "builder_team",
   country: "VN",
   teamSize: "2_9",
+  website: "https://pocketpolicy.example",
   active: true,
   changeable: false,
 };
@@ -183,6 +184,7 @@ const anTran = {
   type: "independent_builder",
   country: "VN",
   teamSize: "just_me",
+  website: null,
   active: true,
   changeable: true,
 };

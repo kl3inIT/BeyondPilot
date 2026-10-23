@@ -1061,6 +1061,7 @@ export type ApplyingOrganization = {
     name: string;
     teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    website?: string | null;
 };
 
 /**

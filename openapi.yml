@@ -16817,6 +16817,10 @@ components:
           - builder_team
           - independent_builder
           - other
+        website:
+          type:
+          - string
+          - "null"
       required:
       - active
       - changeable

@@ -9,6 +9,7 @@ import { programApplyRoute, siteRoutes } from "@/lib/site";
 
 import { applyFormatter } from "./apply-format";
 import { ApplicationSummary } from "./application-summary";
+import { DeleteDraft } from "./delete-draft";
 import { WithdrawApplication } from "./withdraw-application";
 
 /**
@@ -27,6 +28,8 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
   // A draft is unfinished work: where it stands and the way on come before what it holds so far,
   // in the page and so on a phone; from 1024px they stay the column beside it.
   const draft = application.status === "draft";
+  // One never submitted may go for good, even after the close; one withdrawn and changed again was read.
+  const unsent = draft && application.submissions === 0;
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
@@ -125,6 +128,7 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
               {program.open ? t("locked") : t("closed")}
             </p>
           )}
+          {unsent && <DeleteDraft id={application.id} program={program.name} />}
         </aside>
         {draft && (
           <div className="min-w-0 flex-1">
