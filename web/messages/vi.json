@@ -2238,7 +2238,7 @@
         "metaTitle": "Tạo use case · BeyondPilot",
         "title": "Tạo use case",
         "organization": "Tạo use case này cho",
-        "organizationPlaceholder": "Chọn một tổ chức",
+        "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationHint": "Chỉ liệt kê các tổ chức đang hoạt động.",
         "thisOrganization": "tổ chức",
         "publishSubmit": "Đăng use case",

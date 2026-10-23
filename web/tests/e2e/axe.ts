@@ -1,7 +1,36 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 
+/**
+ * Waits until the page has not scrolled for a few frames. A smooth scroll still running moves a
+ * sticky bar over what is under it for a moment, which reads as a target too small to press.
+ */
+async function scrollSettled(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) => {
+        let last = window.scrollY;
+        let still = 0;
+        const frame = () => {
+          if (window.scrollY === last) {
+            still += 1;
+          } else {
+            still = 0;
+            last = window.scrollY;
+          }
+          if (still >= 5) {
+            resolve();
+          } else {
+            requestAnimationFrame(frame);
+          }
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+}
+
 async function seriousViolations(page: Page) {
+  await scrollSettled(page);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
     .analyze();

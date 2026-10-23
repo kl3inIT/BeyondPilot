@@ -1,6 +1,6 @@
 "use client";
 
-import { revalidateLogic } from "@tanstack/react-form";
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -10,14 +10,17 @@ import { z } from "zod";
 import { Button } from "@/components/actions/button";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
+import { useSearchedOptions } from "@/components/form/use-searched-options";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
-import {
-  createAdminSolution,
-  listAdminSolutionOrganizations,
-  type AdminSolutionOrganizationOption,
-} from "@/lib/api/generated";
+import { createAdminSolution, listAdminSolutionOrganizations } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+
+/** The organizations a solution can be started for whose name holds the text, the first page with none. */
+async function findOrganizations(text: string | undefined) {
+  const { data } = await listAdminSolutionOrganizations({ query: { q: text } });
+  return data.map(({ id, name }) => ({ value: id, label: name }));
+}
 
 /**
  * Starts a solution for an organization, as an operator. The organization is one GenAI Fund approved
@@ -29,9 +32,6 @@ function CreateAdminSolution() {
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [organizations, setOrganizations] = useState<AdminSolutionOrganizationOption[] | null>(
-    null,
-  );
 
   const form = useAppForm({
     defaultValues: { organizationId: "", name: "" },
@@ -56,24 +56,13 @@ function CreateAdminSolution() {
       await new Promise(() => undefined);
     },
   });
-
-  async function show() {
-    setOpen(true);
-    if (organizations !== null) {
-      return;
-    }
-    try {
-      const { data } = await listAdminSolutionOrganizations({ query: {} });
-      setOrganizations(data);
-    } catch (error) {
-      notify.failure(error);
-      setOpen(false);
-    }
-  }
+  const organizationId = useStore(form.store, (state) => state.values.organizationId);
+  // Asked once the dialog opens, not with the list the button stands on.
+  const organizations = useSearchedOptions(open ? findOrganizations : null, organizationId);
 
   return (
     <>
-      <Button size="lg" onClick={show}>
+      <Button size="lg" onClick={() => setOpen(true)}>
         <PlusIcon aria-hidden="true" />
         {t("action")}
       </Button>
@@ -91,9 +80,10 @@ function CreateAdminSolution() {
               label={t("organization")}
               requiredMark
               placeholder={t("organizationPlaceholder")}
-              options={(organizations ?? []).map(({ id, name }) => ({ value: id, label: name }))}
+              options={organizations.options}
+              onSearch={organizations.search}
               description={
-                organizations?.length === 0 ? (
+                organizations.none ? (
                   <span className="text-destructive">{t("noOrganizations")}</span>
                 ) : undefined
               }
