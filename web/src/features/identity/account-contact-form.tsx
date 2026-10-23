@@ -47,8 +47,15 @@ function AccountContactForm({ account }: { account: Me }) {
         event.preventDefault();
         void form.handleSubmit();
       }}
+      aria-labelledby="contact-details"
       className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:p-6"
     >
+      <div className="flex flex-col gap-1">
+        <h2 id="contact-details" className="text-base font-medium">
+          {t("contact.title")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("contact.lead")}</p>
+      </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <form.AppField name="name">
           {(field) => (

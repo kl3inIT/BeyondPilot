@@ -623,15 +623,18 @@
       },
       "partners": {
         "short": "Share with program partners",
-        "without": "Partner enterprises, judges and mentors read your applications. Without it you can use BeyondPilot but not apply to programs."
+        "without": "Partner enterprises, judges and mentors read your applications. Without it you can use BeyondPilot but not apply to programs.",
+        "setting": "Partner enterprises, judges and mentors read your applications. Needed to apply to programs."
       },
       "ai": {
         "short": "AI suggestions and evaluation",
-        "without": "Without it your profile stays listed but AI does not suggest it, and only people review your applications."
+        "without": "Without it your profile stays listed but AI does not suggest it, and only people review your applications.",
+        "setting": "AI suggests your profile for opportunities and helps evaluate your applications. When it is off, only people review them."
       },
       "updates": {
         "short": "Updates and newsletters",
-        "without": "Emails about your account and applications still arrive."
+        "without": "Emails about your account and applications still arrive.",
+        "setting": "News, events and invitations from BeyondPilot. Emails about your account and applications always arrive."
       }
     },
     "dialog": {
@@ -642,10 +645,7 @@
       "platformMissing": "Tick the first box to use the platform. The others are up to you."
     },
     "settings": {
-      "title": "Privacy and consent",
-      "agreed": "Version {version}, agreed {date} ·",
-      "read": "Read the consent text",
-      "requests": "To get a copy of your data, correct it or have it deleted, email <mail>team@beyondpilot.ai</mail>.",
+      "title": "Privacy and data",
       "turnedOn": "{purpose} turned on.",
       "turnedOff": "{purpose} turned off.",
       "withdraw": {
@@ -654,6 +654,17 @@
         "note": "We email you a confirmation. This does not delete your data.",
         "keep": "Cancel",
         "confirm": "Withdraw"
+      },
+      "lead": "Choose how BeyondPilot may use your personal data. Changes take effect at once. <read>Read the consent text</read>",
+      "data": {
+        "title": "Your data",
+        "description": "Ask for a copy of your data, a correction or its deletion. We answer within 2 working days.",
+        "action": "Email team@beyondpilot.ai"
+      },
+      "withdrawRow": {
+        "title": "Withdraw your consent",
+        "description": "You won't be able to use BeyondPilot until you agree again. Your data is not deleted.",
+        "action": "Withdraw…"
       }
     }
   },
@@ -703,7 +714,7 @@
   "Account": {
     "metaTitle": "Account · BeyondPilot",
     "title": "Account",
-    "lead": "An application starts from these details.",
+    "lead": "Your contact details, and how BeyondPilot uses your personal data.",
     "name": "Name",
     "nameRequired": "Enter your name.",
     "email": "Email",
@@ -715,7 +726,11 @@
     "save": "Save changes",
     "saved": "Your account is saved.",
     "failed": "We could not save your account. Try again.",
-    "phoneHint": "With its country code, such as +84 912 345 678."
+    "phoneHint": "With its country code, such as +84 912 345 678.",
+    "contact": {
+      "title": "Contact details",
+      "lead": "An application starts from these."
+    }
   },
   "Mcp": {
     "metaTitle": "Connect an AI app · BeyondPilot",

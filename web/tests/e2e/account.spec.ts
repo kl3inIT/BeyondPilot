@@ -58,7 +58,9 @@ test.describe("Account", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/account");
-    await expect(page.getByRole("heading", { name: "Privacy and consent" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Privacy and data" })).toBeVisible();
+    // Using the platform is no switch beside the optional purposes; it is withdrawn on its own row.
+    await expect(page.getByRole("switch")).toHaveCount(3);
 
     const recorded: { ai: boolean; platform: boolean; source: string }[] = [];
     await page.route("**/api/identity/consent", async (route) => {
@@ -92,7 +94,7 @@ test.describe("Account", () => {
     await expect(ai).toBeChecked();
     expect(recorded.at(-1)).toMatchObject({ ai: true, source: "undo" });
 
-    await page.getByRole("switch", { name: "Use the platform" }).click();
+    await page.getByRole("button", { name: "Withdraw…" }).click();
     await expect(page.getByRole("alertdialog")).toContainText(
       "Withdraw your consent to use the platform?",
     );

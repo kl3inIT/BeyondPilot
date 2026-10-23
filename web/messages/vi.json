@@ -623,15 +623,18 @@
       },
       "partners": {
         "short": "Chia sẻ với đối tác chương trình",
-        "without": "Doanh nghiệp đối tác, giám khảo và mentor đọc hồ sơ ứng tuyển của bạn. Nếu không đồng ý, bạn vẫn dùng được BeyondPilot nhưng không ứng tuyển được vào chương trình."
+        "without": "Doanh nghiệp đối tác, giám khảo và mentor đọc hồ sơ ứng tuyển của bạn. Nếu không đồng ý, bạn vẫn dùng được BeyondPilot nhưng không ứng tuyển được vào chương trình.",
+        "setting": "Doanh nghiệp đối tác, giám khảo và mentor đọc hồ sơ ứng tuyển của bạn. Cần để ứng tuyển vào chương trình."
       },
       "ai": {
         "short": "AI gợi ý và đánh giá",
-        "without": "Nếu không đồng ý, hồ sơ của bạn vẫn hiển thị nhưng AI không gợi ý nó, và chỉ con người xem xét hồ sơ ứng tuyển của bạn."
+        "without": "Nếu không đồng ý, hồ sơ của bạn vẫn hiển thị nhưng AI không gợi ý nó, và chỉ con người xem xét hồ sơ ứng tuyển của bạn.",
+        "setting": "AI gợi ý hồ sơ của bạn cho các cơ hội phù hợp và hỗ trợ đánh giá hồ sơ ứng tuyển. Khi tắt, chỉ con người xem xét."
       },
       "updates": {
         "short": "Tin tức và bản tin",
-        "without": "Bạn vẫn nhận email về tài khoản và hồ sơ ứng tuyển."
+        "without": "Bạn vẫn nhận email về tài khoản và hồ sơ ứng tuyển.",
+        "setting": "Tin tức, sự kiện và lời mời từ BeyondPilot. Email về tài khoản và hồ sơ ứng tuyển vẫn được gửi."
       }
     },
     "dialog": {
@@ -642,10 +645,7 @@
       "platformMissing": "Hãy tick ô đầu tiên để dùng nền tảng. Các ô còn lại tùy bạn."
     },
     "settings": {
-      "title": "Quyền riêng tư và sự đồng ý",
-      "agreed": "Phiên bản {version}, đồng ý ngày {date} ·",
-      "read": "Đọc văn bản đồng ý",
-      "requests": "Để nhận bản sao, sửa hoặc xóa dữ liệu của bạn, gửi email tới <mail>team@beyondpilot.ai</mail>.",
+      "title": "Quyền riêng tư và dữ liệu",
       "turnedOn": "Đã bật {purpose}.",
       "turnedOff": "Đã tắt {purpose}.",
       "withdraw": {
@@ -654,6 +654,17 @@
         "note": "Chúng tôi sẽ gửi email xác nhận. Việc này không xóa dữ liệu của bạn.",
         "keep": "Hủy",
         "confirm": "Rút lại"
+      },
+      "lead": "Chọn cách BeyondPilot được dùng dữ liệu cá nhân của bạn. Thay đổi có hiệu lực ngay. <read>Đọc văn bản đồng ý</read>",
+      "data": {
+        "title": "Dữ liệu của bạn",
+        "description": "Yêu cầu bản sao, sửa hoặc xóa dữ liệu của bạn. Chúng tôi phản hồi trong 2 ngày làm việc.",
+        "action": "Email team@beyondpilot.ai"
+      },
+      "withdrawRow": {
+        "title": "Rút lại sự đồng ý",
+        "description": "Bạn sẽ không dùng được BeyondPilot cho tới khi đồng ý lại. Dữ liệu của bạn không bị xóa.",
+        "action": "Rút lại…"
       }
     }
   },
@@ -703,7 +714,7 @@
   "Account": {
     "metaTitle": "Tài khoản · BeyondPilot",
     "title": "Tài khoản",
-    "lead": "Đơn nộp sẽ điền sẵn các thông tin này.",
+    "lead": "Thông tin liên hệ của bạn, và cách BeyondPilot dùng dữ liệu cá nhân của bạn.",
     "name": "Họ tên",
     "nameRequired": "Nhập họ tên của bạn.",
     "email": "Email",
@@ -715,7 +726,11 @@
     "save": "Lưu thay đổi",
     "saved": "Đã lưu tài khoản.",
     "failed": "Chưa lưu được tài khoản. Hãy thử lại.",
-    "phoneHint": "Kèm mã quốc gia, ví dụ +84 912 345 678."
+    "phoneHint": "Kèm mã quốc gia, ví dụ +84 912 345 678.",
+    "contact": {
+      "title": "Thông tin liên hệ",
+      "lead": "Hồ sơ ứng tuyển bắt đầu từ những thông tin này."
+    }
   },
   "Mcp": {
     "metaTitle": "Kết nối ứng dụng AI · BeyondPilot",
