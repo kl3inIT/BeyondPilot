@@ -8,4 +8,6 @@ Your seat at {{eventName}} is confirmed.{{#when}} It takes place on {{when}}{{/w
 
 [Add to your calendar]({{calendarUrl}})
 
-The event's page shows your code too: [view the event]({{eventUrl}}).
+The event's page shows your code too.
+
+[View the event]({{eventUrl}})

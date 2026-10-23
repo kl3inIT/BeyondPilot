@@ -171,7 +171,8 @@ class EmailRendererTest {
 				"proposal_shortlisted", "proposal_declined", "matching_invitation",
 				"talent_approved", "talent_changes_requested", "talent_restored", "message_request",
 				"message_request_reminder", "message_request_accepted", "message_request_declined",
-				"message_request_closed", "message_unread");
+				"message_request_closed", "message_unread", "event_registration_received",
+				"event_registration_waitlisted", "event_registration_confirmed");
 	}
 
 	@Test
