@@ -658,7 +658,7 @@
       "lead": "Chọn cách BeyondPilot được dùng dữ liệu cá nhân của bạn. Thay đổi có hiệu lực ngay. <read>Đọc văn bản đồng ý</read>",
       "data": {
         "title": "Dữ liệu của bạn",
-        "description": "Yêu cầu bản sao, sửa hoặc xóa dữ liệu của bạn. Chúng tôi phản hồi trong 2 ngày làm việc.",
+        "description": "Yêu cầu bản sao, sửa hoặc xóa dữ liệu của bạn. Chúng tôi xác nhận đã nhận trong 2 ngày làm việc, rồi xử lý trong thời hạn luật quy định.",
         "action": "Email team@beyondpilot.ai"
       },
       "withdrawRow": {

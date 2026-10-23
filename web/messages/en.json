@@ -658,7 +658,7 @@
       "lead": "Choose how BeyondPilot may use your personal data. Changes take effect at once. <read>Read the consent text</read>",
       "data": {
         "title": "Your data",
-        "description": "Ask for a copy of your data, a correction or its deletion. We answer within 2 working days.",
+        "description": "Ask for a copy of your data, a correction or its deletion. We confirm we have it within 2 working days, then act on it within the time the law sets.",
         "action": "Email team@beyondpilot.ai"
       },
       "withdrawRow": {
