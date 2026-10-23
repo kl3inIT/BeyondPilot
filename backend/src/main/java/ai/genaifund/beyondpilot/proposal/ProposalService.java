@@ -240,10 +240,15 @@ public class ProposalService {
 		identity.requireActive(actor);
 		ApplicationForm form = open(slug);
 		boolean individual = "individual".equals(request.kind());
-		ApplicantOrganization applicant = new ApplicantOrganization(request.name().strip(),
-				individual ? Membership.INDIVIDUAL : Membership.TEAM, request.country(),
-				individual ? "just_me" : Objects.requireNonNullElse(request.teamSize(), "2_9"), text(request.website()));
 		Membership membership = organizations.membershipOf(actor).orElse(null);
+		// A team renamed without a size keeps its own; a new team is small unless told otherwise.
+		String size = request.teamSize() != null ? request.teamSize()
+				: membership != null && membership.team() ? organizations.profile(membership.organizationId())
+					.map(OrganizationProfile::teamSize)
+					.orElse("2_9") : "2_9";
+		ApplicantOrganization applicant = new ApplicantOrganization(request.name().strip(),
+				individual ? Membership.INDIVIDUAL : Membership.TEAM, request.country(), individual ? "just_me" : size,
+				text(request.website()));
 		UUID organizationId;
 		if (membership == null) {
 			organizationId = organizationService.createForApplicant(actor, applicant);

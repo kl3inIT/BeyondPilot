@@ -12,7 +12,6 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
-import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicSolutionDeckResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingResponse;
@@ -35,7 +34,7 @@ final class SolutionViews {
 	}
 
 	static SolutionResponse solution(Solution solution, String organizationName, @Nullable String submittedBy,
-			List<CustomerDeployment> deployments, List<OfferResponse> offers, StorageService storage) {
+			List<CustomerDeployment> deployments, StorageService storage) {
 		UUID logo = solution.getLogoFileId();
 		UUID cover = solution.getCoverFileId();
 		return new SolutionResponse(solution.getId(), solution.getOrganizationId(), organizationName,
@@ -47,7 +46,7 @@ final class SolutionViews {
 				logo == null ? null : image(logo, storage).orElse(null),
 				cover == null ? null : image(cover, storage).orElse(null),
 				solution.getImageFileIds().stream().flatMap(fileId -> image(fileId, storage).stream()).toList(),
-				offers, solution.getStatus(),
+				solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.getSuspendedAt(),
 				solution.getSuspensionReason(), solution.getSuspensionMessage(), solution.isListed(),
 				solution.getFeaturedAt(), solution.isComplete(), solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),

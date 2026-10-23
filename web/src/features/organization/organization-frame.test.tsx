@@ -35,12 +35,13 @@ function frame(organization: Organization, current: "profile" | "members", role 
 }
 
 describe("OrganizationFrame, for a person on their own", () => {
-  it("is an ordinary organization: its type is named and it has the profile and members tabs", () => {
+  it("is an ordinary organization: its type is named and it has the profile, members and perks tabs", () => {
     render(frame({ ...complete, type: "independent_builder" }, "members"));
 
     expect(screen.getByText("Just me")).toBeVisible();
     expect(screen.getByRole("link", { name: /Profile/ })).toBeVisible();
     expect(screen.getByRole("link", { name: /Members/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Perks/ })).toBeVisible();
   });
 });
 

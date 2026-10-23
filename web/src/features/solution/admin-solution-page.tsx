@@ -14,7 +14,6 @@ import { siteRoutes } from "@/lib/site";
 import { CustomerDeploymentsReview } from "./customer-deployments-review";
 import { SolutionBacking } from "./solution-backing";
 import { SolutionFeature } from "./solution-feature";
-import { SolutionOffersChoice } from "./solution-offers-choice";
 import { SolutionRecord } from "./solution-record";
 import { SolutionReview } from "./solution-review";
 
@@ -169,7 +168,6 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
             </div>
           </aside>
           <SolutionBacking key={solution.id} solution={solution} />
-          <SolutionOffersChoice key={`${solution.id}-offers`} solution={solution} />
         </div>
 
         <div className="flex min-w-0 flex-col gap-6 lg:order-1 lg:col-span-2">

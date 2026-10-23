@@ -29,7 +29,7 @@ it asks applicants, and whether the public site shows it. It was delivered by
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
 `V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
 when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from.
-`V114__program_create_luma_connection.sql` creates `program_luma_connection`, and `V115__program_create_luma_registrations.sql`
+`V114__program_create_luma_connection.sql` creates `program_luma_connection`, and `V116__program_create_luma_registrations.sql`
 adds `program.luma_form` and creates `program_luma_registration`. The module owns all six ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,

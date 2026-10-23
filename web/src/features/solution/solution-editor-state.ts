@@ -1,4 +1,4 @@
-import type { Offer, SaveSolution, Solution } from "@/lib/api/generated";
+import type { SaveSolution, Solution } from "@/lib/api/generated";
 
 import { draftSchema, linkSchema } from "./solution-schemas";
 
@@ -21,7 +21,6 @@ export const limits = {
   builtWith: 10,
   builtWithName: 40,
   images: 4,
-  offers: 5,
 } as const;
 
 /** The deck the editor holds: the one the solution names, or one just uploaded and not saved yet. */
@@ -64,8 +63,6 @@ export type SolutionDraft = {
   cover: HeldImage | null;
   /** The images under the cover, in the order they are shown. */
   images: HeldImage[];
-  /** The offers it comes with, chosen from the list GenAI Fund keeps. */
-  offers: Offer[];
   listed: boolean;
 };
 
@@ -91,7 +88,6 @@ export function held(solution: Solution): SolutionDraft {
     logo: solution.logo ?? null,
     cover: solution.cover ?? null,
     images: solution.images,
-    offers: solution.offers,
     listed: solution.listed,
   };
 }
@@ -125,7 +121,6 @@ export function toRequest(draft: SolutionDraft, version: number): SaveSolution {
     logoFileId: draft.logo?.fileId ?? null,
     coverFileId: draft.cover?.fileId ?? null,
     imageFileIds: draft.images.map((image) => image.fileId),
-    offerIds: draft.offers.map((offer) => offer.id),
     listed: draft.listed,
     version,
   };
@@ -186,7 +181,6 @@ export const fieldSteps: Record<string, EditorStep> = {
   maturity: "basics",
   traction: "basics",
   builtWith: "basics",
-  offerIds: "basics",
   industries: "fit",
   focusAreas: "fit",
   languages: "fit",

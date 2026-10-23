@@ -59,16 +59,19 @@ export async function ProgramBreadcrumb({ name }: { name: string }) {
 
 /**
  * A program's standard page, built from what an operator entered: the summary and the cover, About,
- * the use cases attached to it, the timeline of its key dates and application window, its events,
- * and the card to apply.
+ * the use cases attached to it, the perks for its teams, the timeline of its key dates and
+ * application window, its events, and the card to apply.
  */
 async function ProgramPage({
   program,
   askHref,
+  perks,
 }: {
   program: Program;
   /** Where "Ask GenAI Fund" leads; absent on a draft and for an operator. */
   askHref?: string;
+  /** The perks for its teams, which the perk area draws; nothing when it has none. */
+  perks?: React.ReactNode;
 }) {
   const [t, types, locale, useCases] = await Promise.all([
     getTranslations("Program.page"),
@@ -158,6 +161,7 @@ async function ProgramPage({
                 lead={t("useCases.lead")}
               />
             )}
+            {perks}
             {steps.length > 0 && (
               <section className="flex flex-col gap-4">
                 <h2 className="text-2xl font-semibold tracking-title">{t("timeline")}</h2>

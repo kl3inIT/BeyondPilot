@@ -46,8 +46,6 @@ public class UseCaseDirectory {
 	/** The order the public list opens with, the only one the featured use cases lead. */
 	private static final String OPENING_SORT = "newest";
 
-	private static final int ORGANIZATION_LIMIT = 50;
-
 	private final UseCaseQueryRepository useCaseList;
 
 	private final UseCaseRepository useCases;
@@ -242,11 +240,7 @@ public class UseCaseDirectory {
 			}
 			program = named.get().id();
 		}
-		List<UUID> matching = text == null ? List.of()
-				: organizations.activeOrganizations(text, ORGANIZATION_LIMIT)
-					.stream()
-					.map(OrganizationName::id)
-					.toList();
+		List<UUID> matching = text == null ? List.of() : organizations.named(text);
 		boolean opening = text == null && (request.industry() == null || request.industry().isEmpty())
 				&& program == null && request.proposalStatus() == null && OPENING_SORT.equals(sort);
 		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,

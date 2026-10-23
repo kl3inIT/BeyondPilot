@@ -146,7 +146,6 @@ export function solutionBodyOf(next: SolutionDraft, found: Solution): SaveSoluti
     logoFileId: found.logo?.fileId ?? null,
     coverFileId: found.cover?.fileId ?? null,
     imageFileIds: found.images.map((image) => image.fileId),
-    offerIds: found.offers.map((offer) => offer.id),
     listed: found.listed,
     version: found.version,
   };

@@ -1,30 +1,25 @@
 import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
-  getAdminOffer,
   getAdminSolution,
   getAdminSolutionDraft,
   getMySolution,
   getOrganization,
   getSharedSolution,
   getSolution,
-  listAdminOffers,
   listAdminSolutions,
   listCustomerDeployments,
   listMySolutions,
-  listOwnOffers,
   listSolutions,
   search as searchDirectory,
-  type AdminOffer,
-  type AdminOfferDetail,
   type AdminSolutionList,
   type MySolutions,
-  type OwnOffer,
   type PublicCustomerDeploymentList,
   type PublicOrganization,
   type PublicSolution,
   type PublicSolutionList,
   type Solution,
+  type SolutionPerkLine,
   getDeploymentReviewQueue,
   getSolutionReviewQueue,
   type SolutionReviewQueue,
@@ -48,8 +43,15 @@ function absent(error: unknown): null {
   throw error;
 }
 
-/** One page of the public directory. Read without a session and never kept: approval shows at once. */
-export async function readSolutions(search: SolutionsSearch): Promise<PublicSolutionList> {
+/**
+ * One page of the public directory, and the perks of its cards when the search answered them; the
+ * list without a search leaves them to whoever reads the perks. Read without a session and never kept:
+ * approval shows at once.
+ */
+export async function readSolutions(search: SolutionsSearch): Promise<{
+  solutions: PublicSolutionList;
+  perks: Record<string, SolutionPerkLine[]> | null;
+}> {
   const q = text(search.q);
   if (q) {
     const { data } = await searchDirectory({
@@ -65,7 +67,7 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
         size: search.size ?? undefined,
       },
     });
-    return {
+    const solutions: PublicSolutionList = {
       ...data,
       items: data.items.map((item) => ({
         name: item.title,
@@ -82,8 +84,11 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
         customerDeployments: item.customerDeployments!,
         featured: item.featured!,
         backing: item.backing,
-        offers: item.offers,
       })),
+    };
+    return {
+      solutions,
+      perks: Object.fromEntries(data.items.map((item) => [item.slug, item.perks])),
     };
   }
   const { data } = await listSolutions({
@@ -98,7 +103,7 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
       size: search.size ?? undefined,
     },
   });
-  return data;
+  return { solutions: data, perks: null };
 }
 
 /** One solution of the directory by its address, or `null`. */
@@ -174,12 +179,6 @@ export async function readMySolutions(): Promise<MySolutions> {
   return data;
 }
 
-/** The offers the caller's organization wrote for its solutions. Server only. */
-export async function readMyOffers(): Promise<OwnOffer[]> {
-  const { data } = await listOwnOffers(await sessionRequest());
-  return data;
-}
-
 /** One solution of the caller's organization, or `null`. Server only. */
 export async function readMySolution(id: string): Promise<Solution | null> {
   try {
@@ -220,22 +219,6 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
 export async function readAdminSolution(id: string): Promise<Solution | null> {
   try {
     const { data } = await getAdminSolution({ ...(await sessionRequest()), path: { id } });
-    return data;
-  } catch (error) {
-    return absent(error);
-  }
-}
-
-/** The list of offers GenAI Fund keeps, for the operator behind this request. Server only. */
-export async function readAdminOffers(): Promise<AdminOffer[]> {
-  const { data } = await listAdminOffers(await sessionRequest());
-  return data;
-}
-
-/** One offer with the solutions that come with it, or `null` when there is no such offer. Server only. */
-export async function readAdminOffer(id: string): Promise<AdminOfferDetail | null> {
-  try {
-    const { data } = await getAdminOffer({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
     return absent(error);

@@ -48,17 +48,17 @@ type AdminOrganizationPageProps = {
   size: number | null;
   /** The order of the members, as the URL holds it; none is the tab's own. */
   sort: string;
-  /** The Offers tab: what the organization gives with its solutions, which the solution area draws. */
-  offers: ReactNode;
-  /** How many offers the organization gives, beside the tab's name. */
-  offerCount: number;
+  /** The Perks tab: what the organization gives to members of BeyondPilot, which the perk area draws. */
+  perks: ReactNode;
+  /** How many perks the organization gives, beside the tab's name. */
+  perkCount: number;
 };
 
 /**
  * Admin › Organisations › one organization: its profile and verified domain, which an operator
  * changes as its owners do, and its people. An operator also decides a claim on one nobody owns,
  * takes an organization down or restores it, merges a duplicate into the one to keep, and writes
- * the offers it gives. A merged one only says where it went.
+ * the perks it gives. A merged one only says where it went.
  */
 function AdminOrganizationPage({
   detail,
@@ -66,8 +66,8 @@ function AdminOrganizationPage({
   page,
   size,
   sort,
-  offers,
-  offerCount,
+  perks,
+  perkCount,
 }: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
@@ -86,7 +86,7 @@ function AdminOrganizationPage({
   const tabs = adminOrganizationTabs.map((key) => ({
     key,
     label: t(`tabs.${key}`),
-    count: key === "members" ? detail.members.length : key === "offers" ? offerCount : undefined,
+    count: key === "members" ? detail.members.length : key === "perks" ? perkCount : undefined,
   }));
   const kind = [
     typeName(organization.type),
@@ -218,8 +218,8 @@ function AdminOrganizationPage({
       ) : tab === "profile" ? (
         // The key gives a saved organization a fresh editor, reading the new version.
         <OrganizationProfileEditor key={organization.version} organization={organization} admin />
-      ) : tab === "offers" ? (
-        offers
+      ) : tab === "perks" ? (
+        perks
       ) : (
         <AdminMembers detail={detail} page={page} size={size} sort={sort} record={record} />
       )}

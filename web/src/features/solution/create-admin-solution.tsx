@@ -81,7 +81,7 @@ function CreateAdminSolution() {
               requiredMark
               placeholder={t("organizationPlaceholder")}
               options={organizations.options}
-              onSearch={organizations.search}
+              search={organizations.search}
               description={
                 organizations.none ? (
                   <span className="text-destructive">{t("noOrganizations")}</span>

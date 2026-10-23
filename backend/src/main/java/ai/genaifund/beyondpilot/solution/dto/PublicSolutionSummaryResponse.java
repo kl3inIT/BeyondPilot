@@ -28,7 +28,5 @@ public record PublicSolutionSummaryResponse(@Schema(requiredMode = Schema.Requir
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many approved customer deployments it lists.") int customerDeployments,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether GenAI Fund features it; its card says so.") boolean featured,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The offers it comes with, by title; its card links to each.") List<PublicOfferResponse> offers) {
+				description = "Whether GenAI Fund features it; its card says so.") boolean featured) {
 }

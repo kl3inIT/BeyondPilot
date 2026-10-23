@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
+import { hydrated } from "./hydration";
 import { draftId, emptyView, submittedId, tascoQuestions } from "./stub-applications.mjs";
 
 const applyPath = "/programs/insurance-ai-tasco/apply";
@@ -65,7 +66,6 @@ async function fakeBackend(page: Page, joining: "joined" | "requested" = "joined
     logo: null,
     cover: null,
     images: [],
-    offers: [],
     status: "draft",
     decisionReason: null,
     decisionMessage: null,
@@ -627,7 +627,7 @@ test.describe("apply", () => {
       deleted.push(route.request().method());
       await route.fulfill({ status: 204 });
     });
-    await page.getByRole("button", { name: "Delete draft" }).click();
+    await (await hydrated(page.getByRole("button", { name: "Delete draft" }))).click();
     const dialog = page.getByRole("alertdialog");
     await expect(dialog).toContainText("Delete your draft for AI for Insurance Challenge × Tasco?");
     await expect(dialog).toContainText("This cannot be undone.");

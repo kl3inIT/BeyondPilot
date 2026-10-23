@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
@@ -33,10 +34,8 @@ import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
-import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionDeckResponse;
-import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
@@ -98,12 +97,10 @@ public class SolutionAdministration {
 
 	private final SolutionService service;
 
-	private final SolutionOffers offers;
-
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
 			AuditTrail audit, ApplicationEventPublisher events, StorageService storage, EmailService email,
-			SolutionService service, SolutionOffers offers) {
+			SolutionService service) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
@@ -114,7 +111,6 @@ public class SolutionAdministration {
 		this.storage = storage;
 		this.email = email;
 		this.service = service;
-		this.offers = offers;
 	}
 
 	/**
@@ -135,13 +131,13 @@ public class SolutionAdministration {
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
-		Map<UUID, OrganizationName> optionNames = organizations.names(solutionList.adminOrganizationIds());
-		List<AdminSolutionOrganizationOptionResponse> organizationOptions = optionNames.values()
-			.stream()
-			.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
-			.sorted(Comparator.comparing(AdminSolutionOrganizationOptionResponse::name, String.CASE_INSENSITIVE_ORDER)
-				.thenComparing(AdminSolutionOrganizationOptionResponse::id))
-			.toList();
+		AdminSolutionOrganizationOptionResponse narrowedTo = request.organizationId() == null ? null
+				: organizations.names(List.of(request.organizationId()))
+					.values()
+					.stream()
+					.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
+					.findFirst()
+					.orElse(null);
 		Map<UUID, Person> senders = identity.people(rows.stream()
 			.map(SolutionQueryRepository.Row::submittedByAccountId)
 			.filter(Objects::nonNull)
@@ -150,7 +146,7 @@ public class SolutionAdministration {
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), organizationOptions, page, size,
+			.toList(), narrowedTo, page, size,
 			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
 					request.featured(), toReview(request)),
 			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
@@ -223,7 +219,7 @@ public class SolutionAdministration {
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
 				SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(id), offers.of(id),
+				deployments.findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(id),
 				storage);
 	}
 
@@ -252,6 +248,31 @@ public class SolutionAdministration {
 	}
 
 	/**
+	 * The organizations that hold a submitted solution, for the operators' list to be narrowed to one, by name; at most
+	 * {@value #ORGANIZATION_LIMIT}. Those taken down are among them, as their solutions are in the list.
+	 * @param text only those whose name contains it, ignoring case and accents; every one when blank or null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public List<AdminSolutionOrganizationOptionResponse> organizationsWithSolutions(Actor actor, @Nullable String text) {
+		identity.requireOperator(actor);
+		String named = SolutionViews.text(text);
+		List<UUID> holding = solutionList.adminOrganizationIds();
+		if (named != null) {
+			Set<UUID> matching = Set.copyOf(organizations.named(named));
+			holding = holding.stream().filter(matching::contains).toList();
+		}
+		return organizations.names(holding)
+			.values()
+			.stream()
+			.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
+			.sorted(Comparator.comparing(AdminSolutionOrganizationOptionResponse::name, String.CASE_INSENSITIVE_ORDER)
+				.thenComparing(AdminSolutionOrganizationOptionResponse::id))
+			.limit(ORGANIZATION_LIMIT)
+			.toList();
+	}
+
+	/**
 	 * The organizations not taken down a solution can be started for, by name; at most {@value #ORGANIZATION_LIMIT}.
 	 * @param text only those whose name contains it, ignoring case; every one when blank or null
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
@@ -277,7 +298,7 @@ public class SolutionAdministration {
 			.orElseThrow(() -> organizationNotApproved(request.organizationId()));
 		Solution solution = service.start(actor, organization.id(), request.name());
 		record(AuditAction.SOLUTION_CREATE, operator, solution, Map.of());
-		return SolutionViews.solution(solution, organization.name(), null, List.of(), List.of(), storage);
+		return SolutionViews.solution(solution, organization.name(), null, List.of(), storage);
 	}
 
 	/**
@@ -291,7 +312,7 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).orElseThrow(() -> draftNotFound(id));
 		requireDraft(solution);
 		return SolutionViews.solution(solution, organizationName(solution), SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(id), offers.of(id), storage);
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
 	}
 
 	/**
@@ -371,22 +392,6 @@ public class SolutionAdministration {
 		solution.back(SolutionViews.text(request.backedBy()), SolutionViews.text(request.program()),
 				SolutionViews.text(request.funding()), Instant.now());
 		record(AuditAction.SOLUTION_BACK, operator, solution, Map.of());
-		events.publishEvent(new SolutionChanged(id));
-	}
-
-	/**
-	 * Chooses the offers a solution that was sent for review comes with, of those its organization gives. Its owners
-	 * choose them in their editor; an operator does it here for a solution whose owners do not.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws SolutionException when no submitted solution has this identifier, or an offer named is not its
-	 * organization's
-	 */
-	@Transactional
-	public void offer(Actor actor, UUID id, SolutionOffersRequest request) {
-		Operator operator = identity.requireOperator(actor);
-		Solution solution = reviewable(id);
-		offers.choose(solution, request.offerIds());
-		record(AuditAction.SOLUTION_OFFERS_CHOOSE, operator, solution, Map.of());
 		events.publishEvent(new SolutionChanged(id));
 	}
 
@@ -679,7 +684,7 @@ public class SolutionAdministration {
 				found.demoUrl(), deck == null ? null : deck.fileName(),
 				backing == null ? null
 						: new SolutionReviewRecord.Backing(backing.backedBy(), backing.program(), backing.funding()),
-				found.offers().stream().map(OfferResponse::title).toList(), found.status(), found.decisionReason(),
+				found.status(), found.decisionReason(),
 				found.decisionMessage(), found.suspendedAt(), found.suspensionReason(), found.suspensionMessage(),
 				found.listed(), found.featuredAt(), found.complete(), found.submittedAt(), found.submittedBy(),
 				found.updatedAt(),

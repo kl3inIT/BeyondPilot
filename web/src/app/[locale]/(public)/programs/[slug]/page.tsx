@@ -4,6 +4,7 @@ import { setRequestLocale } from "next-intl/server";
 
 import { contactRoute } from "@/features/messaging/messaging-search";
 import { customProgramPages, customProgramShareImages } from "@/features/program/custom-pages";
+import { ProgramPerks } from "@/features/perk/program-perks";
 import { EventPage } from "@/features/program/event-page";
 import { ProgramPage } from "@/features/program/program-page";
 import { readEventRegistration, readProgram } from "@/features/program/program-public-queries";
@@ -68,6 +69,6 @@ export default async function ProgramRoute({ params }: PageProps<"/[locale]/prog
   return Custom ? (
     <Custom program={program} askHref={askHref} />
   ) : (
-    <ProgramPage program={program} askHref={askHref} />
+    <ProgramPage program={program} askHref={askHref} perks={<ProgramPerks slug={program.slug} />} />
   );
 }

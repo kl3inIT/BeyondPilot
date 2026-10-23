@@ -2,8 +2,6 @@
 // talent profiles, as the operators' lists and their record pages read them. Nothing here changes: a
 // decision is answered by the test that makes it, and the page reads the same records again.
 
-import { offers } from "./stub-directories.mjs";
-
 const hour = 60 * 60 * 1000;
 const ago = (hours) => new Date(Date.now() - hours * hour).toISOString();
 const day = "2026-10-01T03:00:00Z";
@@ -237,7 +235,6 @@ function solution(id, name, status, more) {
       sizeBytes: 1258291,
     },
     images: [],
-    offers: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -514,52 +511,9 @@ function queueOf(waiting) {
  * nothing when the path is neither.
  */
 export function answerReview(url, account) {
-  // Every organization's offers, which an operator reads. The picker reads its own from the browser,
-  // which a test answers. Both are Pocket Policy's: GenAI Fund arranged the first, the second it wrote.
-  const listed = offers.map((offer, index) => ({
-    ...offer,
-    organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-    organizationName: "Pocket Policy",
-    // The first goes with a solution, so it cannot be deleted; the second with none.
-    solutions: index === 0 ? 1 : 0,
-    version: 0,
-    updatedAt: day,
-    closed: false,
-  }));
-  if (url.pathname === "/api/solution/admin/offers") {
-    if (account?.role !== "operator") {
-      return [account ? 403 : 401, {}];
-    }
-    return [200, listed];
-  }
-  // The record of one offer: the offer and the solutions that come with it.
-  const offerRecord = url.pathname.match(/^\/api\/solution\/admin\/offers\/([^/]+)$/);
-  if (offerRecord) {
-    if (account?.role !== "operator") {
-      return [account ? 403 : 401, {}];
-    }
-    const offer = listed.find((item) => item.id === offerRecord[1]);
-    if (!offer) {
-      return [404, { status: 404, code: "SOLUTION_OFFER_NOT_FOUND" }];
-    }
-    return [
-      200,
-      {
-        offer,
-        createdAt: day,
-        solutionList: [
-          {
-            id: "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03",
-            slug: "policy-chat",
-            name: "Policy Chat",
-            organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-            organizationName: "Pocket Policy",
-            status: "approved",
-            suspendedAt: null,
-          },
-        ],
-      },
-    ];
+  // The perks an operator reads; the organizations of these tests give none.
+  if (url.pathname === "/api/perk/admin/perks") {
+    return account?.role === "operator" ? [200, []] : [account ? 403 : 401, {}];
   }
   // The editor of an operator reads a draft, which no list of submitted solutions holds, and the organizations.
   const draft = url.pathname.match(/^\/api\/solution\/admin\/solutions\/([^/]+)\/draft$/);
@@ -596,14 +550,9 @@ export function answerReview(url, account) {
       path === "/api/solution/admin/solutions"
         ? {
             ...found,
-            organizations: [
-              ...new Map(
-                records.map((record) => [
-                  record.organizationId,
-                  { id: record.organizationId, name: record.organizationName },
-                ]),
-              ).values(),
-            ].sort((left, right) => left.name.localeCompare(right.name)),
+            organization:
+              holding(records).find(({ id }) => id === url.searchParams.get("organizationId")) ??
+              null,
             awaitingReview: records.filter((record) => record.status === "in_review").length,
             deploymentsAwaitingReview: records
               .flatMap((record) => record.customerDeployments)
@@ -616,4 +565,16 @@ export function answerReview(url, account) {
     (candidate) => idOf(candidate) === url.pathname.slice(path.length + 1),
   );
   return record ? [200, record] : [404, { status: 404, code: "NOT_FOUND" }];
+}
+
+/** The organizations that hold one of these solutions, by name. */
+function holding(records) {
+  return [
+    ...new Map(
+      records.map((record) => [
+        record.organizationId,
+        { id: record.organizationId, name: record.organizationName },
+      ]),
+    ).values(),
+  ].sort((left, right) => left.name.localeCompare(right.name));
 }

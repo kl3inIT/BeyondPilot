@@ -74,7 +74,9 @@ async function AuditLogPage({ events, named, search }: AuditLogPageProps) {
     ) : (
       <span className="font-medium">{event.resource.label}</span>
     );
-    return t.rich(`activity.${event.action}`, { resource: () => resource });
+    // Named first: past about 140 actions, TypeScript no longer infers the key from the union in the call.
+    const key: Parameters<typeof t.rich>[0] = `activity.${event.action}`;
+    return t.rich(key, { resource: () => resource });
   }
 
   const rows = events.items.map((event) => {

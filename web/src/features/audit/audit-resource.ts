@@ -24,7 +24,9 @@ const retiredEmailKinds = new Set([
 const recordRoutes: Record<string, (id: string) => string | null> = {
   organization: (id) => `${siteRoutes.adminOrganizations}/${id}`,
   solution: (id) => `${siteRoutes.adminSolutions}/${id}`,
-  solution_offer: (id) => `${siteRoutes.adminOffers}/${id}`,
+  // An offer became a perk under the same identifier.
+  solution_offer: (id) => `${siteRoutes.adminPerks}/${id}`,
+  perk: (id) => `${siteRoutes.adminPerks}/${id}`,
   talent: (id) => `${siteRoutes.adminTalent}/${id}`,
   use_case: (id) => `${siteRoutes.adminUseCases}/${id}`,
   program: adminProgramRoute,
@@ -40,7 +42,7 @@ const recordRoutes: Record<string, (id: string) => string | null> = {
 };
 
 /** The actions after which the record is gone, so its name leads nowhere. */
-const endings = new Set(["talent.delete", "solution.offer_delete"]);
+const endings = new Set(["talent.delete", "solution.offer_delete", "perk.delete"]);
 
 /**
  * Where the resource of an audit event is read in the admin area, or null when the app has no page

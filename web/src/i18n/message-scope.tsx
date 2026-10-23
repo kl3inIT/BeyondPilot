@@ -37,6 +37,8 @@ const areaPaths = {
     "Application",
     "Home.featured",
     "Mcp",
+    // Getting a perk, on its page.
+    "Perk",
     "Program",
     "Programs",
     // The code typed in the card that registers for an event (BEY-245).
@@ -66,10 +68,13 @@ const areaPaths = {
   ],
   workspace: [
     "EntryList",
+    // The Export menu of who got a perk the organization gives.
+    "ExportMenu",
     "Matching",
     "Messaging",
     "Organization",
     "PdfViewer",
+    "Perk",
     // What the AI found in the proposals the organization's use case received.
     "ProposalEvaluation",
     "Solution",
@@ -86,6 +91,7 @@ const areaPaths = {
     "Messaging.assignments",
     "Mcp",
     "Organization",
+    "Perk",
     // The full-screen reader of an application's files.
     "PdfViewer",
     "Program",

@@ -65,11 +65,9 @@ public class SolutionService {
 
 	private final ApplicationEventPublisher events;
 
-	private final SolutionOffers offers;
-
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			OrganizationDirectory organizations, IdentityService identity, StorageService storage, AuditTrail audit,
-			ApplicationEventPublisher events, SolutionOffers offers) {
+			ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
@@ -77,7 +75,6 @@ public class SolutionService {
 		this.storage = storage;
 		this.audit = audit;
 		this.events = events;
-		this.offers = offers;
 	}
 
 	/** The solutions of the caller's organization, the newest first; none for a caller who belongs to no organization. */
@@ -120,7 +117,7 @@ public class SolutionService {
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
 		Membership membership = writer(actor);
 		return SolutionViews.solution(start(actor, membership.organizationId(), request.name()),
-				membership.organizationName(), null, List.of(), List.of(), storage);
+				membership.organizationName(), null, List.of(), storage);
 	}
 
 	/** A new draft of an organization, under the address its name makes free; the caller decided that it may. */
@@ -139,10 +136,10 @@ public class SolutionService {
 	 * back waits for the owner to submit it again; a solution refused for good is not changed. A deck or an image the
 	 * solution stops naming is removed from
 	 * the store. A solution that was sent for review does not lose anything a review needs; one approved before a
-	 * logo and a cover were asked for may stay without them. The offers it comes with are its organization's.
+	 * logo and a cover were asked for may stay without them.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, it changed since the screen read it, a deck or an image it names is not a stored file the caller
-	 * may give it, or an offer it names is not in the list
+	 * may give it
 	 */
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
@@ -174,7 +171,6 @@ public class SolutionService {
 		solution.link(SolutionViews.text(request.website()), SolutionViews.text(request.demoUrl()));
 		UUID replacedDeck = nameDeck(actor, solution, request.deckFileId());
 		List<UUID> droppedPictures = namePictures(actor, solution, request);
-		offers.choose(solution, request.offerIds());
 		solution.list(request.listed());
 		if (!solution.isDraft() && !solution.isNeedsChanges() && !lackedBefore.containsAll(solution.missing())) {
 			// What operators review, and what the directory shows, keeps what a submission needs.
@@ -188,7 +184,7 @@ public class SolutionService {
 		droppedPictures.forEach(fileId -> events.publishEvent(new DroppedFiles.FileDropped(id, fileId)));
 		events.publishEvent(new SolutionChanged(id));
 		return SolutionViews.solution(solution, organizationName, SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(id), offers.of(id), storage);
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
 	}
 
 	/**
@@ -459,7 +455,7 @@ public class SolutionService {
 	private SolutionResponse view(Solution solution, Membership membership) {
 		return SolutionViews.solution(solution, membership.organizationName(),
 				SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()), offers.of(solution.getId()),
+				deployments.findBySolutionIdOrderByCreatedAtDesc(solution.getId()),
 				storage);
 	}
 

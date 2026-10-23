@@ -20,6 +20,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  ComboboxStatus,
 } from "@/components/ui/combobox";
 import {
   Field,
@@ -39,9 +40,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormatter } from "@/i18n/format";
 import { cn } from "@/lib/utils";
+
+import type { OptionSearch } from "./use-searched-options";
 
 /**
  * A field's label and hint, and what it says about having to be filled (`optional`, `requiredMark`,
@@ -335,10 +339,10 @@ type Option = { value: string; label: string };
 
 type ComboboxFieldProps = SelectFieldProps & {
   /**
-   * Asks the server for the options matching what is typed, for a list it gives only the first page
-   * of; the options are then shown as given, not narrowed here. See `useSearchedOptions`.
+   * For a list the server gives only the first page of: what is typed is asked of the server, and the
+   * options are shown as it answers, not narrowed here. See `useSearchedOptions`.
    */
-  onSearch?: (text: string) => void;
+  search?: OptionSearch;
 };
 
 /**
@@ -353,7 +357,7 @@ function ComboboxField({
   description,
   options,
   placeholder,
-  onSearch,
+  search,
 }: ComboboxFieldProps) {
   const t = useTranslations("Form");
   const { field, invalid, errors, hintId, errorId, describedBy, required, errorRole } =
@@ -376,7 +380,11 @@ function ComboboxField({
         value={options.find((option) => option.value === field.state.value) ?? null}
         isItemEqualToValue={(item: Option, other: Option) => item.value === other.value}
         onValueChange={(next: Option | null) => field.handleChange(next?.value ?? "")}
-        {...(onSearch && { filter: null, onInputValueChange: (text: string) => onSearch(text) })}
+        {...(search && {
+          filter: null,
+          onInputValueChange: (text: string, { reason }: { reason: string }) =>
+            search.onSearch(text, reason),
+        })}
       >
         <ComboboxInput
           id={field.name}
@@ -387,8 +395,21 @@ function ComboboxField({
           aria-describedby={describedBy}
           onBlur={field.handleBlur}
         />
-        <ComboboxContent>
-          <ComboboxEmpty>{t("noMatch")}</ComboboxEmpty>
+        <ComboboxContent aria-busy={search?.searching || undefined}>
+          {search && (
+            // Said to a screen reader as it changes: the list is still being asked for, or could not be.
+            <ComboboxStatus>
+              {search.searching ? (
+                <>
+                  <Spinner />
+                  {t("searching")}
+                </>
+              ) : search.failed ? (
+                t("searchFailed")
+              ) : null}
+            </ComboboxStatus>
+          )}
+          <ComboboxEmpty>{search?.searching || search?.failed ? null : t("noMatch")}</ComboboxEmpty>
           {/* The list names itself: a listbox without a name is nothing to a screen reader. */}
           <ComboboxList aria-label={label}>
             {(option: Option) => (

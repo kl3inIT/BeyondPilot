@@ -15,7 +15,6 @@ import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
-import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
@@ -114,6 +113,16 @@ class AdminSolutionsController {
 		return solutions.get(actor, id);
 	}
 
+	@GetMapping(path = "/organizations/with-solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listAdminSolutionOrganizationsWithSolutions",
+			summary = "The organizations that hold a submitted solution, by name, for the list's filter; at most 50",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The organizations, by name.")
+	List<AdminSolutionOrganizationOptionResponse> organizationsWithSolutions(@CurrentActor Actor actor,
+			@RequestParam(required = false) @Nullable String q) {
+		return solutions.organizationsWithSolutions(actor, q);
+	}
+
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listAdminSolutionOrganizations",
 			summary = "The organizations, not taken down, a solution can be started for, by name; at most 50",
@@ -208,19 +217,6 @@ class AdminSolutionsController {
 		solutions.back(actor, id, request);
 	}
 
-	@PutMapping(path = "/{id}/offers", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "chooseSolutionOffers",
-			summary = "Choose the offers a submitted solution comes with, of those its organization gives",
-			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The solution comes with the offers named.", content = @Content)
-	@ApiResponse(responseCode = "400", description = "More than five offers, or one that is not in the list.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = NOT_FOUND,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void offer(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody SolutionOffersRequest request) {
-		solutions.offer(actor, id, request);
-	}
 
 	@PostMapping(path = "/{id}/send-back", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)

@@ -60,27 +60,7 @@ public enum SolutionErrorCode implements ErrorCode {
 			"This customer deployment is not withdrawn."),
 
 	DEPLOYMENT_CHANGED_MEANWHILE("SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
-			"Someone else saved this customer deployment in the meantime. Reload it and make your changes again."),
-
-	OFFER_NOT_FOUND("SOLUTION_OFFER_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such offer."),
-
-	OFFER_ORGANIZATION_NOT_FOUND("SOLUTION_OFFER_ORGANIZATION_NOT_FOUND", ErrorCategory.NOT_FOUND,
-			"There is no such organization to give the offer."),
-
-	OFFER_ARRANGED("SOLUTION_OFFER_ARRANGED", ErrorCategory.NOT_PERMITTED,
-			"GenAI Fund arranged this offer, so only GenAI Fund changes, closes or deletes it."),
-
-	OFFER_TITLE_TAKEN("SOLUTION_OFFER_TITLE_TAKEN", ErrorCategory.CONFLICT,
-			"Another offer already reads the same. Choose that one, or name this one differently."),
-
-	OFFER_IN_USE("SOLUTION_OFFER_IN_USE", ErrorCategory.CONFLICT,
-			"A solution still comes with this offer. Take it off those solutions before deleting it."),
-
-	OFFER_CHANGED_MEANWHILE("SOLUTION_OFFER_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
-			"Someone else saved this offer in the meantime. Reload it and make your changes again."),
-
-	OFFER_NOT_USABLE("SOLUTION_OFFER_NOT_USABLE", ErrorCategory.VALIDATION,
-			"One of the chosen offers no longer exists. Reload and choose again.");
+			"Someone else saved this customer deployment in the meantime. Reload it and make your changes again.");
 
 	private final String code;
 	private final ErrorCategory category;

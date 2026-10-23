@@ -12,7 +12,9 @@ import {
 describe("auditActions", () => {
   it("is the backend's catalog, every action and nothing else, so the filter misses none", () => {
     // Checked when the code is compiled: an action the backend adds and the list lacks fails here.
-    expectTypeOf<AuditAction>().toEqualTypeOf<AuditEvent["action"]>();
+    // Both ways rather than toEqualTypeOf, which past about 140 actions judges equal unions unequal.
+    expectTypeOf<AuditAction>().toExtend<AuditEvent["action"]>();
+    expectTypeOf<AuditEvent["action"]>().toExtend<AuditAction>();
   });
 });
 

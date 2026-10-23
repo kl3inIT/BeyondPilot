@@ -232,6 +232,30 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a member of the organization that gives a perk that a request for it waits for an answer. The link opens
+	 * the perk's requests in My organization.
+	 * @param perkId the perk, whose requests the link opens
+	 */
+	@Transactional
+	public void sendPerkRequestWaiting(String recipient, String perkTitle, String requesterOrganization, UUID perkId) {
+		queue(EmailKind.PERK_REQUEST_WAITING, recipient, values("perkTitle", perkTitle, "requesterOrganization",
+				requesterOrganization, "requestsUrl", url(MY_ORGANIZATION + "/perks/" + perkId)));
+	}
+
+	/**
+	 * Tells the person who requested a perk what its partner decided. The link opens the perk's page.
+	 * @param granted whether the request was granted; otherwise it was declined
+	 * @param perkSlug the perk's address
+	 */
+	@Transactional
+	public void sendPerkRequestDecision(String recipient, String perkTitle, String partnerName, boolean granted,
+			String perkSlug) {
+		queue(granted ? EmailKind.PERK_REQUEST_GRANTED : EmailKind.PERK_REQUEST_DECLINED, recipient,
+				values("perkTitle", perkTitle, "partnerName", partnerName, "perkUrl",
+						url("/solutions/perks/" + perkSlug)));
+	}
+
+	/**
 	 * Tells a member of an organization what GenAI Fund decided about one of its use cases. The reason, when GenAI
 	 * Fund sent the use case back, is quoted as written. The link opens the published brief, or the use case in My
 	 * organization, where a member edits one sent back.

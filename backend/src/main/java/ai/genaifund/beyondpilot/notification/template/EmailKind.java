@@ -97,6 +97,21 @@ public enum EmailKind {
 			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
 			Variable.optional("solutionUrl", "https://beyondpilot.example/solutions/claimlens")),
 
+	PERK_REQUEST_WAITING("perk_request_waiting", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("perkTitle", "Free AI readiness assessment"),
+			Variable.required("requesterOrganization", "Fintrace"),
+			Variable.optional("requestsUrl", "https://beyondpilot.example/workspace/organization/perks/1")),
+
+	PERK_REQUEST_GRANTED("perk_request_granted", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("perkTitle", "Free AI readiness assessment"),
+			Variable.required("partnerName", "Kyanon Digital"),
+			Variable.optional("perkUrl", "https://beyondpilot.example/solutions/perks/kyanon-assessment")),
+
+	PERK_REQUEST_DECLINED("perk_request_declined", EmailGroup.SOLUTIONS, true, null,
+			Variable.required("perkTitle", "Free AI readiness assessment"),
+			Variable.required("partnerName", "Kyanon Digital"),
+			Variable.optional("perkUrl", "https://beyondpilot.example/solutions/perks/kyanon-assessment")),
+
 	USE_CASE_APPROVED("use_case_approved", EmailGroup.USE_CASES, true, null,
 			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
 			Variable.required("organizationName", "Plain Cover"),
