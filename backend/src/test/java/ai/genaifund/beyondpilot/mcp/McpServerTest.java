@@ -85,7 +85,13 @@ class McpServerTest {
 		organization(owner, "Revve " + word);
 		UUID solution = submittedSolution(owner, "Voice Agent " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
-		await().atMost(WAIT).until(() -> searchTotal("voice agent " + word) == 1);
+		// Waits for the solution's own row: a count of results would also take in another test's solution whose random
+		// word starts alike, which the trigram match on titles finds too.
+		await().atMost(WAIT)
+			.until(() -> jdbc.sql("select count(*) from search_document where item_id = :id")
+				.param("id", solution)
+				.query(Long.class)
+				.single() == 1);
 
 		String person = TestSignIn.session(client, mail, "reader-" + word + "@mcp.test");
 		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
@@ -983,18 +989,6 @@ class McpServerTest {
 	private static String text(CallToolResult result) {
 		assertThat(result.isError()).isFalse();
 		return ((TextContent) result.content().getFirst()).text();
-	}
-
-	private int searchTotal(String query) {
-		String body = new String(client.get()
-			.uri("/api/search?q={q}", query)
-			.exchange()
-			.expectStatus()
-			.isOk()
-			.expectBody()
-			.returnResult()
-			.getResponseBody(), UTF_8);
-		return JsonPath.<Integer>read(body, "$.total");
 	}
 
 	private UUID organization(String session, String name) {
