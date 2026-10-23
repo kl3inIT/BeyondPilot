@@ -18,6 +18,16 @@ Studied on 23 October 2026, after Kai Yong asked that people register for GenAI 
 
 `event.updated` is not promised for an edit of the questions alone, and `calendar.event.added` carries no questions. Luma's own registration asks for no sign-in and no code: name and email, prefilled for someone signed in to Luma; an approval event sends a pending email, then a confirmation or a decline ([help](https://help.luma.com/p/event-registration-process)).
 
+## What the calendar holds
+
+Read through the API with a key of the calendar on 23 October 2026, without writing anything:
+
+- `calendars/events/list` returns 25 events GenAI Fund manages, each already with its `registration_questions`, and 3 more with `access=view` that other hosts list on the calendar. No webhook is registered for the key.
+- Three of the 25 are `private`: the Nestlé Vietnam briefing day on 11 November, a Singapore meetup on 19 November and a postponed orientation. None is paid.
+- Questions across the 25: 106 `select`, 98 `text`, 48 `url`, 15 `agree-check`, 5 `terms`. The `terms` questions are on five events, the Shinhan Future's Lab Demo Day among them, so a `terms` question is not rare.
+- Every event asks a country from a list of about 200. The Tasco and Nestlé briefings ask `Name` and `Email` again as text questions, beside Luma's own fields.
+- TinyFish, Big Minds requires approval, has 40 seats with 1 left and a waitlist, and keeps its venue for guests; the Tasco and Nestlé briefings are on Zoom with the link kept for guests.
+
 ## How others do it
 
 Nobody of those read builds its form from `registration_questions`, and nobody emails the person from a webhook.
