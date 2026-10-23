@@ -67,6 +67,18 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	@Query("update Proposal p set p.reviewStatus = :reviewStatus where p.id = :id")
 	void decide(UUID id, String reviewStatus);
 
+	/**
+	 * Whether an application, a version of one or a use case proposal names the file, as its deck or in an answer. A
+	 * person may bring a file they uploaded for one to another.
+	 */
+	@Query(nativeQuery = true, value = """
+			select exists (select 1 from proposal
+			               where deck_file_id = :fileId or answers::text like '%' || cast(:fileId as text) || '%')
+			    or exists (select 1 from proposal_version where snapshot::text like '%' || cast(:fileId as text) || '%')
+			    or exists (select 1 from use_case_proposal where deck_file_id = :fileId)
+			""")
+	boolean fileNamed(UUID fileId);
+
 	/** Whether the organization ever submitted an application, to any program. */
 	boolean existsByOrganizationIdAndSubmittedAtIsNotNull(UUID organizationId);
 

@@ -315,7 +315,7 @@
     "ORGANIZATION_INDIVIDUAL": "Just me is one person: it has no other members, invitations or email domain. Make it a team or a company first.",
     "ORGANIZATION_NOT_ALONE": "This organization has other members, invitations or requests to join, so it cannot become Just me. Remove them first.",
     "ORGANIZATION_TEAM_SIZE_REQUIRED": "Choose how many people the team or company has.",
-    "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "Something was already sent under this name, or someone else is in it, so who applies stays as it is.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
     "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
@@ -463,6 +463,7 @@
     "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
     "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
     "PROPOSAL_NOT_SUBMITTED": "Only a submitted application can be withdrawn. Reload the page to see where yours stands.",
+    "PROPOSAL_DRAFT_ONLY": "This application was submitted, so it can no longer be deleted. Withdraw it instead.",
     "PROPOSAL_REVIEW_PROGRAM_NOT_FOUND": "There is no such program with applications to review. Reload the page.",
     "PROPOSAL_OWN_APPLICATION": "You cannot score or decide an application of your own or of your organization.",
     "PROPOSAL_REVIEW_NOT_ALLOWED": "You do not review this program's applications.",
@@ -6547,7 +6548,9 @@
       "applyingAsHint": "This is kept with your account when you continue. As an individual, you can change it until you send something under your name.",
       "change": "Change",
       "changeHint": "You can apply as a team or a company instead until you send something under your name.",
+      "changeHintTeam": "You can apply as yourself or for a company instead, or rename the team, until you send something under its name or someone joins it.",
       "companyInstead": "To apply for a company, first stop applying as yourself, then find or add the company. A solution you began here stays with you and does not move to the company.",
+      "companyInsteadTeam": "To apply for a company, first leave your team, then find or add the company. A solution you began here stays with you and does not move to the company.",
       "companyInsteadAction": "Apply for a company",
       "whoRequired": "Choose who is applying.",
       "who": {
@@ -6751,6 +6754,15 @@
       "closed": "Applications have closed, so it can no longer be withdrawn.",
       "failed": "It could not be withdrawn. Try again.",
       "leadFinal": "Reviewers will no longer read it, and you cannot submit it again."
+    },
+    "deleteDraft": {
+      "button": "Delete draft",
+      "title": "Delete your draft for {program}?",
+      "lead": "The draft and the files you added only to it are deleted for good. This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel",
+      "done": "Your draft was deleted.",
+      "failed": "The draft could not be deleted. Try again."
     },
     "receipt": {
       "title": "Application submitted",

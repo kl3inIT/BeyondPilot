@@ -107,6 +107,11 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which stays active, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
   organization so that they join or add a company. Once something was sent, both answer
   `PROPOSAL_INDIVIDUAL_LOCKED`.
+- **Applying as a team of one** ([BEY-246](../increments/active/bey-246-applicant-changes-who-applies-and-deletes-a-draft/design.md)). A `builder_team` its owner stands alone in (one member, no open invitation,
+  no open request to join, `OrganizationDirectory.standsAlone`) is `changeable` on the same terms: `kind = team`
+  renames it in place, `kind = individual` turns it into the person on their own in place, and `…/leave` turns it into
+  a builder on their own under its name, then takes the person out, so that nobody is offered to join or claim it.
+  Anyone else in it, invited or asking to join, or anything sent under it answers `PROPOSAL_INDIVIDUAL_LOCKED`.
 - **As a company.** The person joins or creates the company through the `organization` module; the proposal module
   only reads the membership.
 
@@ -142,6 +147,16 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **Editing until the close.** When the program sets `allowUpdatesUntilClose`, a submitted application can be saved
   and submitted again, each time as a new version. Otherwise a save or a new submission of a submitted application is
   refused with `PROPOSAL_LOCKED`.
+
+### Deleting a draft
+
+- **Only an application never submitted** (`status = draft`, `submissions = 0`), whether or not the window is open
+  ([BEY-246](../increments/active/bey-246-applicant-changes-who-applies-and-deletes-a-draft/design.md)). `DELETE /api/proposal/applications/{id}` removes it with its child rows; one withdrawn and saved again was
+  submitted, so it answers `PROPOSAL_DRAFT_ONLY`, as a submitted one does. Another caller's answers
+  `PROPOSAL_APPLICATION_NOT_FOUND`.
+- **Its files go with it** when the applicant uploaded them for an application and nothing else names them: no other
+  application, version or use-case proposal (`ProposalRepository.fileNamed`).
+- It is logged as `proposal.draft.deleted`, not audited: nobody else saw it.
 
 ### Withdrawing
 
@@ -409,11 +424,12 @@ Every endpoint needs a session, except `GET /api/proposal/use-case-proposal-coun
 | `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization                |
 | `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                          |
 | `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                   |
-| `POST /api/proposal/programs/{slug}/application/organization/leave`            | Leave an individual organization nothing was sent under            |
+| `POST /api/proposal/programs/{slug}/application/organization/leave`            | Leave an individual or a team of one nothing was sent under        |
 | `GET /api/proposal/applications`                                               | My applications                                                    |
 | `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                     |
 | `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                            |
 | `POST /api/proposal/applications/{id}/withdraw`                                | Withdraw                                                           |
+| `DELETE /api/proposal/applications/{id}`                                       | Delete an application never submitted                              |
 | `GET /api/proposal/review/programs`                                            | The programs the caller reviews, with counts and whether released  |
 | `GET`, `PUT /api/proposal/review/programs/{programId}/criteria`                | Read the criteria; an operator replaces them                       |
 | `GET`, `POST /api/proposal/review/programs/{programId}/reviewers`              | An operator lists judges or invites one                            |

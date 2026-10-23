@@ -149,6 +149,11 @@ public class Proposal {
 		withdrawnAt = at;
 	}
 
+	/** A draft never submitted, which nobody but its applicant has seen. One withdrawn and changed again was seen. */
+	public boolean isUnsent() {
+		return DRAFT.equals(status) && submissions == 0;
+	}
+
 	public boolean isSubmitted() {
 		return SUBMITTED.equals(status);
 	}
