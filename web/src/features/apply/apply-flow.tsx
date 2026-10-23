@@ -352,7 +352,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
    * person now is read here, after any save under way: no older answer then comes after it, and
    * nothing typed is touched. A read that fails is said, and the next save answers the same.
    */
-  /** Stops applying as oneself, so that the finder can join or add the company. */
+  /** Stops applying as oneself or as a team of one, so that the finder can join or add the company. */
   async function applyForCompany() {
     setProblem(null);
     try {
@@ -467,10 +467,17 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       }
       // The step is saved before who applies is kept: a refused save then leaves nothing behind.
       await save(form.state.values.application);
-      if (step === "you" && changing && values.who === "individual") {
+      if (
+        step === "you" &&
+        changing &&
+        values.who === "individual" &&
+        view.organization &&
+        isIndividual(view.organization)
+      ) {
         setChanging(false);
       } else if (step === "you" && !applyingFor && values.who !== "") {
-        // Someone applying as themselves who chose a team turns into that team.
+        // Someone choosing again turns their organization into what they chose: a team, renamed, or
+        // themselves.
         const { data } = await organizeApplicant({
           path: { slug: program.slug },
           body: organizationBodyOf(values),
@@ -659,7 +666,18 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                   view={view}
                   changing={changing}
                   onChanging={(next) => {
-                    form.setFieldValue("who", "individual");
+                    const current = view.organization;
+                    if (current && !isIndividual(current)) {
+                      // A team starts from what it is, so that keeping it only renames it.
+                      form.setFieldValue("who", "team");
+                      form.setFieldValue("team", {
+                        name: current.name,
+                        size: current.teamSize ?? "2_9",
+                        website: current.website ?? "",
+                      });
+                    } else {
+                      form.setFieldValue("who", "individual");
+                    }
                     setChanging(next);
                   }}
                   onCompany={applyForCompany}
@@ -744,10 +762,10 @@ function StepYou({
 }: {
   form: ApplyForm;
   view: ApplicationView;
-  /** Whether someone applying as themselves is choosing again who applies. */
+  /** Whether someone applying as themselves, or through a team that is just them, chooses again. */
   changing: boolean;
   onChanging: (changing: boolean) => void;
-  /** Someone applying as themselves chose to apply for a company instead. */
+  /** Someone choosing again chose to apply for a company instead. */
   onCompany: () => Promise<void>;
   /** The person joined a company through the finder, or asked to. */
   onOrganization: () => Promise<void>;
@@ -757,6 +775,7 @@ function StepYou({
   const sizeName = useVocabulary("teamSize");
   const countryName = useCountryName();
   const organization = changing ? null : view.organization;
+  const team = view.organization ? !isIndividual(view.organization) : false;
   const [leaving, setLeaving] = useState(false);
   const who = useStore(form.store, (state) => state.values.who);
   const name = useStore(form.store, (state) => {
@@ -798,21 +817,31 @@ function StepYou({
       ) : organization ? (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{t("applyingFor")}</h2>
-          <div className="flex flex-col gap-1 rounded-xl border p-4">
-            <span className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">{organization.name}</span>
-              {!organization.active && <TakenDown />}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {[
-                typeName(organization.type),
-                organization.teamSize && sizeName(organization.teamSize),
-                organization.country && countryName(organization.country),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
+            <div className="flex flex-col gap-1">
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{organization.name}</span>
+                {!organization.active && <TakenDown />}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {[
+                  typeName(organization.type),
+                  organization.teamSize && sizeName(organization.teamSize),
+                  organization.country && countryName(organization.country),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+            {organization.changeable && (
+              <Button prominence="secondary" size="sm" onClick={() => onChanging(true)}>
+                {t("change")}
+              </Button>
+            )}
           </div>
+          {organization.changeable && (
+            <p className="text-xs text-muted-foreground">{t("changeHintTeam")}</p>
+          )}
         </section>
       ) : (
         <form.AppField name="who">
@@ -834,7 +863,9 @@ function StepYou({
                   // The finder joins or adds a company for someone in no organization, so they stop
                   // applying as themselves first.
                   <div className="flex flex-col items-start gap-3">
-                    <p className="text-sm text-muted-foreground">{t("companyInstead")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t(team ? "companyInsteadTeam" : "companyInstead")}
+                    </p>
                     <Button
                       prominence="secondary"
                       pending={leaving}

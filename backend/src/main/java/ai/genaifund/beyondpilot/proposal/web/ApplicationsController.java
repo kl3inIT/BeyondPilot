@@ -16,13 +16,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** A signed-in person's applications to programs. */
@@ -87,11 +90,11 @@ class ApplicationsController {
 
 	@PostMapping(path = "/programs/{slug}/application/organization/leave", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "leaveApplyingAlone",
-			summary = "Stop applying as oneself, to apply for a company instead",
+			summary = "Stop applying as oneself or as a team of one, to apply for a company instead",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The form, with no organization.")
 	@ApiResponse(responseCode = "409",
-			description = "The program takes no applications now, the caller does not apply as themselves, or something was already sent under their name.",
+			description = "The program takes no applications now, the caller applies neither as themselves nor through a team that is just them, or something was already sent under its name.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ApplicationViewResponse leaveIndividual(@CurrentActor Actor actor, @PathVariable String slug) {
 		return proposals.leaveIndividual(actor, slug);
@@ -128,6 +131,19 @@ class ApplicationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ApplicationViewResponse submit(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return proposals.submit(actor, id);
+	}
+
+	@DeleteMapping("/applications/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "deleteDraftApplication", summary = "Delete an application never submitted, for good",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The application and the files only it named are gone.")
+	@ApiResponse(responseCode = "404", description = "The caller has no such application.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "It was submitted; a submitted one can be withdrawn instead.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void deleteDraft(@CurrentActor Actor actor, @PathVariable UUID id) {
+		proposals.deleteDraft(actor, id);
 	}
 
 	@PostMapping(path = "/applications/{id}/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)

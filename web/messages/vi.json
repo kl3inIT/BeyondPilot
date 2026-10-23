@@ -315,7 +315,7 @@
     "ORGANIZATION_INDIVIDUAL": "Chỉ mình tôi là một người: không có thành viên khác, lời mời hay tên miền email. Hãy chuyển thành đội hoặc công ty trước.",
     "ORGANIZATION_NOT_ALONE": "Tổ chức này còn thành viên khác, lời mời hoặc yêu cầu tham gia nên chưa thể chuyển thành Chỉ mình tôi. Hãy gỡ chúng trước.",
     "ORGANIZATION_TEAM_SIZE_REQUIRED": "Chọn số người của đội hoặc công ty.",
-    "PROPOSAL_INDIVIDUAL_LOCKED": "Bạn đã gửi một thứ dưới tên mình, nên bạn tiếp tục nộp với tư cách cá nhân.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "Đã có một thứ được gửi dưới tên này, hoặc có người khác trong đó, nên người nộp được giữ nguyên.",
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
     "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
     "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",
@@ -463,6 +463,7 @@
     "PROPOSAL_ANSWER_INVALID": "Có câu trả lời không khớp với câu hỏi.",
     "PROPOSAL_ANSWER_REQUIRED": "Trả lời mọi câu hỏi của chương trình.",
     "PROPOSAL_NOT_SUBMITTED": "Chỉ rút được đơn đã nộp. Hãy tải lại trang để xem đơn của bạn đang ở đâu.",
+    "PROPOSAL_DRAFT_ONLY": "Đơn này đã được nộp nên không xóa được nữa. Hãy rút đơn thay vì xóa.",
     "PROPOSAL_REVIEW_PROGRAM_NOT_FOUND": "Không có chương trình nào như vậy đang có đơn để chấm. Hãy tải lại trang.",
     "PROPOSAL_OWN_APPLICATION": "Bạn không chấm hay quyết định đơn của chính mình hoặc của tổ chức mình.",
     "PROPOSAL_REVIEW_NOT_ALLOWED": "Bạn không chấm đơn của chương trình này.",
@@ -6622,7 +6623,9 @@
       "applyingAsHint": "Lựa chọn này được lưu với tài khoản của bạn khi bạn tiếp tục. Nếu nộp với tư cách cá nhân, bạn có thể đổi cho đến khi gửi một thứ gì đó dưới tên mình.",
       "change": "Đổi",
       "changeHint": "Bạn có thể nộp với tư cách đội hoặc công ty thay vì cá nhân cho đến khi gửi một thứ gì đó dưới tên mình.",
+      "changeHintTeam": "Bạn có thể nộp với tư cách cá nhân hoặc cho một công ty, hay đổi tên nhóm, cho đến khi bạn gửi một thứ dưới tên nhóm hoặc có người tham gia nhóm.",
       "companyInstead": "Để nộp cho một công ty, hãy thôi nộp với tư cách cá nhân trước, rồi tìm hoặc thêm công ty đó. Giải pháp bạn đã bắt đầu ở đây vẫn ở lại với bạn và không chuyển sang công ty.",
+      "companyInsteadTeam": "Để nộp cho một công ty, trước tiên hãy rời nhóm, rồi tìm hoặc thêm công ty. Giải pháp bạn đã bắt đầu ở đây vẫn ở với bạn và không chuyển sang công ty.",
       "companyInsteadAction": "Nộp cho một công ty",
       "whoRequired": "Chọn ai là người nộp.",
       "who": {
@@ -6826,6 +6829,15 @@
       "closed": "Đợt nhận đơn đã đóng, nên không rút đơn được nữa.",
       "failed": "Chưa rút được đơn. Thử lại.",
       "leadFinal": "Người chấm sẽ không đọc đơn nữa, và bạn sẽ không nộp lại được."
+    },
+    "deleteDraft": {
+      "button": "Xóa bản nháp",
+      "title": "Xóa bản nháp đơn gửi {program}?",
+      "lead": "Bản nháp và các tệp bạn chỉ thêm vào nó sẽ bị xóa vĩnh viễn. Không thể hoàn tác.",
+      "confirm": "Xóa",
+      "cancel": "Hủy",
+      "done": "Đã xóa bản nháp của bạn.",
+      "failed": "Chưa xóa được bản nháp. Thử lại."
     },
     "receipt": {
       "title": "Đã nộp đơn",

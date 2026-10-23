@@ -14,8 +14,16 @@ public record Membership(UUID organizationId, String organizationName, String ty
 	/** The type of a builder on their own, an organization that stands for its one person. */
 	public static final String INDIVIDUAL = "independent_builder";
 
+	/** The type of a team of builders. */
+	public static final String TEAM = "builder_team";
+
 	/** Whether the organization is the person on their own, rather than a company or a team. */
 	public boolean individual() {
 		return INDIVIDUAL.equals(type);
+	}
+
+	/** Whether the organization is a team of builders. */
+	public boolean team() {
+		return TEAM.equals(type);
 	}
 }

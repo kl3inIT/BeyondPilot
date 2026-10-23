@@ -38,6 +38,9 @@ public class Organization {
 	/** The type of a builder on their own: the organization stands for its one person. */
 	public static final String INDIVIDUAL = Membership.INDIVIDUAL;
 
+	/** The type of a team of builders, which an applicant makes and may still change while it is just them. */
+	public static final String TEAM = Membership.TEAM;
+
 	@Id
 	private UUID id;
 
@@ -197,9 +200,18 @@ public class Organization {
 	/** Turns an individual into a team of the same person. It stays active. */
 	public void becomeTeam(String name, String teamSize, @Nullable String website) {
 		this.name = name;
-		this.type = "builder_team";
+		this.type = TEAM;
 		this.teamSize = teamSize;
 		this.website = website;
+	}
+
+	/** Turns a team of one person back into that person on their own. It stays active and keeps no domain. */
+	public void becomeIndividual(String name) {
+		this.name = name;
+		this.type = INDIVIDUAL;
+		this.teamSize = "just_me";
+		this.website = null;
+		verifyDomain(null);
 	}
 
 	/** A builder on their own: it is shown as its person, and it has no members, domain or page of its own. */

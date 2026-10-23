@@ -611,45 +611,78 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Turns the caller's individual into their team, which stays active. Whether it may still change is for the
-	 * caller to decide, from what was sent under it.
+	 * Turns the caller's individual, or their team of one, into their team as given, which stays active. Whether it may
+	 * still change is for the caller to decide, from what was sent under it.
 	 * @return the team's identifier
-	 * @throws OrganizationException when the caller does not own an individual
+	 * @throws OrganizationException when the caller owns neither an individual nor a team they stand alone in
 	 */
 	@Transactional
 	public UUID becomeTeam(Actor actor, ApplicantOrganization team) {
-		Organization organization = ownIndividual(actor);
+		Organization organization = ownApplicant(actor);
+		boolean wasTeam = !organization.isIndividual();
 		organization.becomeTeam(team.name().strip(), team.teamSize(), OrganizationViews.text(team.website()));
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		LOG.atInfo()
-			.addKeyValue("event", "organization.individual.became_team")
+			.addKeyValue("event", wasTeam ? "organization.team.renamed" : "organization.individual.became_team")
 			.addKeyValue("organization_id", organization.getId())
-			.log("Individual became a team");
+			.log(wasTeam ? "Team of one renamed" : "Individual became a team");
 		return organization.getId();
 	}
 
 	/**
-	 * Takes the caller out of their individual so that they can join or add a company. The record stays, with nobody
-	 * in it, for what was written under its name; it is shown nowhere.
-	 * @throws OrganizationException when the caller does not own an individual
+	 * Turns the caller's team of one back into themselves on their own, named after them. Whether it may still change
+	 * is for the caller to decide, from what was sent under it.
+	 * @return the individual's identifier
+	 * @throws OrganizationException when the caller owns no team they stand alone in
 	 */
 	@Transactional
-	public void leaveIndividual(Actor actor) {
-		Organization organization = ownIndividual(actor);
-		memberships.remove(organization.getId(), actor.accountId());
+	public UUID becomeIndividual(Actor actor, String name) {
+		Organization organization = ownApplicant(actor);
+		if (organization.isIndividual()) {
+			throw new OrganizationException(OrganizationErrorCode.MEMBERSHIP_REQUIRED,
+					"Account " + actor.accountId() + " already applies as themselves");
+		}
+		organization.becomeIndividual(name.strip());
+		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		LOG.atInfo()
-			.addKeyValue("event", "organization.individual.left")
+			.addKeyValue("event", "organization.team.became_individual")
 			.addKeyValue("organization_id", organization.getId())
-			.log("Person left their individual");
+			.log("Team of one became an individual");
+		return organization.getId();
 	}
 
-	private Organization ownIndividual(Actor actor) {
+	/**
+	 * Takes the caller out of their individual, or their team of one, so that they can join or add a company. The
+	 * record stays, with nobody in it, for what was written under its name. A team left so becomes a builder on their
+	 * own, under its name, so that it is shown nowhere and nobody asks to join or claim it, as an individual left so.
+	 * @throws OrganizationException when the caller owns neither an individual nor a team they stand alone in
+	 */
+	@Transactional
+	public void leaveApplicant(Actor actor) {
+		Organization organization = ownApplicant(actor);
+		boolean team = !organization.isIndividual();
+		if (team) {
+			organization.becomeIndividual(organization.getName());
+			organizations.flush();
+			events.publishEvent(new OrganizationChanged(organization.getId()));
+		}
+		memberships.remove(organization.getId(), actor.accountId());
+		LOG.atInfo()
+			.addKeyValue("event", team ? "organization.team.left" : "organization.individual.left")
+			.addKeyValue("organization_id", organization.getId())
+			.log("Person left the organization they applied through");
+	}
+
+	/** The caller's own individual, or the team they own and stand alone in, which applying may still change. */
+	private Organization ownApplicant(Actor actor) {
 		Member owner = owner(actor);
 		return organizations.findForUpdate(owner.organizationId())
-			.filter(Organization::isIndividual)
+			.filter(organization -> organization.isIndividual()
+					|| (Organization.TEAM.equals(organization.getType()) && memberships.standsAlone(organization.getId())))
 			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.MEMBERSHIP_REQUIRED,
-					"Account " + actor.accountId() + " owns no individual"));
+					"Account " + actor.accountId() + " owns no individual and no team of one"));
 	}
 
 	/**
@@ -660,10 +693,7 @@ public class OrganizationService {
 	 */
 	private void requireTypeChange(Organization organization, String type, @Nullable String teamSize) {
 		boolean toIndividual = Organization.INDIVIDUAL.equals(type);
-		if (toIndividual && !organization.isIndividual()
-				&& (memberships.countMembers(organization.getId()) > 1
-						|| !memberships.openInvitationsOf(organization.getId()).isEmpty()
-						|| !memberships.openRequestsTo(organization.getId()).isEmpty())) {
+		if (toIndividual && !organization.isIndividual() && !memberships.standsAlone(organization.getId())) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_ALONE,
 					"Organization " + organization.getId() + " has others and cannot become an individual");
 		}

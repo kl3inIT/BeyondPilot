@@ -46,6 +46,15 @@ public class OrganizationDirectory {
 						member.isOwner(), organization.isActive())));
 	}
 
+	/**
+	 * Whether the organization is its one person alone: a single member, no open invitation and no open request to
+	 * join. Someone applying through such a team may still change who applies.
+	 */
+	@Transactional(readOnly = true)
+	public boolean standsAlone(UUID organizationId) {
+		return memberships.standsAlone(organizationId);
+	}
+
 	/** The accounts of everyone who belongs to the organization, owners and members alike. */
 	@Transactional(readOnly = true)
 	public List<UUID> memberAccountIds(UUID organizationId) {

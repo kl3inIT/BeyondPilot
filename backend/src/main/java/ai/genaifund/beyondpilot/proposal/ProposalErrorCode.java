@@ -27,7 +27,7 @@ public enum ProposalErrorCode implements ErrorCode {
 			"You already apply for an organization."),
 
 	INDIVIDUAL_LOCKED("PROPOSAL_INDIVIDUAL_LOCKED", ErrorCategory.CONFLICT,
-			"You applied as yourself already, so you keep applying as yourself."),
+			"Something was already sent under this name, or someone else is in it, so who applies stays as it is."),
 
 	ORGANIZATION_REQUIRED("PROPOSAL_ORGANIZATION_REQUIRED", ErrorCategory.VALIDATION,
 			"Say who applies: yourself, your team or your company."),
@@ -64,6 +64,9 @@ public enum ProposalErrorCode implements ErrorCode {
 
 	NOT_SUBMITTED("PROPOSAL_NOT_SUBMITTED", ErrorCategory.CONFLICT,
 			"Only a submitted application can be withdrawn."),
+
+	DRAFT_ONLY("PROPOSAL_DRAFT_ONLY", ErrorCategory.CONFLICT,
+			"Only an application never submitted can be deleted. A submitted one can be withdrawn."),
 
 	REVIEW_PROGRAM_NOT_FOUND("PROPOSAL_REVIEW_PROGRAM_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such program taking applications."),

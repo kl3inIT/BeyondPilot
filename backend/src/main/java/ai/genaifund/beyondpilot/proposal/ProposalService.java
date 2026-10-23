@@ -48,6 +48,7 @@ import ai.genaifund.beyondpilot.solution.OfferedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,10 +230,10 @@ public class ProposalService {
 
 	/**
 	 * Makes the organization the caller applies through when they belong to none: themselves, or their team. Both are
-	 * active at once. Someone applying as themselves may still
-	 * become a team while nothing was sent under their name.
+	 * active at once. While nothing was sent under its name, someone applying as themselves may still become a team,
+	 * and someone whose team is just them may rename it or become themselves again.
 	 * @throws ProposalException when the program takes no applications now, the caller already belongs to an
-	 * organization other than themselves, or sent something as themselves
+	 * organization they cannot change, or something was sent under its name
 	 */
 	@Transactional
 	public ApplicationViewResponse organize(Actor actor, String slug, ApplicantOrganizationRequest request) {
@@ -240,7 +241,7 @@ public class ProposalService {
 		ApplicationForm form = open(slug);
 		boolean individual = "individual".equals(request.kind());
 		ApplicantOrganization applicant = new ApplicantOrganization(request.name().strip(),
-				individual ? Membership.INDIVIDUAL : "builder_team", request.country(),
+				individual ? Membership.INDIVIDUAL : Membership.TEAM, request.country(),
 				individual ? "just_me" : Objects.requireNonNullElse(request.teamSize(), "2_9"), text(request.website()));
 		Membership membership = organizations.membershipOf(actor).orElse(null);
 		UUID organizationId;
@@ -250,6 +251,11 @@ public class ProposalService {
 		else if (!individual && membership.individual()) {
 			requireSwitchable(membership);
 			organizationId = organizationService.becomeTeam(actor, applicant);
+		}
+		else if (membership.team() && membership.owner()) {
+			requireSwitchable(membership);
+			organizationId = individual ? organizationService.becomeIndividual(actor, applicant.name())
+					: organizationService.becomeTeam(actor, applicant);
 		}
 		else {
 			throw new ProposalException(ProposalErrorCode.ALREADY_IN_ORGANIZATION,
@@ -264,21 +270,21 @@ public class ProposalService {
 	}
 
 	/**
-	 * Takes someone applying as themselves out of that, so that they can apply for a company instead: the application
-	 * then belongs to no organization until they join or add one.
-	 * @throws ProposalException when the program takes no applications now, the caller does not apply as themselves,
-	 * or something was sent under their name
+	 * Takes someone applying as themselves, or through a team that is just them, out of it, so that they can apply for
+	 * a company instead: the application then belongs to no organization until they join or add one.
+	 * @throws ProposalException when the program takes no applications now, the caller applies neither as themselves
+	 * nor through a team of their own, or something was sent under its name
 	 */
 	@Transactional
 	public ApplicationViewResponse leaveIndividual(Actor actor, String slug) {
 		identity.requireActive(actor);
 		ApplicationForm form = open(slug);
 		Membership membership = organizations.membershipOf(actor)
-			.filter(Membership::individual)
+			.filter(found -> found.individual() || (found.team() && found.owner()))
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
-					"Account " + actor.accountId() + " does not apply as themselves"));
+					"Account " + actor.accountId() + " applies neither as themselves nor through a team of their own"));
 		requireSwitchable(membership);
-		organizationService.leaveIndividual(actor);
+		organizationService.leaveApplicant(actor);
 		Proposal proposal = proposals.findForUpdate(form.programId(), actor.accountId()).orElse(null);
 		if (proposal != null) {
 			proposal.leaveOrganization();
@@ -288,15 +294,22 @@ public class ProposalService {
 	}
 
 	/**
-	 * Someone applying as themselves keeps doing so once something went out under their name (an application, a
-	 * proposal for a use case or a solution sent for review), or once GenAI Fund took them down.
+	 * Who applies stays as it is once something went out under its name (an application, a proposal for a use case or a
+	 * solution sent for review), once GenAI Fund took it down, and, for a team, once anyone else is in it or asked or
+	 * was invited to be.
 	 */
 	private void requireSwitchable(Membership membership) {
-		// One that GenAI Fund took down keeps that decision: neither a team nor a fresh start undoes it.
-		if (!membership.active() || sentAnything(membership.organizationId())) {
+		if (!switchable(membership.organizationId(), membership.type(), membership.active())) {
 			throw new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
-					"Individual " + membership.organizationId() + " already sent something");
+					"Organization " + membership.organizationId() + " can no longer change who applies");
 		}
+	}
+
+	private boolean switchable(UUID organizationId, String type, boolean active) {
+		// One that GenAI Fund took down keeps that decision: neither a team nor a fresh start undoes it.
+		boolean applicant = Membership.INDIVIDUAL.equals(type)
+				|| (Membership.TEAM.equals(type) && organizations.standsAlone(organizationId));
+		return applicant && active && !sentAnything(organizationId);
 	}
 
 	private boolean sentAnything(UUID organizationId) {
@@ -413,6 +426,55 @@ public class ProposalService {
 	}
 
 	/**
+	 * Deletes the caller's application for good while it was never submitted, whether or not the program still takes
+	 * applications: nobody else has seen it. The files it names go too, unless something else names them.
+	 * @throws ProposalException when the caller has no such application, or it was submitted
+	 */
+	@Transactional
+	public void deleteDraft(Actor actor, UUID id) {
+		identity.requireActive(actor);
+		Proposal proposal = proposals.findForUpdate(id)
+			.filter(found -> found.getAccountId().equals(actor.accountId()))
+			.orElseThrow(() -> notFound(id));
+		if (!proposal.isUnsent()) {
+			throw new ProposalException(ProposalErrorCode.DRAFT_ONLY, "Application " + id + " was submitted");
+		}
+		List<UUID> named = new ArrayList<>();
+		if (proposal.getDeckFileId() != null) {
+			named.add(proposal.getDeckFileId());
+		}
+		for (String value : read(proposal.getAnswers()).values()) {
+			uuid(value).ifPresent(named::add);
+		}
+		proposals.delete(proposal);
+		proposals.flush();
+		// Only what the applicant uploaded for an application, and nothing else names now.
+		List<UUID> files = storage.describe(named)
+			.values()
+			.stream()
+			.filter(file -> file.purpose() == FilePurpose.APPLICATION_FILE
+					&& actor.accountId().equals(file.uploadedByAccountId()))
+			.map(StoredFile::id)
+			.filter(file -> !proposals.fileNamed(file))
+			.toList();
+		files.forEach(storage::delete);
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.draft.deleted")
+			.addKeyValue("proposal_id", id)
+			.addKeyValue("files_deleted", files.size())
+			.log("Draft application deleted");
+	}
+
+	private static Optional<UUID> uuid(String value) {
+		try {
+			return Optional.of(UUID.fromString(value));
+		}
+		catch (IllegalArgumentException notAFile) {
+			return Optional.empty();
+		}
+	}
+
+	/**
 	 * The answers a save keeps: those to the program's questions, each fitting its question. A new file must be one the
 	 * caller uploaded for an application; one the application already names stays.
 	 */
@@ -500,9 +562,9 @@ public class ProposalService {
 				person.email(), previous,
 				organization == null ? null
 						: new ApplyingOrganizationResponse(organization.id(), organization.name(), organization.type(),
-								organization.country(), organization.teamSize(), organization.active(),
-								Membership.INDIVIDUAL.equals(organization.type()) && organization.active()
-										&& !sentAnything(organization.id())),
+								organization.country(), organization.teamSize(), organization.website(),
+								organization.active(),
+								switchable(organization.id(), organization.type(), organization.active())),
 				offered);
 	}
 

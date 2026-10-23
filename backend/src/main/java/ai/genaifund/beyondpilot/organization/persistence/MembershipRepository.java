@@ -119,6 +119,17 @@ public class MembershipRepository {
 			.single();
 	}
 
+	/** Whether at most one person is in the organization, and nobody asked or was invited to join it. */
+	public boolean standsAlone(UUID organizationId) {
+		return Boolean.TRUE.equals(jdbc.sql("""
+				select (select count(*) from organization_member where organization_id = :id) <= 1
+				   and not exists (select 1 from organization_invitation
+				                   where organization_id = :id and status = 'pending' and expires_at > now())
+				   and not exists (select 1 from organization_join_request
+				                   where organization_id = :id and status = 'pending')
+				""").param("id", organizationId).query(Boolean.class).single());
+	}
+
 	public int owners(UUID organizationId) {
 		return jdbc.sql("select count(*) from organization_member where organization_id = ? and role = 'owner'")
 			.param(organizationId)
