@@ -15,5 +15,5 @@ public record ApplyingOrganizationResponse(@Schema(requiredMode = Schema.Require
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it is active, meaning not taken down.") boolean active,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.") boolean changeable) {
+				description = "Whether the person may still change who applies: they apply as themselves or through a team that is just them, and nothing was sent under its name yet.") boolean changeable) {
 }

@@ -187,9 +187,52 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(team, "$.organization.name")).isEqualTo("Lan and Friends");
 		assertThat(JsonPath.<String>read(team, "$.organization.type")).isEqualTo("builder_team");
 		assertThat(JsonPath.<Boolean>read(team, "$.organization.active")).isTrue();
-		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isFalse();
-		// A team stays one here: it may have members by now.
-		assertProblem(post(lan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		// A team that is just them may still change while it sent nothing: renamed, or back to themselves, in place.
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isTrue();
+		String id = JsonPath.read(team, "$.organization.id");
+		String lab = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Lan Lab", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(lab, "$.organization.name")).isEqualTo("Lan Lab");
+		assertThat(JsonPath.<String>read(lab, "$.organization.id")).isEqualTo(id);
+		String back = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Lan Nguyen", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(back, "$.organization.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(back, "$.organization.name")).isEqualTo("Lan Nguyen");
+		assertThat(JsonPath.<String>read(back, "$.organization.id")).isEqualTo(id);
+		assertThat(JsonPath.<Boolean>read(back, "$.organization.changeable")).isTrue();
+
+		// A team that is just them leaves for a company; nobody is then offered to join the team left empty.
+		String an = TestSignIn.session(client, mail, "an@alone.test");
+		post(an, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Quiet Harbor", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk();
+		String finder = "/api/organization/organizations?q=harbor";
+		String other = TestSignIn.session(client, mail, "finder@alone.test");
+		assertThat(JsonPath.<List<String>>read(body(get(other, finder).expectStatus().isOk()), "$.items[*].name"))
+			.containsExactly("Quiet Harbor");
+		String gone = body(post(an, form.path() + "/organization/leave", null).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(gone, "$.organization")).isNull();
+		assertThat(JsonPath.<List<String>>read(body(get(other, finder).expectStatus().isOk()), "$.items")).isEmpty();
+
+		// A team stays one once someone else may be in it: here, someone invited.
+		String tuan = TestSignIn.session(client, mail, "tuan@alone.test");
+		post(tuan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Tuan Team", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk();
+		post(tuan, "/api/organization/mine/invitations", Map.of("email", "friend@alone.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		assertThat(JsonPath.<Boolean>read(body(get(tuan, form.path()).expectStatus().isOk()),
+				"$.organization.changeable")).isFalse();
+		assertProblem(post(tuan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		assertProblem(post(tuan, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Tuan Do", "country", "VN")), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
 
 		// Leaving leaves the application with no organization, to join or add a company.
 		String minh = TestSignIn.session(client, mail, "minh@alone.test");
