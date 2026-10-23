@@ -2238,7 +2238,7 @@
         "metaTitle": "Create a use case · BeyondPilot",
         "title": "Create a use case",
         "organization": "Create this use case for",
-        "organizationPlaceholder": "Choose an organization",
+        "organizationPlaceholder": "Search or choose an organization",
         "organizationHint": "Only active organizations are listed.",
         "thisOrganization": "the organization",
         "publishSubmit": "Publish use case",
