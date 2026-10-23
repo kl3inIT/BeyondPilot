@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
+import { hydrated } from "./hydration";
 import { draftId, emptyView, submittedId, tascoQuestions } from "./stub-applications.mjs";
 
 const applyPath = "/programs/insurance-ai-tasco/apply";
@@ -611,6 +612,37 @@ test.describe("apply", () => {
     await settled(page);
   });
 
+  test("a draft never submitted is deleted for good once its applicant confirms", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "member", baseURL!);
+    await page.goto(`/applications/${draftId}`);
+    const deleted: string[] = [];
+    await page.route(`**/api/proposal/applications/${draftId}`, async (route) => {
+      if (route.request().method() !== "DELETE") {
+        return route.fallback();
+      }
+      deleted.push(route.request().method());
+      await route.fulfill({ status: 204 });
+    });
+    await (await hydrated(page.getByRole("button", { name: "Delete draft" }))).click();
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toContainText("Delete your draft for AI for Insurance Challenge × Tasco?");
+    await expect(dialog).toContainText("This cannot be undone.");
+    await dialog.getByRole("button", { name: "Cancel" }).click();
+    expect(deleted).toEqual([]);
+    await page.getByRole("button", { name: "Delete draft" }).click();
+    await page
+      .getByRole("alertdialog")
+      .getByRole("button", { name: "Delete", exact: true })
+      .click();
+    await expect(page.getByText("Your draft was deleted.")).toBeVisible();
+    await expect(page).toHaveURL("/applications");
+    expect(deleted).toEqual(["DELETE"]);
+  });
+
   test("the receipt, My applications and an application, which can be withdrawn", async ({
     page,
     context,
@@ -636,6 +668,8 @@ test.describe("apply", () => {
       "href",
       "/programs/insurance-ai-tasco/apply",
     );
+    // A submitted application is withdrawn, never deleted.
+    await expect(page.getByRole("button", { name: "Delete draft" })).toHaveCount(0);
     await settled(page);
     await shot(page, `apply-6-application-${label}`);
 

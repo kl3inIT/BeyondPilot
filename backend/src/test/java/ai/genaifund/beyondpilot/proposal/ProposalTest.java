@@ -187,9 +187,58 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(team, "$.organization.name")).isEqualTo("Lan and Friends");
 		assertThat(JsonPath.<String>read(team, "$.organization.type")).isEqualTo("builder_team");
 		assertThat(JsonPath.<Boolean>read(team, "$.organization.active")).isTrue();
-		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isFalse();
-		// A team stays one here: it may have members by now.
-		assertProblem(post(lan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		// A team that is just them may still change while it sent nothing: renamed, or back to themselves, in place.
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isTrue();
+		String id = JsonPath.read(team, "$.organization.id");
+		String lab = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Lan Lab", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(lab, "$.organization.name")).isEqualTo("Lan Lab");
+		assertThat(JsonPath.<String>read(lab, "$.organization.id")).isEqualTo(id);
+		String back = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Lan Nguyen", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(back, "$.organization.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(back, "$.organization.name")).isEqualTo("Lan Nguyen");
+		assertThat(JsonPath.<String>read(back, "$.organization.id")).isEqualTo(id);
+		assertThat(JsonPath.<Boolean>read(back, "$.organization.changeable")).isTrue();
+
+		// A team that is just them leaves for a company; nobody is then offered to join the team left empty.
+		String an = TestSignIn.session(client, mail, "an@alone.test");
+		post(an, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Quiet Harbour", "country", "VN", "teamSize", "10_49"))
+			.expectStatus()
+			.isOk();
+		// Renamed without a size, it keeps its own.
+		String harbor = body(post(an, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Quiet Harbor", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(harbor, "$.organization.teamSize")).isEqualTo("10_49");
+		String finder = "/api/organization/organizations?q=harbor";
+		String other = TestSignIn.session(client, mail, "finder@alone.test");
+		assertThat(JsonPath.<List<String>>read(body(get(other, finder).expectStatus().isOk()), "$.items[*].name"))
+			.containsExactly("Quiet Harbor");
+		String gone = body(post(an, form.path() + "/organization/leave", null).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(gone, "$.organization")).isNull();
+		assertThat(JsonPath.<List<String>>read(body(get(other, finder).expectStatus().isOk()), "$.items")).isEmpty();
+
+		// A team stays one once someone else may be in it: here, someone invited.
+		String tuan = TestSignIn.session(client, mail, "tuan@alone.test");
+		post(tuan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Tuan Team", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk();
+		post(tuan, "/api/organization/mine/invitations", Map.of("email", "friend@alone.test", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		assertThat(JsonPath.<Boolean>read(body(get(tuan, form.path()).expectStatus().isOk()),
+				"$.organization.changeable")).isFalse();
+		assertProblem(post(tuan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		assertProblem(post(tuan, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Tuan Do", "country", "VN")), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
 
 		// Leaving leaves the application with no organization, to join or add a company.
 		String minh = TestSignIn.session(client, mail, "minh@alone.test");
@@ -250,6 +299,60 @@ class ProposalTest extends ApplicationsHttpTest {
 				select o.name from proposal p join organization o on o.id = p.organization_id
 				where p.account_id = (select id from identity_account where email = 'lan@stays.test')
 				""").query(String.class).single()).isEqualTo("Lan Stays Team");
+	}
+
+	@Test
+	void anApplicantDeletesADraftForGoodWithTheFilesNothingElseNames() {
+		Form first = program("first-draft-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		Form second = program("second-draft-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String email = "mai@drafts.test";
+		String mai = TestSignIn.session(client, mail, email);
+		String draft = body(put(mai, first.path(),
+				withDeck(application(Map.of("firstName", "Mai"), null, answers(first, email), null), email))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(draft, "$.application.id");
+		UUID deck = UUID.fromString(JsonPath.read(draft, "$.application.deck.fileId"));
+		UUID proposalFile = UUID.fromString(JsonPath.read(draft, "$.application.answers['" + first.proposalFile() + "']"));
+		// The next application brings the same deck, then that program closes.
+		Map<String, Object> next = application(Map.of("firstName", "Mai"), null, Map.of(), null);
+		next.put("deckFileId", deck.toString());
+		String other = JsonPath.read(body(put(mai, second.path(), next).expectStatus().isOk()), "$.application.id");
+		jdbc.sql("update program set applications_close_at = now() - interval '1 minute' where id = ?")
+			.params(second.programId())
+			.update();
+
+		assertProblem(delete(TestSignIn.session(client, mail, "stranger@drafts.test"), API + "/applications/" + id),
+				404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		delete(mai, API + "/applications/" + id).expectStatus().isNoContent();
+		assertProblem(get(mai, API + "/applications/" + id), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		assertThat(stored(proposalFile)).isFalse();
+		// The other application still names the deck.
+		assertThat(stored(deck)).isTrue();
+
+		// A program that closed still lets its draft go.
+		delete(mai, API + "/applications/" + other).expectStatus().isNoContent();
+		assertThat(stored(deck)).isFalse();
+
+		// A submitted application is withdrawn instead, and stays so once changed again.
+		String sent = "sent@drafts.test";
+		String sender = TestSignIn.session(client, mail, sent);
+		post(sender, first.path() + "/organization", Map.of("kind", "individual", "name", "Sent Le", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		submitted(sender, sent, first, completeSolution(sender, sent, "Sent Copilot"));
+		String submittedId = JsonPath.read(body(get(sender, first.path()).expectStatus().isOk()), "$.application.id");
+		assertProblem(delete(sender, API + "/applications/" + submittedId), 409, "PROPOSAL_DRAFT_ONLY");
+		String withdrawn = body(post(sender, API + "/applications/" + submittedId + "/withdraw", null).expectStatus()
+			.isOk());
+		Map<String, Object> changed = application(contact(), null, Map.of(), versionOf(withdrawn));
+		assertThat(JsonPath.<String>read(body(put(sender, first.path(), changed).expectStatus().isOk()),
+				"$.application.status")).isEqualTo("draft");
+		assertProblem(delete(sender, API + "/applications/" + submittedId), 409, "PROPOSAL_DRAFT_ONLY");
+	}
+
+	private boolean stored(UUID file) {
+		return jdbc.sql("select exists (select 1 from storage_file where id = ?)").param(file).query(Boolean.class).single();
 	}
 
 	@Test
