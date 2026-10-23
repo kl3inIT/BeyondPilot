@@ -14,8 +14,6 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.organization.OrganizationProfile;
-import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
-import ai.genaifund.beyondpilot.solution.dto.PublicOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListRequest;
 import ai.genaifund.beyondpilot.solution.dto.PublicCustomerDeploymentListResponse;
 import ai.genaifund.beyondpilot.solution.dto.PublicSolutionListRequest;
@@ -59,18 +57,16 @@ public class SolutionDirectory {
 
 	private final StorageService storage;
 
-	private final SolutionOffers offers;
 
 	SolutionDirectory(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			StorageService storage, SolutionOffers offers) {
+			StorageService storage) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
 		this.organizations = organizations;
 		this.identity = identity;
 		this.storage = storage;
-		this.offers = offers;
 	}
 
 	/**
@@ -99,13 +95,12 @@ public class SolutionDirectory {
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.activeNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
-		Map<UUID, List<OfferResponse>> offered = offers.of(rows.stream().map(SolutionQueryRepository.Row::id).toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
 					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments(),
-					row.featuredAt() != null, shownOffers(offered.get(row.id())));
+					row.featuredAt() != null);
 		}).toList(), page, size, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
@@ -159,8 +154,7 @@ public class SolutionDirectory {
 							CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
-					.toList(),
-				shownOffers(offers.of(solution.getId())));
+					.toList());
 	}
 
 	/** The solutions of an organization, the newest first, for the module that applies with one. */
@@ -338,19 +332,10 @@ public class SolutionDirectory {
 		return own != null ? own : organizationLogo;
 	}
 
-	/** The offers of a solution as the public reads them: what each is called and where it is claimed. */
-	private static List<PublicOfferResponse> shownOffers(@Nullable List<OfferResponse> offers) {
-		return offers == null ? List.of()
-				: offers.stream()
-					.map(offer -> new PublicOfferResponse(offer.title(), offer.url(), offer.fromGenAiFund()))
-					.toList();
-	}
-
 	/** Those of these approved solutions whose organization is not taken down. */
 	private List<IndexedSolution> indexed(List<Solution> approved) {
 		Map<UUID, OrganizationName> names = organizations
 			.activeNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
-		Map<UUID, List<OfferResponse>> offered = offers.of(approved.stream().map(Solution::getId).toList());
 		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
 			OrganizationName organization = names.get(solution.getOrganizationId());
 			return new IndexedSolution(solution.getId(), solution.getSlug(), solution.getName(),
@@ -363,11 +348,7 @@ public class SolutionDirectory {
 							CustomerDeployment.APPROVED),
 					solution.isListed(), solution.getDecidedAt(), solution.getCoverFileId(),
 					solution.getProgram() != null ? solution.getProgram() : solution.getBackedBy(),
-					solution.getFeaturedAt() != null,
-					offered.getOrDefault(solution.getId(), List.of())
-						.stream()
-						.map(offer -> new SolutionOffer(offer.title(), offer.url(), offer.fromGenAiFund()))
-						.toList());
+					solution.getFeaturedAt() != null);
 		}).toList();
 	}
 

@@ -1,6 +1,6 @@
 # Perks, claimed on BeyondPilot by the teams they are for
 
-Status: proposed on 23 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-247, under BEY-34. The research behind it: [Perks](../../../research/2026-10-23-perks.md). It replaces the offers of [a solution comes with offers](../bey-148-solution-offers/design.md) (BEY-148), [an offer is closed to new solutions](../bey-158-offer-close-and-record/design.md) (BEY-158) and [an offer belongs to the organization that gives it](../bey-217-offer-belongs-to-its-organization/design.md) (BEY-217). Winners as an audience are BEY-248.
+Status: accepted on 23 October 2026 and being built ([plan](plan.md)). Tracked in Linear as BEY-247, under BEY-34. The research behind it: [Perks](../../../research/2026-10-23-perks.md). It replaces the offers of [a solution comes with offers](../bey-148-solution-offers/design.md) (BEY-148), [an offer is closed to new solutions](../bey-158-offer-close-and-record/design.md) (BEY-158) and [an offer belongs to the organization that gives it](../bey-217-offer-belongs-to-its-organization/design.md) (BEY-217). Winners as an audience are BEY-248.
 
 ## The problem
 
@@ -29,7 +29,7 @@ An offer today is a line of 80 characters and a link, owned by an organization a
 5. Minh at Ollie AI, not shortlisted, sees the perk and that it is for the shortlist; nothing to take.
 6. Kyanon writes its own perk, a free two-week AI readiness assessment for members, by request with Require approval on and 20 places, and publishes it. Thu at Fintrace answers its two questions; Kyanon's members are emailed; one of them grants it; Thu is emailed and sees Granted on the perk and in My organization › Perks.
 
-Failures: a person signed out is asked to sign in; a person in no organization is told a perk needs one; a team already holding the perk sees what it holds; the last code or place taken by someone else a moment before answers No places left; a perk ended or unpublished between opening and asking answers it is no longer available; a code list empty answers No places left and the operator and the partner are told when ten are left.
+Failures: a person signed out is asked to sign in; a person in no organization is told a perk needs one; a team already holding the perk sees what it holds; the last code or place taken by someone else a moment before answers No places left; a perk ended or unpublished between opening and asking answers it is no longer available; a code list empty answers No places left, and the codes left show to the operator and the partner; a team whose request was declined sees the decline and does not ask again.
 
 ## Glossary
 
@@ -85,10 +85,10 @@ The directory's cards without a search term are read from `solution`, which know
 | Topic                   | Decision                                                                                                           | Why                                                                                                                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A module of its own     | `perk`, with offers moved out of `solution`                                                                        | Checking an audience needs `proposal`, which depends on `solution`: in `solution` it would be a cycle. A perk has its own actors (claimants, partners), lifecycle and private data |
-| The word                | Perk, in the interface, the API, the tables and the audit codes; old audit rows are renamed with the tables        | Kai, Joshua and Builder Hub say perk; "offer" also reads as a sales offer beside proposals. Đạt, 23 October                                                                        |
+| The word                | Perk, in the interface, the API, the tables and the audit codes; old audit rows keep their `solution.offer_*` actions | Kai, Joshua and Builder Hub say perk; "offer" also reads as a sales offer beside proposals. The audit log is append-only, so its old rows stay as recorded. Đạt, 23 October                                                                        |
 | Audience checked        | A code, private link or form opens only to those who qualify                                                       | A perk for a shortlist is worth something only if others cannot take it; AWS asks that its Org ID is not shared. Builder Hub checks only on a form. Đạt, 23 October                |
 | Shortlist after release | A team counts as shortlisted only once the program's outcomes are released                                         | Before the release the decision is internal                                                                                                                                        |
-| Code list               | Single-use codes loaded by an operator as CSV, one per claim; ten left emails the operator and the partner         | The practice for codes of value: one leaked code costs one place                                                                                                                   |
+| Code list               | Single-use codes loaded by an operator as CSV, one per claim; the codes left show in both lists of perks           | The practice for codes of value: one leaked code costs one place. No email warns of a low stock: no published read names the operators to write to                                                                                                                   |
 | Require approval        | A switch on a request perk, off granting at once                                                                   | Luma's switch; Builder Hub's OpenAI form fulfils automatically. Đạt, 23 October                                                                                                    |
 | Limit                   | Per organization by default, per person when the partner says so                                                   | Programs for startups count per company (AWS, YC, Brex, Apollo); per person suits a personal plan. Đạt, 23 October                                                                 |
 | Places                  | Optional on a code-list or request perk; a declined request frees its place                                        | Builder Hub's quantity. A link perk is got on the partner's site and cannot be counted                                                                                             |
@@ -100,6 +100,9 @@ The directory's cards without a search term are read from `solution`, which know
 | Closing                 | `closed_at` goes. A perk is draft, published or archived, with dates and places                                    | BEY-158 closed an offer to new solutions; a perk now names its own solutions, and dates and places say when it stops                                                               |
 | Plain text              | About, the steps and the terms are plain text; the steps an ordered list of up to ten                              | Enough for every Builder Hub perk read; rich text can come later                                                                                                                   |
 | Who edits               | The organization's members who may edit its solutions, and operators                                               | The rule offers follow today                                                                                                                                                       |
+| A declined request      | Final for that team: the claim stays declined, frees its place, and the team does not ask again | The partner answered; asking again until granted would turn a decision into a queue |
+| An archived perk        | Off the catalogue and its page, except for the teams that got it, who still read what they hold | What a team got stays with it, as Builder Hub's claimed list does |
+| Who answers a request   | A member of the partner, or an operator for a partner nobody answers for | An operator writes perks for partners nobody has signed in for |
 
 ## What a perk holds
 
@@ -109,7 +112,7 @@ A claim holds the perk, the organization, the person, the code it got, the answe
 
 ## The offers that exist
 
-The migration renames `offer` to `perk` and `solution_offer` to `perk_solution`, and fills the new columns of each existing offer: published, for everyone, a link to its address, once per organization, no value, a slug from its organization and title. A closed offer stays published on the solutions it went with. Audit rows `offer_*` become `perk_*`. Production had no offer on 18 October; staging holds three.
+The migration renames `offer` to `perk` and `solution_offer` to `perk_solution`, and fills the new columns of each existing offer: published, for everyone, a link to its address, once per organization, no value, a slug from its organization and title. A closed offer stays published on the solutions it went with. Audit rows keep their `solution.offer_*` actions. Production had no offer on 18 October; staging holds three.
 
 ## Not in this increment
 

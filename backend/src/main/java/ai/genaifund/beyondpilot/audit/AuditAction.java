@@ -157,6 +157,34 @@ public enum AuditAction {
 	/** An operator deleted an offer no solution comes with. */
 	SOLUTION_OFFER_DELETE("solution.offer_delete"),
 
+	/** A perk was written, as a draft. The offers before it were recorded with the {@code solution.offer_*} actions. */
+	PERK_CREATE("perk.create"),
+
+	PERK_UPDATE("perk.update"),
+
+	/** A perk was published, or published again from the archive; anyone sees it. */
+	PERK_PUBLISH("perk.publish"),
+
+	/** A perk was taken off the site; what teams got of it stays. */
+	PERK_ARCHIVE("perk.archive"),
+
+	/** A perk nobody got was deleted. */
+	PERK_DELETE("perk.delete"),
+
+	/** An operator loaded single-use codes for a perk. {@code count} is how many were new. */
+	PERK_CODES_LOAD("perk.codes_load", "count"),
+
+	/** A member of the partner granted a request for a perk. {@code organization} is the requesting organization. */
+	PERK_REQUEST_GRANT("perk.request_grant", "organization"),
+
+	PERK_REQUEST_DECLINE("perk.request_decline", "organization"),
+
+	/**
+	 * The claims of a perk were downloaded as a spreadsheet, with the claimants' email. {@code count} is how many the
+	 * download holds.
+	 */
+	PERK_CLAIMS_EXPORT("perk.claims_export", "count"),
+
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
 

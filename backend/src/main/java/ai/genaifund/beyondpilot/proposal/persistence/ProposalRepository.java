@@ -43,6 +43,17 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
 	long countByProgramIdAndStatus(UUID programId, String status);
 
+	/**
+	 * The review statuses of the submitted applications to a program by an organization or, for one sent before the
+	 * person belonged to it, by the person.
+	 */
+	@Query("""
+			select p.reviewStatus from Proposal p
+			where p.programId = :programId and p.status = 'submitted'
+			  and (p.organizationId = :organizationId or p.accountId = :accountId)
+			""")
+	List<String> findSubmittedReviewStatuses(UUID programId, UUID organizationId, UUID accountId);
+
 	/** The programs that have a submitted application. */
 	@Query("select distinct p.programId from Proposal p where p.status = 'submitted'")
 	List<UUID> findProgramsWithSubmissions();

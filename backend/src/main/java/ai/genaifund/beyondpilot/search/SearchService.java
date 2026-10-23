@@ -12,7 +12,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.program.ProgramPhase;
 import ai.genaifund.beyondpilot.search.dto.SearchCounts;
 import ai.genaifund.beyondpilot.search.dto.SearchItem;
-import ai.genaifund.beyondpilot.search.dto.SearchOffer;
+import ai.genaifund.beyondpilot.search.dto.SearchPerk;
 import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import ai.genaifund.beyondpilot.search.dto.SearchResponse;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
@@ -163,7 +163,7 @@ public class SearchService {
 				text(facets, Cards.LEAD_PROJECT_TITLE), text(facets, Cards.LEAD_PROJECT_STAGE),
 				bool(facets, Cards.BUDGET_MEMBERS_ONLY), instant(facets, Cards.PUBLISHED_AT),
 				texts(facets, Cards.TECHNOLOGIES), integer(facets, Cards.TIMELINE_MIN_WEEKS),
-				integer(facets, Cards.TIMELINE_MAX_WEEKS), uuid(facets, Cards.ORGANIZATION_LOGO), offers(facets));
+				integer(facets, Cards.TIMELINE_MAX_WEEKS), uuid(facets, Cards.ORGANIZATION_LOGO), perks(facets));
 	}
 
 	private static @Nullable String text(Map<String, Object> facets, String name) {
@@ -175,18 +175,18 @@ public class SearchService {
 				? values.stream().filter(String.class::isInstance).map(String.class::cast).toList() : List.of();
 	}
 
-	/** The offers of a solution's card; a row written before offers were indexed has none. */
-	private static List<SearchOffer> offers(Map<String, Object> facets) {
-		if (!(facets.get(Cards.OFFERS) instanceof List<?> values)) {
+	/** The perks of a solution's card; a row written before perks were indexed has none. */
+	private static List<SearchPerk> perks(Map<String, Object> facets) {
+		if (!(facets.get(Cards.PERKS) instanceof List<?> values)) {
 			return List.of();
 		}
 		return values.stream()
 			.filter(Map.class::isInstance)
 			.map(value -> (Map<?, ?>) value)
-			.filter(offer -> offer.get(Cards.OFFER_TITLE) instanceof String
-					&& offer.get(Cards.OFFER_URL) instanceof String)
-			.map(offer -> new SearchOffer((String) offer.get(Cards.OFFER_TITLE), (String) offer.get(Cards.OFFER_URL),
-					Boolean.TRUE.equals(offer.get(Cards.OFFER_FROM_GENAI_FUND))))
+			.filter(perk -> perk.get(Cards.PERK_SLUG) instanceof String && perk.get(Cards.PERK_TITLE) instanceof String)
+			.map(perk -> new SearchPerk((String) perk.get(Cards.PERK_SLUG), (String) perk.get(Cards.PERK_TITLE),
+					perk.get(Cards.PERK_VALUE) instanceof String value ? value : null,
+					Boolean.TRUE.equals(perk.get(Cards.PERK_FROM_GENAI_FUND))))
 			.toList();
 	}
 

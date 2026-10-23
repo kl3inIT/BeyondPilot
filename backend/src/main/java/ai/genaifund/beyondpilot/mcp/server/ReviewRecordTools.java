@@ -18,9 +18,9 @@ import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.organization.OrganizationAdministration;
 import ai.genaifund.beyondpilot.organization.OrganizationReviewList;
 import ai.genaifund.beyondpilot.organization.OrganizationReviewRecord;
+import ai.genaifund.beyondpilot.perk.PerkEditing;
+import ai.genaifund.beyondpilot.perk.PerkRecord;
 import ai.genaifund.beyondpilot.solution.SolutionAdministration;
-import ai.genaifund.beyondpilot.solution.SolutionOfferRecord;
-import ai.genaifund.beyondpilot.solution.SolutionOffers;
 import ai.genaifund.beyondpilot.solution.SolutionReviewList;
 import ai.genaifund.beyondpilot.solution.SolutionReviewRecord;
 import ai.genaifund.beyondpilot.talent.TalentAdministration;
@@ -76,8 +76,11 @@ class ReviewRecordTools {
 			"use_cases",
 			List.of("id", "title", "organizationName", "industry", "status", "publishedAt", "closesAt", "featuredAt",
 					"submittedAt", "submittedBy", "reviewedAt", "reviewedBy", "reviewNote", "operatorsOnly", "updatedAt"),
-			"offers", List.of("id", "title", "claimUrl", "organizationName", "fromGenAiFund", "status", "solutions",
-					"updatedAt"));
+			"perks", List.of("id", "title", "value", "organizationName", "status", "audience", "way", "fromGenAiFund",
+					"taken", "waiting", "endsAt", "updatedAt"));
+
+	/** A perk's admin page, followed by its identifier. */
+	private static final String PERK_PAGE = "/admin/solutions/perks/";
 
 	/** The longest search the admin lists take. */
 	private static final int MAX_QUERY = 100;
@@ -99,7 +102,7 @@ class ReviewRecordTools {
 
 	private final SolutionAdministration solutions;
 
-	private final SolutionOffers offers;
+	private final PerkEditing perks;
 
 	private final TalentAdministration talent;
 
@@ -114,11 +117,11 @@ class ReviewRecordTools {
 	private final JsonMapper json;
 
 	ReviewRecordTools(OrganizationAdministration organizations, SolutionAdministration solutions,
-			SolutionOffers offers, TalentAdministration talent, UseCaseAdministration useCases, AuditLog audit,
+			PerkEditing perks, TalentAdministration talent, UseCaseAdministration useCases, AuditLog audit,
 			IdentityService identity, McpCallers callers, JsonMapper json) {
 		this.organizations = organizations;
 		this.solutions = solutions;
-		this.offers = offers;
+		this.perks = perks;
 		this.talent = talent;
 		this.useCases = useCases;
 		this.audit = audit;
@@ -135,7 +138,7 @@ class ReviewRecordTools {
 				+ "for every status. The values each area takes: organizations: active, claimed, suspended, merged. "
 				+ "solutions: in_review, needs_changes, approved, rejected, suspended. talent: in_review, "
 				+ "needs_changes, approved, suspended. use_cases: draft, in_review, needs_changes, approved, closed. "
-				+ "offers: open, closed."));
+				+ "perks: draft, published, archived."));
 		properties.put("q", Map.of("type", "string", "description", "Only records whose name contains this."));
 		properties.put("page", Map.of("type", "integer", "minimum", 1, "description", "The page, from 1."));
 		properties.put("size", Map.of("type", "integer", "minimum", 1, "maximum", MAX_SIZE, "description",
@@ -147,7 +150,7 @@ class ReviewRecordTools {
 			.description("List one area of BeyondPilot's admin as a GenAI Fund operator sees it, in any status (a "
 					+ "solution or talent profile may be in review, need changes or be rejected; an organization is "
 					+ "active, suspended or merged): organizations, solutions, talent "
-					+ "profiles, use cases or the offers solutions come with, a page at a time. Each record gives its "
+					+ "profiles, use cases or the perks organizations give, a page at a time. Each record gives its "
 					+ "id, name, status, what an operator scans (organization, country, submitted and updated dates, "
 					+ "featured) and its admin page; read one with get_record. search and fetch cover only what is "
 					+ "approved or published; for a one-call summary of what waits for review in every area, use "
@@ -198,18 +201,18 @@ class ReviewRecordTools {
 						found.items().forEach(item -> items.add(item(item, site + "/admin/use-cases/" + item.id())));
 					}
 					default -> {
-						// The offers' list is short and has no pages of its own: it is narrowed and paged here.
-						List<SolutionOfferRecord> found = offers.offerRecords(actor)
+						// The perks' list is short and has no pages of its own: it is narrowed and paged here.
+						List<PerkRecord> found = perks.records(actor)
 							.stream()
-							.filter(offer -> status == null || offer.closed() == status.equals("closed"))
-							.filter(offer -> q == null || contains(offer.title(), q)
-									|| contains(offer.organizationName(), q))
+							.filter(perk -> status == null || perk.status().equals(status))
+							.filter(perk -> q == null || contains(perk.title(), q)
+									|| contains(perk.organizationName(), q))
 							.toList();
 						total = found.size();
 						found.stream()
 							.skip((long) (page - 1) * size)
 							.limit(size)
-							.forEach(offer -> items.add(offer(offer, site)));
+							.forEach(perk -> items.add(item(perk, site + PERK_PAGE + perk.id())));
 					}
 				}
 			}
@@ -238,7 +241,7 @@ class ReviewRecordTools {
 				List.of("area", "id"), "additionalProperties", false);
 		Tool tool = Tool.builder("get_record", schema)
 			.title("Read a record operators review")
-			.description("Read one organization, solution, talent profile, use case or offer from BeyondPilot's admin, in "
+			.description("Read one organization, solution, talent profile, use case or perk from BeyondPilot's admin, in "
 					+ "any status, with its history from the audit log, newest first (when, the action, by whom and "
 					+ "its details; a solution's includes its customer deployments'). By default the concise view: "
 					+ "its name, status, key fields, GenAI Fund's latest decision with the message sent, and the last "
@@ -287,18 +290,14 @@ class ReviewRecordTools {
 								"/admin/use-cases/" + id, found, "use_case");
 					}
 					default -> {
-						SolutionOfferRecord found = offers.offerRecord(actor, id);
-						yield new Read("offer", found.title(), "/admin/solutions/offers/" + id, found,
-								"solution_offer");
+						PerkRecord found = perks.record(actor, id);
+						yield new Read("perk", found.title(), PERK_PAGE + id, found, "perk");
 					}
 				};
 				// The audit log asks no caller; the services above checked the role, and it is checked again here.
 				identity.requireOperator(actor);
 				history = history(read, id, detail ? HISTORY : RECENT_HISTORY);
 				Map<String, Object> fields = compact(json.convertValue(read.record(), MAP));
-				if (read.record() instanceof SolutionOfferRecord offer) {
-					fields = offerFields(fields, offer);
-				}
 				if (detail) {
 					result.putAll(fields);
 				}
@@ -354,22 +353,6 @@ class ReviewRecordTools {
 		return entry;
 	}
 
-	private Map<String, Object> offer(SolutionOfferRecord offer, String site) {
-		Map<String, Object> entry = offerFields(compact(json.convertValue(offer, MAP)), offer);
-		entry.remove("solutionList");
-		entry.put("url", site + "/admin/solutions/offers/" + offer.id());
-		return entry;
-	}
-
-	/** An offer's fields with its status named, and the address where it is claimed apart from its admin page. */
-	private static Map<String, Object> offerFields(Map<String, Object> fields, SolutionOfferRecord offer) {
-		Map<String, Object> named = new LinkedHashMap<>();
-		fields.forEach((key, value) -> named.put(key.equals("url") ? "claimUrl" : key, value));
-		named.remove("closed");
-		named.put("status", offer.closed() ? "closed" : "open");
-		return named;
-	}
-
 	/** The map with every null value left out, at every depth. */
 	@SuppressWarnings("unchecked")
 	private static Map<String, Object> compact(Map<String, Object> map) {
@@ -400,7 +383,7 @@ class ReviewRecordTools {
 		statuses.put("solutions", List.of("in_review", "needs_changes", "approved", "rejected", "suspended"));
 		statuses.put("talent", List.of("in_review", "needs_changes", "approved", "suspended"));
 		statuses.put("use_cases", List.of("draft", "in_review", "needs_changes", "approved", "closed"));
-		statuses.put("offers", List.of("open", "closed"));
+		statuses.put("perks", List.of("draft", "published", "archived"));
 		return statuses;
 	}
 

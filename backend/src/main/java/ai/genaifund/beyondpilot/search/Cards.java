@@ -64,13 +64,15 @@ final class Cards {
 
 	static final String BACKING = "backing";
 
-	static final String OFFERS = "offers";
+	static final String PERKS = "perks";
 
-	static final String OFFER_TITLE = "title";
+	static final String PERK_SLUG = "slug";
 
-	static final String OFFER_URL = "url";
+	static final String PERK_TITLE = "title";
 
-	static final String OFFER_FROM_GENAI_FUND = "fromGenAiFund";
+	static final String PERK_VALUE = "value";
+
+	static final String PERK_FROM_GENAI_FUND = "fromGenAiFund";
 
 	static final String PROJECT_COUNT = "projectCount";
 

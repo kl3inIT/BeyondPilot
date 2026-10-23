@@ -161,43 +161,67 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
-	void aSolutionIsFoundByAnOfferItComesWithAndItsCardSaysWhereTheOfferIsClaimed() {
-		String owner = TestSignIn.session(client, mail, "offer-" + word + "@directories.test");
-		UUID organization = organization(owner, "Offer " + word);
+	void aSolutionIsFoundByAPerkItGoesWithAndItsCardNamesThePerk() {
+		String owner = TestSignIn.session(client, mail, "perk-" + word + "@directories.test");
+		UUID organization = organization(owner, "Perk " + word);
 		UUID solution = submittedSolution(owner, "Claims Reader " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("claims reader " + word) == 1);
-		assertThat(JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].offers")).isEmpty();
+		assertThat(JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].perks")).isEmpty();
 
-		String offer = body(client.post()
-			.uri("/api/solution/admin/offers")
+		Map<String, Object> perk = new HashMap<>();
+		perk.put("title", "Numbat credits " + word);
+		perk.put("value", "$1,000");
+		perk.put("steps", List.of());
+		perk.put("audience", "everyone");
+		perk.put("way", "link");
+		perk.put("url", "https://perks.example.test/" + word);
+		perk.put("questions", List.of());
+		perk.put("requireApproval", false);
+		perk.put("perPerson", false);
+		perk.put("solutionIds", List.of(solution));
+		String created = body(client.post()
+			.uri("/api/perk/admin/perks")
 			.header(TestSignIn.CSRF_HEADER, "1")
 			.cookie(TestSignIn.SESSION_COOKIE, operator)
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(Map.of("organizationId", organization, "title", "Numbat credits " + word, "url",
-					"https://offers.example.test/" + word, "fromGenAiFund", true))
+			.body(Map.of("organizationId", organization, "perk", perk, "fromGenAiFund", true, "shownOnProgramIds",
+					List.of()))
 			.exchange()
 			.expectStatus()
 			.isCreated());
-		String offerId = JsonPath.read(offer, "$.id");
-		Map<String, Object> withOffer = asSaved(owner, solution, "Claims Reader " + word);
-		withOffer.put("offerIds", List.of(offerId));
-		put(owner, "/api/solution/mine/" + solution, withOffer);
+		String perkId = JsonPath.read(created, "$.id");
+		post(operator, "/api/perk/admin/perks/" + perkId + "/publish", null);
 
-		// The words of the offer find the solution, and its card carries the offer.
+		// The words of the perk find the solution, and its card names the perk.
 		await().atMost(WAIT).until(() -> total("numbat credits " + word) == 1);
 		String found = search("numbat%20credits%20" + word);
 		assertThat(JsonPath.<String>read(found, "$.items[0].title")).isEqualTo("Claims Reader " + word);
-		assertThat(JsonPath.<List<String>>read(found, "$.items[0].offers[*].url"))
-			.containsExactly("https://offers.example.test/" + word);
+		assertThat(JsonPath.<List<String>>read(found, "$.items[0].perks[*].value")).containsExactly("$1,000");
+		assertThat(JsonPath.<List<Boolean>>read(found, "$.items[0].perks[*].fromGenAiFund")).containsExactly(true);
 
-		// A change to the offer reaches the card of every solution that comes with it.
-		put(operator, "/api/solution/admin/offers/" + offerId,
-				Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/moved-" + word,
-						"fromGenAiFund", true, "version", JsonPath.<Number>read(offer, "$.version").longValue()));
+		// A change to the perk reaches the card of every solution it goes with, and an archived one leaves it.
+		perk.put("value", "$2,000");
+		put(operator, "/api/perk/admin/perks/" + perkId,
+				Map.of("perk", withVersion(perk, body(client.get()
+					.uri("/api/perk/admin/perks/" + perkId)
+					.cookie(TestSignIn.SESSION_COOKIE, operator)
+					.exchange())), "fromGenAiFund", true, "shownOnProgramIds", List.of()))
+			.expectStatus()
+			.isOk();
 		await().atMost(WAIT)
-			.until(() -> List.of("https://offers.example.test/moved-" + word)
-				.equals(JsonPath.<List<String>>read(search("claims%20reader%20" + word), "$.items[0].offers[*].url")));
+			.until(() -> List.of("$2,000")
+				.equals(JsonPath.<List<String>>read(search("claims%20reader%20" + word), "$.items[0].perks[*].value")));
+		post(operator, "/api/perk/admin/perks/" + perkId + "/archive", null);
+		await().atMost(WAIT)
+			.until(() -> JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].perks").isEmpty());
+	}
+
+	/** The perk's form with the version a read of it answered. */
+	private static Map<String, Object> withVersion(Map<String, Object> perk, String read) {
+		Map<String, Object> form = new HashMap<>(perk);
+		form.put("version", JsonPath.<Number>read(read, "$.version").longValue());
+		return form;
 	}
 
 	@Test

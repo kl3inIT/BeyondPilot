@@ -1087,7 +1087,6 @@ class MatchingRunTest {
 		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
 		request.put("imageFileIds", List.of());
-		request.put("offerIds", List.of());
 		request.put("listed", true);
 		request.put("version", JsonPath.<Number>read(draft, "$.version").longValue());
 		request.put("logoFileId", TestUploads.image(client, owner, "solution_logo", "logo.png"));
