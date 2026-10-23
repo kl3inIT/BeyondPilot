@@ -6,6 +6,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -196,6 +198,88 @@ public final class LumaApi {
 		body.put("send_email", false);
 		JsonNode added = call(HttpMethod.POST, "/v1/events/guests/add", Map.of(), key, body);
 		return added.path("skipped").isArray() && !added.path("skipped").isEmpty();
+	}
+
+	/**
+	 * An event to create on the calendar, free and kept private (BEY-250).
+	 * @param venue a free-text address, or null for an event online or without a place yet
+	 * @param capacity the seats, or null for no limit
+	 */
+	public record NewEvent(String name, Instant startsAt, @Nullable Instant endsAt, ZoneId zone, @Nullable String venue,
+			boolean hideVenue, @Nullable String meetingUrl, @Nullable String description, boolean approval,
+			@Nullable Integer capacity, boolean waitlist, List<NewQuestion> questions) {
+	}
+
+	/**
+	 * A question of an event to create, in Luma's own types.
+	 * @param id chosen by the caller, unique in the event
+	 */
+	public record NewQuestion(String id, String label, String type, boolean required, boolean multiline,
+			List<String> options, boolean multiple) {
+	}
+
+	/**
+	 * Creates a private event on the calendar with one free ticket, which asks for approval when the event does.
+	 * @return the event's identifier
+	 * @throws Refused when Luma refuses what was sent
+	 */
+	public String createEvent(String key, NewEvent event) throws IOException {
+		// In a fixed order, so what is sent reads the same each time.
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("name", event.name());
+		body.put("start_at", event.startsAt().toString());
+		if (event.endsAt() != null) {
+			body.put("end_at", event.endsAt().toString());
+		}
+		body.put("timezone", event.zone().getId());
+		body.put("visibility", "private");
+		if (event.description() != null) {
+			body.put("description_md", event.description());
+		}
+		if (event.venue() != null) {
+			Map<String, Object> place = new LinkedHashMap<>();
+			place.put("type", "manual");
+			place.put("address", event.venue());
+			body.put("geo_address_json", place);
+			body.put("location_visibility", event.hideVenue() ? "guests-only" : "public");
+		}
+		if (event.meetingUrl() != null) {
+			body.put("meeting_url", event.meetingUrl());
+		}
+		if (event.capacity() != null) {
+			body.put("max_capacity", event.capacity());
+		}
+		body.put("waitlist_status", event.waitlist() ? "enabled" : "disabled");
+		Map<String, Object> ticket = new LinkedHashMap<>();
+		ticket.put("name", "Standard");
+		ticket.put("type", "free");
+		ticket.put("require_approval", event.approval());
+		body.put("ticket_types", List.of(ticket));
+		body.put("registration_questions", event.questions().stream().map(LumaApi::question).toList());
+		String id = text(call(HttpMethod.POST, "/v1/events/create", Map.of(), key, body), "id");
+		if (id == null) {
+			throw new IOException("Luma answered no event");
+		}
+		return id;
+	}
+
+	private static Map<String, Object> question(NewQuestion question) {
+		Map<String, Object> sent = new LinkedHashMap<>();
+		sent.put("id", question.id());
+		sent.put("label", question.label());
+		sent.put("required", question.required());
+		sent.put("question_type", question.type());
+		if (question.multiline()) {
+			sent.put("multiline", true);
+		}
+		if (!question.options().isEmpty()) {
+			sent.put("options", question.options());
+			sent.put("multiple", question.multiple());
+		}
+		if ("company".equals(question.type())) {
+			sent.put("collect_job_title", true);
+		}
+		return sent;
 	}
 
 	/** The guest of the event with this address or identifier; empty while Luma has none. */

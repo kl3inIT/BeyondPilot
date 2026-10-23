@@ -1016,6 +1016,7 @@ paths:
           - program.luma_read
           - program.luma_connect
           - program.luma_disconnect
+          - program.luma_event_create
           - program.feature
           - program.unfeature
           - program.export
@@ -1187,6 +1188,7 @@ paths:
             - program.luma_read
             - program.luma_connect
             - program.luma_disconnect
+            - program.luma_event_create
             - program.feature
             - program.unfeature
             - program.export
@@ -1927,6 +1929,7 @@ paths:
           - program.luma_read
           - program.luma_connect
           - program.luma_disconnect
+          - program.luma_event_create
           - program.feature
           - program.unfeature
           - program.export
@@ -2098,6 +2101,7 @@ paths:
             - program.luma_read
             - program.luma_connect
             - program.luma_disconnect
+            - program.luma_event_create
             - program.feature
             - program.unfeature
             - program.export
@@ -17656,6 +17660,7 @@ components:
           - program.luma_read
           - program.luma_connect
           - program.luma_disconnect
+          - program.luma_event_create
           - program.feature
           - program.unfeature
           - program.export

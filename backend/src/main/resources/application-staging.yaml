@@ -5,6 +5,9 @@ beyondpilot:
     luma:
       # Staging reads the real GenAI Fund calendar; people register here only for its hidden test event (BEY-245).
       registration-events: evt-DCRVsSuHrK7voYF
+      # An event created from BeyondPilot is a test event here, named so on the real calendar, and takes
+      # registrations as the hidden one does (BEY-250).
+      created-name-prefix: "[TEST] "
 
 logging:
   level:

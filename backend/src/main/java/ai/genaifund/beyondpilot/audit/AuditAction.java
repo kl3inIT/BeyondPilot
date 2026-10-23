@@ -55,6 +55,12 @@ public enum AuditAction {
 	/** An operator removed the Luma key; the calendar is no longer read. */
 	PROGRAM_LUMA_DISCONNECT("program.luma_disconnect", "calendar"),
 
+	/**
+	 * An operator created an event on the Luma calendar from BeyondPilot (BEY-250); {@code event} is Luma's identifier.
+	 * The resource is the program that holds it, or the event while the calendar read has not brought it yet.
+	 */
+	PROGRAM_LUMA_EVENT_CREATE("program.luma_event_create", "event"),
+
 	/** An operator featured a program, which the home page announces while it takes applications. */
 	PROGRAM_FEATURE("program.feature"),
 

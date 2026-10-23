@@ -1344,6 +1344,7 @@
           "luma_read": "Đọc lịch trên Luma",
           "luma_connect": "Kết nối lịch trên Luma",
           "luma_disconnect": "Ngắt kết nối lịch trên Luma",
+          "luma_event_create": "Tạo sự kiện trên Luma",
           "export": "Tải danh sách chương trình"
         },
         "organization": {
@@ -1526,6 +1527,7 @@
           "luma_read": "Đọc <resource></resource> ngay",
           "luma_connect": "Kết nối <resource></resource>",
           "luma_disconnect": "Ngắt kết nối <resource></resource>",
+          "luma_event_create": "Đã tạo sự kiện <resource></resource> trên Luma",
           "export": "Tải danh sách chương trình"
         },
         "organization": {

@@ -1344,6 +1344,7 @@
           "luma_read": "Read the calendar on Luma",
           "luma_connect": "Connected the calendar on Luma",
           "luma_disconnect": "Disconnected the calendar on Luma",
+          "luma_event_create": "Created an event on Luma",
           "export": "Downloaded the programs"
         },
         "organization": {
@@ -1526,6 +1527,7 @@
           "luma_read": "Read <resource></resource> now",
           "luma_connect": "Connected <resource></resource>",
           "luma_disconnect": "Disconnected <resource></resource>",
+          "luma_event_create": "Created the event <resource></resource> on Luma",
           "export": "Downloaded the programs"
         },
         "organization": {
