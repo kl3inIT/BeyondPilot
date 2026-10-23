@@ -270,8 +270,8 @@ class ProgramAdministrationTest {
 	void readingLumaWhereNoCalendarIsConfiguredIsRefusedAndChangesNothing() {
 		String user = TestSignIn.session(client, mail, "plain@program.test");
 
-		assertProblem(command(user, PROGRAMS + "/luma", "read"), 403, "IDENTITY_OPERATOR_REQUIRED");
-		assertProblem(command(operator, PROGRAMS + "/luma", "read"), 503, "PROGRAM_LUMA_NOT_CONFIGURED");
+		assertProblem(command(user, "/api/program/admin/luma", "read"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(command(operator, "/api/program/admin/luma", "read"), 503, "PROGRAM_LUMA_NOT_CONFIGURED");
 	}
 
 	private RestTestClient.ResponseSpec command(String session, String uri, String command) {

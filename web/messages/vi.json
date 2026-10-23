@@ -562,8 +562,10 @@
     "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất.",
     "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động.",
     "SPREADSHEET_TOO_LARGE": "Danh sách này có nhiều dòng hơn mức một lần tải cho phép. Hãy thu hẹp bằng bộ lọc rồi tải lại.",
-    "PROGRAM_LUMA_NOT_CONFIGURED": "Môi trường này không đọc lịch Luma nào.",
-    "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút."
+    "PROGRAM_LUMA_NOT_CONFIGURED": "Chưa kết nối lịch Luma nào. Dán API key của lịch ở tab Luma của Chương trình.",
+    "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút.",
+    "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "Môi trường này chưa lưu được key Luma. Nhờ đội kỹ thuật đặt khóa mã hóa.",
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma từ chối key này. Sao chép lại key từ Settings › Developer của lịch trên Luma."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -836,6 +838,10 @@
     "programs": {
       "metaTitle": "Chương trình · BeyondPilot",
       "title": "Chương trình",
+      "sections": {
+        "programs": "Chương trình",
+        "luma": "Luma"
+      },
       "columns": {
         "program": "Chương trình",
         "status": "Trạng thái",
@@ -1156,6 +1162,53 @@
         "read": "Lấy từ Luma",
         "hint": "Đọc lịch GenAI Fund trên Luma ngay; lịch này cũng được đọc mỗi giờ.",
         "done": "Đã đọc Luma: {created, plural, =0 {không có sự kiện mới} other {# sự kiện mới}}, {updated} cập nhật, {unpublished} gỡ đăng{failed, plural, =0 {} other {; # không đọc được và sẽ thử lại}}."
+      },
+      "lumaTab": {
+        "metaTitle": "Luma · Chương trình · BeyondPilot",
+        "title": "Chương trình",
+        "calendar": "Lịch",
+        "key": "API key",
+        "keyEnding": "•••• {ending}",
+        "keyHidden": "Đã lưu, không hiển thị",
+        "webhook": {
+          "label": "Thay đổi trên Luma",
+          "on": "Được báo ngay",
+          "off": "Chỉ đọc mỗi giờ"
+        },
+        "lastRead": {
+          "label": "Lần đọc gần nhất",
+          "never": "Chưa đọc lần nào",
+          "before": "Lần đọc thành công gần nhất: {at}"
+        },
+        "connected": "Kết nối lúc",
+        "empty": {
+          "title": "Chưa kết nối lịch Luma nào",
+          "description": "Dán API key của lịch GenAI Fund, tạo trên Luma ở Settings › Developer của lịch. Khi đó các event của lịch tự trở thành chương trình và luôn được cập nhật."
+        },
+        "noEncryption": {
+          "title": "Môi trường này chưa lưu được key Luma",
+          "description": "Nhờ đội kỹ thuật đặt khóa mã hóa, rồi quay lại kết nối lịch."
+        },
+        "connect": {
+          "open": "Kết nối lịch",
+          "replace": "Thay key",
+          "title": "Kết nối lịch Luma",
+          "replaceTitle": "Thay key Luma",
+          "lead": "BeyondPilot kiểm tra key với Luma, lưu ở dạng mã hóa và không hiển thị lại, rồi tạo webhook để Luma báo khi có thay đổi.",
+          "key": "API key",
+          "keyHint": "Trên Luma: lịch › Settings › Developer › API keys › Create.",
+          "submit": "Kết nối",
+          "cancel": "Hủy",
+          "done": "Đã kết nối lịch Luma. Đang đọc các event của lịch."
+        },
+        "disconnect": {
+          "open": "Ngắt kết nối",
+          "title": "Ngừng đọc {calendar}?",
+          "description": "Key và webhook tạo bằng key đó sẽ bị xóa. Các chương trình lịch đã mang vào vẫn giữ nguyên và không còn được cập nhật.",
+          "confirm": "Ngắt kết nối",
+          "cancel": "Hủy",
+          "done": "Đã ngừng đọc lịch Luma."
+        }
       }
     },
     "accounts": {
@@ -1271,6 +1324,8 @@
           "feature": "Đặt một chương trình nổi bật",
           "unfeature": "Bỏ nổi bật một chương trình",
           "luma_read": "Đọc lịch trên Luma",
+          "luma_connect": "Kết nối lịch trên Luma",
+          "luma_disconnect": "Ngắt kết nối lịch trên Luma",
           "export": "Tải danh sách chương trình"
         },
         "organization": {
@@ -1440,6 +1495,8 @@
           "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
           "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>",
           "luma_read": "Đọc <resource></resource> ngay",
+          "luma_connect": "Kết nối <resource></resource>",
+          "luma_disconnect": "Ngắt kết nối <resource></resource>",
           "export": "Tải danh sách chương trình"
         },
         "organization": {
@@ -2182,7 +2239,7 @@
         "metaTitle": "Tạo use case · BeyondPilot",
         "title": "Tạo use case",
         "organization": "Tạo use case này cho",
-        "organizationPlaceholder": "Chọn một tổ chức",
+        "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationHint": "Chỉ liệt kê các tổ chức đang hoạt động.",
         "thisOrganization": "tổ chức",
         "publishSubmit": "Đăng use case",

@@ -52,13 +52,13 @@ Both environments share `hn-fci-k8s-aioffice-application` (`167.254.65.226`, Ubu
 
 Under each root:
 
-| Path                 | Owner, mode              | Holds                                                                                                                                                       |
-| -------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                         |
-| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                       |
-| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                            |
-| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `notification-encryption-key`, `ai-encryption-key`, `mcp-signing-key`, each owned by uid 1654 with mode `0400` |
-| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                          |
+| Path                 | Owner, mode              | Holds                                                                                                                                                                                 |
+| -------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `incoming`           | `beyondpilot-ci`, `0700` | One directory per uploaded release; `deploy.sh` keeps the current and previous ones                                                                                                   |
+| `deployments`        | root, `0700`             | `lock`, `current.env`, `previous.env`                                                                                                                                                 |
+| `backups`            | root, `0700`             | Pre-deployment dumps (five newest), nightly dumps and nightly archives of the uploaded files (14 newest of each)                                                                      |
+| `secrets`            | root, `0700`             | `database-password`, `google-client-secret`, `notification-encryption-key`, `ai-encryption-key`, `program-encryption-key`, `mcp-signing-key`, each owned by uid 1654 with mode `0400` |
+| `.env.<environment>` | root, `0600`             | The non-secret values of the environment's example                                                                                                                                    |
 
 ### Provision the host once
 
@@ -97,12 +97,13 @@ sudo sh -c 'umask 077; openssl rand -hex 32 > database-password'
 sudo sh -c 'umask 077; cat > google-client-secret'      # paste the client secret, then Ctrl-D
 sudo sh -c 'umask 077; openssl rand -base64 32 > notification-encryption-key'
 sudo sh -c 'umask 077; openssl rand -base64 32 > ai-encryption-key'
+sudo sh -c 'umask 077; openssl rand -base64 32 > program-encryption-key'
 sudo sh -c 'umask 077; openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out mcp-signing-key'
-sudo chown 1654:1654 database-password google-client-secret notification-encryption-key ai-encryption-key mcp-signing-key
-sudo chmod 0400 database-password google-client-secret notification-encryption-key ai-encryption-key mcp-signing-key
+sudo chown 1654:1654 database-password google-client-secret notification-encryption-key ai-encryption-key program-encryption-key mcp-signing-key
+sudo chmod 0400 database-password google-client-secret notification-encryption-key ai-encryption-key program-encryption-key mcp-signing-key
 ```
 
-`ai-encryption-key` encrypts the keys of the AI providers that operators connect in Admin › AI › Providers, where the provider and the model search embeds with are chosen; replacing it makes those keys unreadable, and search goes by keywords until an operator enters them again. `mcp-signing-key` signs the access tokens of the AI apps people connect to the MCP servers; replacing it ends every connection's current token, and the apps refresh or connect again. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. `notification-encryption-key` encrypts the email providers' secrets that operators enter in Admin › Email; each environment has its own, and replacing it makes those secrets unreadable until an operator enters them again. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
+`ai-encryption-key` encrypts the keys of the AI providers that operators connect in Admin › AI › Providers, where the provider and the model search embeds with are chosen; replacing it makes those keys unreadable, and search goes by keywords until an operator enters them again. `program-encryption-key` encrypts the key of the Luma calendar and its webhook's secret, which an operator enters in Admin › Programs › Luma; replacing it makes them unreadable, and the calendar is not read until an operator enters the key again. `mcp-signing-key` signs the access tokens of the AI apps people connect to the MCP servers; replacing it ends every connection's current token, and the apps refresh or connect again. `database-password` sets the password when PostgreSQL first creates its data directory; changing the file later does not change the database. `notification-encryption-key` encrypts the email providers' secrets that operators enter in Admin › Email; each environment has its own, and replacing it makes those secrets unreadable until an operator enters them again. Write the environment file from its example with `sudo install -m 0600 /dev/null <root>/.env.<environment>` and an editor under sudo. Both environments use the same Google OAuth client, whose redirect URIs name both addresses.
 
 Install the nightly backup, which saves both environments, production first:
 

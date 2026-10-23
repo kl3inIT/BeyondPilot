@@ -562,8 +562,10 @@
     "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand.",
     "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator.",
     "SPREADSHEET_TOO_LARGE": "This list holds more rows than a download takes. Narrow it with the filters and download again.",
-    "PROGRAM_LUMA_NOT_CONFIGURED": "This environment reads no Luma calendar.",
-    "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes."
+    "PROGRAM_LUMA_NOT_CONFIGURED": "No Luma calendar is connected. Paste the calendar's API key on the Luma tab of Programs.",
+    "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes.",
+    "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "This environment cannot keep a Luma key yet. Ask the team to set its encryption key.",
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -836,6 +838,10 @@
     "programs": {
       "metaTitle": "Programs · BeyondPilot",
       "title": "Programs",
+      "sections": {
+        "programs": "Programs",
+        "luma": "Luma"
+      },
       "columns": {
         "program": "Program",
         "status": "Status",
@@ -1156,6 +1162,53 @@
         "read": "Pull from Luma",
         "hint": "Read the GenAI Fund calendar on Luma now; it is also read every hour.",
         "done": "Luma read: {created, plural, =0 {no new event} one {# new event} other {# new events}}, {updated} updated, {unpublished} unpublished{failed, plural, =0 {} other {; # could not be read and will be tried again}}."
+      },
+      "lumaTab": {
+        "metaTitle": "Luma · Programs · BeyondPilot",
+        "title": "Programs",
+        "calendar": "Calendar",
+        "key": "API key",
+        "keyEnding": "•••• {ending}",
+        "keyHidden": "Kept, never shown",
+        "webhook": {
+          "label": "Changes on Luma",
+          "on": "Told at once",
+          "off": "Read every hour only"
+        },
+        "lastRead": {
+          "label": "Last read",
+          "never": "Not read yet",
+          "before": "Last read that worked: {at}"
+        },
+        "connected": "Connected",
+        "empty": {
+          "title": "No Luma calendar is connected",
+          "description": "Paste the API key of the GenAI Fund calendar, made on Luma in the calendar's Settings › Developer. Its events then become programs by themselves, and stay up to date."
+        },
+        "noEncryption": {
+          "title": "This environment cannot keep a Luma key yet",
+          "description": "Ask the team to set its encryption key, then come back to connect the calendar."
+        },
+        "connect": {
+          "open": "Connect a calendar",
+          "replace": "Replace key",
+          "title": "Connect a Luma calendar",
+          "replaceTitle": "Replace the Luma key",
+          "lead": "BeyondPilot checks the key with Luma, keeps it sealed and never shows it again, and makes the webhook that tells it of a change.",
+          "key": "API key",
+          "keyHint": "On Luma: the calendar › Settings › Developer › API keys › Create.",
+          "submit": "Connect",
+          "cancel": "Cancel",
+          "done": "The Luma calendar is connected. Its events are being read."
+        },
+        "disconnect": {
+          "open": "Disconnect",
+          "title": "Stop reading {calendar}?",
+          "description": "The key and the webhook made with it are removed. The programs the calendar brought stay as they are, and are no longer updated.",
+          "confirm": "Disconnect",
+          "cancel": "Cancel",
+          "done": "The Luma calendar is no longer read."
+        }
       }
     },
     "accounts": {
@@ -1271,6 +1324,8 @@
           "feature": "Featured a program",
           "unfeature": "Stopped featuring a program",
           "luma_read": "Read the calendar on Luma",
+          "luma_connect": "Connected the calendar on Luma",
+          "luma_disconnect": "Disconnected the calendar on Luma",
           "export": "Downloaded the programs"
         },
         "organization": {
@@ -1440,6 +1495,8 @@
           "feature": "Featured the program <resource></resource> on the home page",
           "unfeature": "Stopped featuring the program <resource></resource>",
           "luma_read": "Read <resource></resource> now",
+          "luma_connect": "Connected <resource></resource>",
+          "luma_disconnect": "Disconnected <resource></resource>",
           "export": "Downloaded the programs"
         },
         "organization": {
@@ -2182,7 +2239,7 @@
         "metaTitle": "Create a use case · BeyondPilot",
         "title": "Create a use case",
         "organization": "Create this use case for",
-        "organizationPlaceholder": "Choose an organization",
+        "organizationPlaceholder": "Search or choose an organization",
         "organizationHint": "Only active organizations are listed.",
         "thisOrganization": "the organization",
         "publishSubmit": "Publish use case",

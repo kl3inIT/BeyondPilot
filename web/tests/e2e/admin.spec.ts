@@ -283,6 +283,24 @@ test.describe("admin", () => {
       submitted = route.request().postDataJSON() as Record<string, unknown>;
       await route.fulfill({ status: 201, json: {} });
     });
+    // The backend gives the first 50 organizations by name; one past them is found by its name.
+    const first = Array.from({ length: 50 }, (_, index) => ({
+      id: `8b3e5c74-2b20-4c75-9c77-0000000000${String(index).padStart(2, "0")}`,
+      name: `Agency ${String(index).padStart(2, "0")}`,
+      logoFileId: null,
+    }));
+    const pocketPolicy = {
+      id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+      name: "Pocket Policy",
+      logoFileId: null,
+    };
+    await page.route("**/api/usecase/admin/organizations**", (route) => {
+      const q = new URL(route.request().url()).searchParams.get("q")?.toLowerCase();
+      const items = q
+        ? [...first, pocketPolicy].filter(({ name }) => name.toLowerCase().includes(q))
+        : first;
+      return route.fulfill({ status: 200, json: { items } });
+    });
     await page.goto("/admin/use-cases/new");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create a use case");
@@ -292,8 +310,13 @@ test.describe("admin", () => {
     await expect(page.getByText("Send for review", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Save draft", { exact: true })).toHaveCount(0);
 
-    await page.getByRole("combobox", { name: "Create this use case for" }).click();
+    const organization = page.getByRole("combobox", { name: "Create this use case for" });
+    await organization.click();
+    await expect(page.getByRole("option", { name: "Agency 00" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Pocket Policy" })).toHaveCount(0);
+    await organization.fill("pocket");
     await page.getByRole("option", { name: "Pocket Policy" }).click();
+    await expect(organization).toHaveValue("Pocket Policy");
     await page.getByLabel("Use case title").fill("Faster claims triage");
     await page
       .getByLabel("Problem statement")
@@ -378,8 +401,11 @@ test.describe("admin", () => {
       // On a phone the sidebar is a sheet, which may still be open from the last choice, or still
       // closing after an Escape: its account button shows until it has gone, and a menu opened
       // from it goes with it. Wait until no sheet is closing before looking.
-      // Base UI marks a closing popup with data-ending-style until its animation ends.
+      // Base UI marks a closing popup with data-ending-style until its animation ends. A menu just
+      // closed by Escape stays in the page, marked data-closed, until its own animation ends, and
+      // would be the first menu found: Enter on its items does nothing.
       await expect(page.locator('[role="dialog"][data-ending-style]')).toHaveCount(0);
+      await expect(page.locator('[role="menu"][data-closed]')).toHaveCount(0);
       if (isMobile && !(await account.isVisible())) {
         await page
           .getByRole("main")

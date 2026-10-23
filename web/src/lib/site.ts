@@ -22,6 +22,7 @@ export const siteRoutes = {
   terms: "/terms",
   admin: "/admin",
   adminPrograms: "/admin/programs",
+  adminProgramsLuma: "/admin/programs/luma",
   adminAccounts: "/admin/accounts",
   adminAuditLog: "/admin/audit-log",
   adminOrganizations: "/admin/organizations",
