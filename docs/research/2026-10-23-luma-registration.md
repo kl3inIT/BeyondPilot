@@ -9,7 +9,7 @@ Studied on 23 October 2026, after Kai Yong asked that people register for GenAI 
 | The event and its form | `GET /v1/events/get`: name, `description_md`, `start_at`, `end_at`, `timezone`, `geo_address_json`, `location_type`, `cover_url`, `url`, `visibility` (public, members-only, private), `registration_open`, `require_approval`, `spots_remaining`, `display_price`, and `registration_questions`, which only an event the key manages carries |
 | The questions          | Each has `id`, `label`, `required`, `question_type`: `text` (`multiline`), `select` (`options`, `multiple`), `agree-check`, `company` (`collect_job_title`), `phone-number`, `url`, `github`, `instagram`, `linkedin`, `telegram`, `twitter`, `youtube`, `terms`                                                                              |
 | Adding a guest         | `POST /v1/events/guests/add`: `event_id`, `guests[{email, name, registration_answers[{question_id, value}]}]`, `approval_status` (`approved` by default, `pending_approval`, `waitlist`), `send_email` (true by default). Runs in the background and answers only `skipped` emails (unsubscribed, removed or blocked), with a 200             |
-| An answer              | A string for text, single select, URL, phone and social handles; an array for a multiple select; a boolean for `agree-check`; `{company, job_title}` for company. `terms` has no input form: it cannot be answered through the API                                                                                                            |
+| An answer              | A string for text, single select, URL, phone and social handles; an array for a multiple select; a boolean for `agree-check`; `{company, job_title}` for company. The input schema names no form for `terms`, yet `true` was accepted and kept (see below)                                                                                    |
 | An existing guest      | Adding the same email again keeps the guest's existing answers and name. `GET /v1/events/guests/get?event_id=&id=` takes the guest id or the email                                                                                                                                                                                            |
 | A decision             | `POST /v1/events/guests/update-status`: `approved`, `declined`, `pending_approval`, `waitlist`, with `send_email`. Guest statuses read back: `approved`, `session`, `pending_approval`, `invited`, `declined`, `waitlist`                                                                                                                     |
 | Webhooks               | `POST /v2/webhooks/create` returns the id and the signing secret; `list`, `get`, `update`, `delete`. Types: `event.created`, `event.updated`, `event.canceled`, `calendar.event.added`, `guest.registered`, `guest.updated`, `guest.refunded`, `ticket.registered` and two calendar-person ones                                               |
@@ -27,6 +27,17 @@ Read through the API with a key of the calendar on 23 October 2026, without writ
 - Questions across the 25: 106 `select`, 98 `text`, 48 `url`, 15 `agree-check`, 5 `terms`. The `terms` questions are on five events, the Shinhan Future's Lab Demo Day among them, so a `terms` question is not rare.
 - Every event asks a country from a list of about 200. The Tasco and Nestlé briefings ask `Name` and `Email` again as text questions, beside Luma's own fields.
 - TinyFish, Big Minds requires approval, has 40 seats with 1 left and a waitlist, and keeps its venue for guests; the Tasco and Nestlé briefings are on Zoom with the link kept for guests.
+
+## What a test event showed
+
+On 23 October 2026, with Đạt's agreement, a private event "[TEST] BeyondPilot registration - do not join" (`evt-DCRVsSuHrK7voYF`, 15 December 2026, approval required) was created through the API with one question of each kind the calendar uses, a `terms` question copied from a real event included, and guests `team+t1…t5@beyondpilot.ai` were added with `approval_status: pending_approval` and `send_email: false`:
+
+- **Create.** `events/create` takes the questions with ids the caller chooses and a free ticket type with `require_approval`.
+- **Add.** Every add answered `{"skipped": []}`; the guest could be read by email (`guests/get?id=<email>`) within seconds, `pending_approval`, with its `gst-` id and `check_in_qr_code`, which is a check-in address (`luma.com/check-in/<event>?pk=g-…`) to draw as a QR, not an image.
+- **Terms.** A `terms` answer of `true` was accepted and kept; leaving it out was accepted too. The calendar's `terms` questions are a link or a text without a signature (`collect_signature: false`).
+- **No validation by Luma.** An add without a required answer, and one with an option the select does not offer, were both accepted and stored as sent. An unknown question id refused the whole add with 400 "The event has no registration question with ID nope."
+- **Again.** Adding the same email again with another answer kept the guest and its first answers; no second guest.
+- **Decision.** `guests/update-status` to `declined` with `send_email: false` answered `{}` and the guest read back `declined`.
 
 ## How others do it
 
@@ -48,7 +59,7 @@ Luma's own [example](https://github.com/luma-team/basketball-club-example) and [
 ## What this means for BeyondPilot
 
 - **The key and the webhook are configuration an operator keeps**, as email and AI providers already are (ADR 0005, 0006): pasted in Admin, checked with `GET /v1/users/get-self`, stored encrypted; the webhook made by code after listing the existing ones, its secret stored the same way (AgendaForge, codex-events, nashville-takeover).
-- **The form is built from `registration_questions`, read again before a registration is accepted.** A hard-coded question id fails the whole call when the host edits the form (Habinext). An event asking a `terms` question cannot be registered for here.
+- **The form is built from `registration_questions`, read again before a registration is accepted.** A hard-coded question id fails the whole call when the host edits the form (Habinext). Luma checks neither required answers nor options, so BeyondPilot checks them.
 - **The registration is stored before Luma is called, with a sync state and an operator's retry** (Zectix, codex-events); `skipped` is a failure; the guest is found afterwards by email.
 - **A delivery is verified, deduplicated by `Webhook-Id`, and only a trigger:** the guest is read again from Luma before anything changes, since a payload carries no order (hack0, nashville-takeover, design-meetup-web). A reconciliation from `guests/list` catches what a webhook missed.
 - **Our own add comes back as `guest.registered`:** it must find the registration already there, not open another (Habinext).
