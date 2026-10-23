@@ -118,6 +118,9 @@ beyondpilot:
       encryption-key: ${BEYONDPILOT_PROGRAM_ENCRYPTION_KEY:}
       # Luma sends its webhook to this address of the site.
       site-url: ${BEYONDPILOT_SITE_URL:http://localhost:3000}
+      # The Luma events people may register for on BeyondPilot, by identifier, or * for all. None unless an
+      # environment names them, so no environment adds a guest to a real event by mistake.
+      registration-events: ${BEYONDPILOT_PROGRAM_LUMA_REGISTRATION_EVENTS:}
   ai:
     # 32 bytes in Base64 that encrypt the AI providers' keys in the database. Without it no key can be saved, and
     # search goes by keywords alone.

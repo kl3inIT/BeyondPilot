@@ -1,6 +1,9 @@
 import {
   BadgeCheckIcon,
   BadgeXIcon,
+  CalendarCheckIcon,
+  CalendarClockIcon,
+  CalendarRangeIcon,
   CircleXIcon,
   DoorClosedIcon,
   DoorOpenIcon,
@@ -64,6 +67,9 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   message_request_declined: MessageSquareXIcon,
   message_request_closed: TimerOffIcon,
   message_unread: MessageSquareDotIcon,
+  event_registration_received: CalendarClockIcon,
+  event_registration_waitlisted: CalendarRangeIcon,
+  event_registration_confirmed: CalendarCheckIcon,
 };
 
 function isEmailKind(kind: string): kind is EmailKind {

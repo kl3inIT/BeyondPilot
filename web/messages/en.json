@@ -564,7 +564,12 @@
     "PROGRAM_LUMA_NOT_CONFIGURED": "No Luma calendar is connected. Paste the calendar's API key on the Luma tab of Programs.",
     "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes.",
     "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "This environment cannot keep a Luma key yet. Ask the team to set its encryption key.",
-    "PROGRAM_LUMA_KEY_REFUSED": "Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma."
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma.",
+    "PROGRAM_REGISTRATION_NOT_HERE": "People register for this event on Luma, not here.",
+    "PROGRAM_REGISTRATION_CLOSED": "This event takes no more registrations.",
+    "PROGRAM_REGISTRATION_FORM_CHANGED": "The host just changed the questions of this event. Look at the form again, then register.",
+    "PROGRAM_REGISTRATION_ANSWERS_INVALID": "An answer is missing or not one the question takes. Check the form, then register.",
+    "PROGRAM_REGISTRATION_EXISTS": "You have already registered for this event."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -3324,7 +3329,8 @@
         "solutions": "Solutions",
         "use_cases": "Use cases",
         "talent": "Talent",
-        "messages": "Messages"
+        "messages": "Messages",
+        "events": "Events"
       },
       "kinds": {
         "sign_in_code": {
@@ -3466,6 +3472,18 @@
         "message_unread": {
           "name": "Unread message",
           "description": "Sent when a message arrives for someone who does not have BeyondPilot open, once until they read it. GenAI Fund's operators are not emailed."
+        },
+        "event_registration_received": {
+          "name": "Event registration received",
+          "description": "Sent when a registration for a Luma event GenAI Fund approves each guest of reaches Luma, where it waits for review."
+        },
+        "event_registration_waitlisted": {
+          "name": "On an event's waitlist",
+          "description": "Sent when someone registers for a Luma event that is full, so their registration is on its waitlist."
+        },
+        "event_registration_confirmed": {
+          "name": "Event seat confirmed",
+          "description": "Sent when someone's seat at a Luma event is confirmed, with their check-in code and a calendar file."
         }
       },
       "status": {
@@ -5749,6 +5767,69 @@
       "opens": "Applications open",
       "closes": "Applications close",
       "outcomes": "Every applicant hears back"
+    },
+    "event": {
+      "page": {
+        "when": "When",
+        "where": "Where",
+        "online": "Online",
+        "hostedBy": "Hosted by",
+        "about": "About the event",
+        "addressForGuests": "The address is shown once your registration is confirmed.",
+        "linkForGuests": "The link to join is shown once your registration is confirmed."
+      },
+      "card": {
+        "title": "Registration",
+        "yours": "Your registration",
+        "closed": "Registration is closed for this event.",
+        "approval": "Your registration is subject to approval by the host.",
+        "full": "This event is full. Register to join the waitlist.",
+        "name": "Name",
+        "email": "Email",
+        "emailHint": "We send a code to this address to confirm it is yours.",
+        "emailAs": "Registering as",
+        "emailInvalid": "Enter an email address, like name@company.com.",
+        "choose": "Choose…",
+        "jobTitle": "Job title",
+        "readTerms": "Read the terms",
+        "agreeTerms": "I agree to the terms",
+        "requestToJoin": "Request to join",
+        "register": "Register",
+        "joinWaitlist": "Join the waitlist",
+        "notice": "Your name, email and answers go to GenAI Fund through Luma to review your registration. <privacy>Privacy</privacy>",
+        "codeLead": "Enter the code we sent to",
+        "codeContinue": "Confirm and register",
+        "codeBack": "Change my answers",
+        "codeLimited": "Too many codes were asked for. Wait a minute, then try again.",
+        "codeFailed": "The code could not be sent. Try again in a moment.",
+        "acceptAndRegister": "Accept all and register"
+      },
+      "status": {
+        "received": {
+          "title": "Registration received",
+          "lead": "We are sending it to GenAI Fund. We will email {email} with what happens next."
+        },
+        "pending": {
+          "title": "Pending approval",
+          "lead": "GenAI Fund reviews each registration. We will email {email} when yours is decided."
+        },
+        "waitlist": {
+          "title": "You're on the waitlist",
+          "lead": "The event is full. If a seat opens and you are confirmed, we will email {email}."
+        },
+        "approved": {
+          "title": "You're in",
+          "lead": "Your seat is confirmed. We emailed your ticket to {email}.",
+          "code": "Your check-in code",
+          "codeHint": "Show this code at the door to check in.",
+          "join": "Join the event online",
+          "calendar": "Add to calendar"
+        },
+        "declined": {
+          "title": "Registration declined",
+          "lead": "GenAI Fund could not offer you a seat at this event."
+        }
+      }
     }
   },
   "Programs": {

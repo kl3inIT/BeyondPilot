@@ -4,7 +4,7 @@
  * stored file the program names by its identifier.
  */
 @ApplicationModule(displayName = "Program", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "shared", "storage" })
+		allowedDependencies = { "audit", "identity", "notification", "shared", "storage" })
 @NullMarked
 package ai.genaifund.beyondpilot.program;
 

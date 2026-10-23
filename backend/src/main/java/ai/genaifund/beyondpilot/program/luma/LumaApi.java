@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,6 +62,17 @@ public final class LumaApi {
 
 		KeyRefused() {
 			super("Luma refused the key");
+		}
+
+	}
+
+	/** Luma refused what was sent as not valid, as an answer to a question the event no longer asks. */
+	public static final class Refused extends IOException {
+
+		private static final long serialVersionUID = 1L;
+
+		Refused() {
+			super("Luma refused the request");
 		}
 
 	}
@@ -152,6 +164,52 @@ public final class LumaApi {
 		}
 	}
 
+	/**
+	 * One answer as Luma takes it: text for a text, a single select, an address, a phone number and a handle; the
+	 * options for a multiple select; true or false for a box; {@code company} and {@code job_title} for a company.
+	 */
+	public record Answer(String questionId, Object value) {
+	}
+
+	/**
+	 * Adds a person to the event with the status given and Luma's own email off. Luma does it in the background, and
+	 * says only which addresses it skipped: one that unsubscribed from the calendar or was removed or blocked.
+	 * @return true when Luma skipped the address and added no one
+	 */
+	public boolean addGuest(String key, String eventId, String email, String name, List<Answer> answers,
+			LumaGuest.Status status) throws IOException {
+		// In a fixed order, so what is sent reads the same each time.
+		List<Map<String, Object>> sent = answers.stream().map(answer -> {
+			Map<String, Object> one = new LinkedHashMap<>();
+			one.put("question_id", answer.questionId());
+			one.put("value", answer.value());
+			return one;
+		}).toList();
+		Map<String, Object> guest = new LinkedHashMap<>();
+		guest.put("email", email);
+		guest.put("name", name);
+		guest.put("registration_answers", sent);
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("event_id", eventId);
+		body.put("guests", List.of(guest));
+		body.put("approval_status", status.value());
+		body.put("send_email", false);
+		JsonNode added = call(HttpMethod.POST, "/v1/events/guests/add", Map.of(), key, body);
+		return added.path("skipped").isArray() && !added.path("skipped").isEmpty();
+	}
+
+	/** The guest of the event with this address or identifier; empty while Luma has none. */
+	public Optional<LumaGuest> guest(String key, String eventId, String emailOrId) throws IOException {
+		try {
+			return LumaGuest
+				.of(unwrap(call(HttpMethod.GET, "/v1/events/guests/get", Map.of("event_id", eventId, "id", emailOrId),
+						key, null), "guest"));
+		}
+		catch (NotFound none) {
+			return Optional.empty();
+		}
+	}
+
 	private static Optional<Webhook> webhook(JsonNode node) {
 		String id = text(node, "id");
 		String url = text(node, "url");
@@ -183,9 +241,9 @@ public final class LumaApi {
 				request.header("Content-Type", "application/json").body(JSON.writeValueAsString(body));
 			}
 			// Read here, whatever the status: the default handling would put Luma's text in an exception.
-			Answer answer = request.exchange((asked, response) -> {
+			Reply answer = request.exchange((asked, response) -> {
 				try (InputStream stream = response.getBody()) {
-					return new Answer(response.getStatusCode().value(), stream.readNBytes(MAX_BYTES + 1));
+					return new Reply(response.getStatusCode().value(), stream.readNBytes(MAX_BYTES + 1));
 				}
 			});
 			if (answer.status() == 401 || answer.status() == 403) {
@@ -193,6 +251,9 @@ public final class LumaApi {
 			}
 			if (answer.status() == 404) {
 				throw new NotFound();
+			}
+			if (answer.status() == 400 || answer.status() == 422) {
+				throw new Refused();
 			}
 			if (answer.status() < 200 || answer.status() >= 300 || answer.body().length > MAX_BYTES) {
 				throw new IOException("Luma answered " + answer.status());
@@ -208,7 +269,7 @@ public final class LumaApi {
 		}
 	}
 
-	private record Answer(int status, byte[] body) {
+	private record Reply(int status, byte[] body) {
 	}
 
 	/** The object itself, or the one it wraps under the name, as some answers do. */

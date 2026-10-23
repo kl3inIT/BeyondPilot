@@ -564,7 +564,12 @@
     "PROGRAM_LUMA_NOT_CONFIGURED": "Chưa kết nối lịch Luma nào. Dán API key của lịch ở tab Luma của Chương trình.",
     "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút.",
     "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "Môi trường này chưa lưu được key Luma. Nhờ đội kỹ thuật đặt khóa mã hóa.",
-    "PROGRAM_LUMA_KEY_REFUSED": "Luma từ chối key này. Sao chép lại key từ Settings › Developer của lịch trên Luma."
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma từ chối key này. Sao chép lại key từ Settings › Developer của lịch trên Luma.",
+    "PROGRAM_REGISTRATION_NOT_HERE": "Sự kiện này đăng ký trên Luma, không phải ở đây.",
+    "PROGRAM_REGISTRATION_CLOSED": "Sự kiện này không nhận thêm đăng ký.",
+    "PROGRAM_REGISTRATION_FORM_CHANGED": "Ban tổ chức vừa đổi câu hỏi của sự kiện. Xem lại form rồi đăng ký.",
+    "PROGRAM_REGISTRATION_ANSWERS_INVALID": "Có câu trả lời còn thiếu hoặc không hợp lệ. Kiểm tra lại form rồi đăng ký.",
+    "PROGRAM_REGISTRATION_EXISTS": "Bạn đã đăng ký sự kiện này rồi."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -3324,7 +3329,8 @@
         "solutions": "Giải pháp",
         "use_cases": "Use case",
         "talent": "Nhân lực",
-        "messages": "Tin nhắn"
+        "messages": "Tin nhắn",
+        "events": "Sự kiện"
       },
       "kinds": {
         "sign_in_code": {
@@ -3466,6 +3472,18 @@
         "message_unread": {
           "name": "Tin chưa đọc",
           "description": "Gửi khi có tin nhắn đến cho người không đang mở BeyondPilot, một lần cho tới khi họ đọc. Người vận hành của GenAI Fund không nhận email này."
+        },
+        "event_registration_received": {
+          "name": "Đã nhận đăng ký sự kiện",
+          "description": "Gửi khi đăng ký cho một sự kiện Luma mà GenAI Fund duyệt từng khách đã tới Luma và đang chờ duyệt."
+        },
+        "event_registration_waitlisted": {
+          "name": "Trong danh sách chờ của sự kiện",
+          "description": "Gửi khi ai đó đăng ký một sự kiện Luma đã đủ chỗ, nên đăng ký của họ vào danh sách chờ."
+        },
+        "event_registration_confirmed": {
+          "name": "Đã có chỗ ở sự kiện",
+          "description": "Gửi khi chỗ của ai đó ở một sự kiện Luma được xác nhận, kèm mã check-in và file lịch."
         }
       },
       "status": {
@@ -5749,6 +5767,69 @@
       "opens": "Mở nhận đơn",
       "closes": "Đóng nhận đơn",
       "outcomes": "Mọi người nộp đơn nhận kết quả"
+    },
+    "event": {
+      "page": {
+        "when": "Thời gian",
+        "where": "Địa điểm",
+        "online": "Trực tuyến",
+        "hostedBy": "Đơn vị tổ chức",
+        "about": "Về sự kiện",
+        "addressForGuests": "Địa chỉ sẽ hiện khi đăng ký của bạn được xác nhận.",
+        "linkForGuests": "Đường link tham gia sẽ hiện khi đăng ký của bạn được xác nhận."
+      },
+      "card": {
+        "title": "Đăng ký",
+        "yours": "Đăng ký của bạn",
+        "closed": "Sự kiện này đã đóng đăng ký.",
+        "approval": "Đăng ký của bạn cần ban tổ chức duyệt.",
+        "full": "Sự kiện đã đủ chỗ. Đăng ký để vào danh sách chờ.",
+        "name": "Họ tên",
+        "email": "Email",
+        "emailHint": "Chúng tôi gửi một mã tới địa chỉ này để xác nhận đó là của bạn.",
+        "emailAs": "Đăng ký với",
+        "emailInvalid": "Nhập một địa chỉ email, ví dụ name@company.com.",
+        "choose": "Chọn…",
+        "jobTitle": "Chức danh",
+        "readTerms": "Đọc điều khoản",
+        "agreeTerms": "Tôi đồng ý với điều khoản",
+        "requestToJoin": "Gửi yêu cầu tham gia",
+        "register": "Đăng ký",
+        "joinWaitlist": "Vào danh sách chờ",
+        "notice": "Họ tên, email và câu trả lời của bạn được gửi tới GenAI Fund qua Luma để xét đăng ký. <privacy>Quyền riêng tư</privacy>",
+        "codeLead": "Nhập mã chúng tôi đã gửi tới",
+        "codeContinue": "Xác nhận và đăng ký",
+        "codeBack": "Sửa câu trả lời",
+        "codeLimited": "Bạn đã xin mã quá nhiều lần. Đợi một phút rồi thử lại.",
+        "codeFailed": "Không gửi được mã. Thử lại sau giây lát.",
+        "acceptAndRegister": "Đồng ý tất cả và đăng ký"
+      },
+      "status": {
+        "received": {
+          "title": "Đã nhận đăng ký",
+          "lead": "Chúng tôi đang gửi đăng ký tới GenAI Fund và sẽ email tới {email} khi có kết quả."
+        },
+        "pending": {
+          "title": "Đang chờ duyệt",
+          "lead": "GenAI Fund duyệt từng đăng ký. Chúng tôi sẽ email tới {email} khi có quyết định."
+        },
+        "waitlist": {
+          "title": "Bạn đang trong danh sách chờ",
+          "lead": "Sự kiện đã đủ chỗ. Nếu có chỗ và bạn được xác nhận, chúng tôi sẽ email tới {email}."
+        },
+        "approved": {
+          "title": "Bạn đã có chỗ",
+          "lead": "Chỗ của bạn đã được xác nhận. Vé đã được gửi tới {email}.",
+          "code": "Mã check-in của bạn",
+          "codeHint": "Đưa mã này ở cửa để check-in.",
+          "join": "Tham gia sự kiện trực tuyến",
+          "calendar": "Thêm vào lịch"
+        },
+        "declined": {
+          "title": "Đăng ký bị từ chối",
+          "lead": "GenAI Fund không thể xếp chỗ cho bạn ở sự kiện này."
+        }
+      }
     }
   },
   "Programs": {

@@ -20,10 +20,11 @@ import tools.jackson.databind.JsonNode;
  * @param cover the address of its cover image; null when it has none
  * @param page its page on Luma
  * @param listed true when the calendar only lists an event another host manages
+ * @param form how people register for it on BeyondPilot; null when they register on Luma
  */
 public record LumaEvent(String id, String name, @Nullable String description, Instant startsAt,
 		@Nullable Instant endsAt, ZoneId zone, boolean online, @Nullable String city, @Nullable String country,
-		@Nullable URI cover, URI page, Visibility visibility, boolean listed) {
+		@Nullable URI cover, URI page, Visibility visibility, boolean listed, @Nullable LumaForm form) {
 
 	/** Who Luma shows the event to. */
 	public enum Visibility {
@@ -65,7 +66,7 @@ public record LumaEvent(String id, String name, @Nullable String description, In
 		return Optional.of(new LumaEvent(id, name, LumaApi.text(node, "description"), startsAt, endsAt, zone, online,
 				online ? null : LumaApi.text(address, "city"), online ? null : country(LumaApi.text(address, "country")),
 				uri(LumaApi.text(node, "cover_url")), page, Visibility.of(LumaApi.text(node, "visibility")),
-				"view".equals(LumaApi.text(node, "access"))));
+				"view".equals(LumaApi.text(node, "access")), LumaForm.of(node, zone.getId()).orElse(null)));
 	}
 
 	/** Luma names the country by its ISO code ("VN"); the program names it in words ("Vietnam"). */

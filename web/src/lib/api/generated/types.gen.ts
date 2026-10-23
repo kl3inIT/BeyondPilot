@@ -2551,6 +2551,99 @@ export type EvaluationUseCase = {
 };
 
 /**
+ * An answer, in the field its question's type takes: text for text, a single select, an address, a phone number and a handle; choices for a multiple select; agreed for agree-check and terms; company and jobTitle for company.
+ */
+export type EventAnswer = {
+    agreed?: boolean | null;
+    choices?: Array<string> | null;
+    company?: string | null;
+    jobTitle?: string | null;
+    questionId: string;
+    text?: string | null;
+};
+
+/**
+ * A question of an event's registration form, as the host wrote it on Luma.
+ */
+export type EventQuestion = {
+    id: string;
+    /**
+     * For company, whether the job title is asked beside it.
+     */
+    jobTitle: boolean;
+    /**
+     * Answered from the person's name or email address, so not asked again.
+     */
+    known?: 'name' | 'email';
+    label: string;
+    /**
+     * For text, whether the answer may run over several lines.
+     */
+    multiline: boolean;
+    /**
+     * For select, whether several options may be chosen.
+     */
+    multiple: boolean;
+    /**
+     * For select, what may be chosen.
+     */
+    options: Array<string>;
+    required: boolean;
+    /**
+     * For terms written out, their text in Markdown.
+     */
+    termsText?: string;
+    /**
+     * For terms, the address of the terms to read.
+     */
+    termsUrl?: string;
+    type: 'text' | 'select' | 'agree-check' | 'terms' | 'company' | 'phone-number' | 'url' | 'github' | 'instagram' | 'linkedin' | 'telegram' | 'twitter' | 'youtube';
+};
+
+/**
+ * How to register for an event of GenAI Fund's Luma calendar on BeyondPilot, and the caller's registration.
+ */
+export type EventRegistration = {
+    /**
+     * Whether GenAI Fund approves each guest.
+     */
+    approval: boolean;
+    /**
+     * A mark of the questions as they stand; a registration sends it back.
+     */
+    formVersion: string;
+    hosts: Array<string>;
+    /**
+     * The address of the call; absent when there is none or it is kept for confirmed guests.
+     */
+    meetingUrl?: string;
+    /**
+     * The caller's registration; absent when there is none or nobody is signed in.
+     */
+    mine?: MyEventRegistration;
+    /**
+     * Whether Luma keeps the venue or the call for confirmed guests, and the caller is not one yet.
+     */
+    placeKept: boolean;
+    /**
+     * In Luma's order, those answered from the account included.
+     */
+    questions: Array<EventQuestion>;
+    /**
+     * `waitlist`: the event is full and a new registration joins its waitlist.
+     */
+    state: 'open' | 'waitlist' | 'closed';
+    /**
+     * The address of the venue; absent for an event online, or kept for confirmed guests.
+     */
+    venue?: string;
+    /**
+     * Where the event is held; its times read as that place's.
+     */
+    zone: string;
+};
+
+/**
  * Which of a program's submitted applications to download.
  */
 export type ExportApplicationsRequest = {
@@ -3651,6 +3744,23 @@ export type MyApplication = {
  */
 export type MyApplications = {
     items: Array<MyApplication>;
+};
+
+export type MyEventRegistration = {
+    /**
+     * The event as a calendar file; only for a confirmed guest.
+     */
+    calendarUrl?: string;
+    /**
+     * The image of the check-in QR code; only for a confirmed guest.
+     */
+    checkInImageUrl?: string;
+    name: string;
+    registeredAt: string;
+    /**
+     * `received` until Luma has the registration; then the guest's status on Luma.
+     */
+    status: 'received' | 'pending_approval' | 'waitlist' | 'approved' | 'declined' | 'invited';
 };
 
 /**
@@ -5275,6 +5385,21 @@ export type ReceivedUseCaseProposals = {
      */
     shortlisted: number;
     useCase: ProposalUseCase;
+};
+
+/**
+ * A registration for an event: the name Luma shows the host and the answers to its questions.
+ */
+export type RegisterForEvent = {
+    /**
+     * One per question answered; those answered from the account are left out.
+     */
+    answers: Array<EventAnswer>;
+    /**
+     * The formVersion the form was filled against.
+     */
+    formVersion: string;
+    name: string;
 };
 
 /**
@@ -13240,6 +13365,126 @@ export type GetProgramResponses = {
 };
 
 export type GetProgramResponse = GetProgramResponses[keyof GetProgramResponses];
+
+export type GetEventRegistrationData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/program/programs/{slug}/registration';
+};
+
+export type GetEventRegistrationErrors = {
+    /**
+     * No program is published at this address (`PROGRAM_NOT_FOUND`), or people register for it on Luma (`PROGRAM_REGISTRATION_NOT_HERE`).
+     */
+    404: Problem;
+};
+
+export type GetEventRegistrationError = GetEventRegistrationErrors[keyof GetEventRegistrationErrors];
+
+export type GetEventRegistrationResponses = {
+    /**
+     * The form, and the caller's registration when there is one.
+     */
+    200: EventRegistration;
+};
+
+export type GetEventRegistrationResponse = GetEventRegistrationResponses[keyof GetEventRegistrationResponses];
+
+export type RegisterForEventData = {
+    body: RegisterForEvent;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/program/programs/{slug}/registration';
+};
+
+export type RegisterForEventErrors = {
+    /**
+     * The request or an answer is not valid (`PROGRAM_REGISTRATION_ANSWERS_INVALID`).
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * `PROGRAM_NOT_FOUND` or `PROGRAM_REGISTRATION_NOT_HERE`.
+     */
+    404: Problem;
+    /**
+     * Already registered (`PROGRAM_REGISTRATION_EXISTS`), the questions changed (`PROGRAM_REGISTRATION_FORM_CHANGED`) or the event takes no more (`PROGRAM_REGISTRATION_CLOSED`).
+     */
+    409: Problem;
+};
+
+export type RegisterForEventError = RegisterForEventErrors[keyof RegisterForEventErrors];
+
+export type RegisterForEventResponses = {
+    /**
+     * The registration, `received` until Luma has it.
+     */
+    200: EventRegistration;
+};
+
+export type RegisterForEventResponse = RegisterForEventResponses[keyof RegisterForEventResponses];
+
+export type GetCheckInCodeData = {
+    body?: never;
+    path: {
+        ticket: string;
+    };
+    query?: never;
+    url: '/api/program/tickets/{ticket}/check-in.png';
+};
+
+export type GetCheckInCodeErrors = {
+    /**
+     * No confirmed guest holds this ticket, or Luma gave no code.
+     */
+    404: string;
+};
+
+export type GetCheckInCodeError = GetCheckInCodeErrors[keyof GetCheckInCodeErrors];
+
+export type GetCheckInCodeResponses = {
+    /**
+     * The code as a PNG image.
+     */
+    200: Blob | File;
+};
+
+export type GetCheckInCodeResponse = GetCheckInCodeResponses[keyof GetCheckInCodeResponses];
+
+export type GetEventCalendarFileData = {
+    body?: never;
+    path: {
+        ticket: string;
+    };
+    query?: never;
+    url: '/api/program/tickets/{ticket}/event.ics';
+};
+
+export type GetEventCalendarFileErrors = {
+    /**
+     * No confirmed guest holds this ticket.
+     */
+    404: string;
+};
+
+export type GetEventCalendarFileError = GetEventCalendarFileErrors[keyof GetEventCalendarFileErrors];
+
+export type GetEventCalendarFileResponses = {
+    /**
+     * An iCalendar file with the event, its time and its place.
+     */
+    200: string;
+};
+
+export type GetEventCalendarFileResponse = GetEventCalendarFileResponses[keyof GetEventCalendarFileResponses];
 
 export type ListMyApplicationsData = {
     body?: never;

@@ -4,8 +4,9 @@ import { setRequestLocale } from "next-intl/server";
 
 import { contactRoute } from "@/features/messaging/messaging-search";
 import { customProgramPages, customProgramShareImages } from "@/features/program/custom-pages";
+import { EventPage } from "@/features/program/event-page";
 import { ProgramPage } from "@/features/program/program-page";
-import { readProgram } from "@/features/program/program-public-queries";
+import { readEventRegistration, readProgram } from "@/features/program/program-public-queries";
 import { getCurrentAccount } from "@/lib/auth/session";
 import { publicFileUrl } from "@/lib/storage/upload";
 
@@ -48,6 +49,22 @@ export default async function ProgramRoute({ params }: PageProps<"/[locale]/prog
       ? contactRoute({ kind: "program", slug: program.slug }, !!account, locale)
       : undefined;
 
+  // An event of GenAI Fund's Luma calendar that people register for here has a page of its own.
+  const registration =
+    program.type === "event" && program.pageKind === "standard" && program.events.length > 0
+      ? await readEventRegistration(program.slug)
+      : null;
+
+  if (registration) {
+    return (
+      <EventPage
+        program={program}
+        registration={registration}
+        account={account}
+        askHref={askHref}
+      />
+    );
+  }
   return Custom ? (
     <Custom program={program} askHref={askHref} />
   ) : (

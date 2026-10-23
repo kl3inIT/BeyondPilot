@@ -65,7 +65,11 @@ class SecurityConfiguration {
 				.requestMatchers(HttpMethod.GET, "/api/storage/files/*")
 				.permitAll()
 				// The programs and their pages are for visitors; an operator's session only adds the drafts.
-				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*")
+				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*",
+						"/api/program/programs/*/registration")
+				.permitAll()
+				// A confirmed guest's check-in code and calendar file open from an email by their unguessable ticket.
+				.requestMatchers(HttpMethod.GET, "/api/program/tickets/*/check-in.png", "/api/program/tickets/*/event.ics")
 				.permitAll()
 				// The directories of approved solutions and talent, and the page of an organization that is not taken down, are read
 				// without a session. So is the deck of an approved solution; a session only adds the deck of one that

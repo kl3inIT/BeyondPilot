@@ -17,7 +17,9 @@ public enum EmailGroup {
 
 	TALENT("talent"),
 
-	MESSAGES("messages");
+	MESSAGES("messages"),
+
+	EVENTS("events");
 
 	private final String value;
 

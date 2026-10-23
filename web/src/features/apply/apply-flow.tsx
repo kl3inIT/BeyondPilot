@@ -13,6 +13,7 @@ import { EntryList } from "@/components/composites/entry-list";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
+import { ChoicesField } from "@/components/form/choices-field";
 import { AllRequired, ChoiceCardsField } from "@/components/form/form-fields";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -42,13 +43,7 @@ import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
 import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
 import { applyWords, refusedFields, type RefusedSave } from "./apply-errors";
-import {
-  AgreementField,
-  ChoicesField,
-  NativeSelectField,
-  Optional,
-  PdfField,
-} from "./apply-fields";
+import { AgreementField, NativeSelectField, Optional, PdfField } from "./apply-fields";
 import { focusField } from "./apply-focus";
 import { applyFormOptions, checkAgain } from "./apply-form";
 import { applyFormatter } from "./apply-format";

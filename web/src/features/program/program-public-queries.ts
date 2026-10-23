@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 
 import { ApiError } from "@/lib/api/client";
 import {
+  getEventRegistration,
   getProgram,
   listPrograms,
   search as searchDirectory,
+  type EventRegistration,
   type Program,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
@@ -128,6 +130,26 @@ export async function readProgram(slug: string): Promise<Program> {
   } catch (error) {
     if (error instanceof ApiError && [400, 404].includes(error.status ?? 0)) {
       notFound();
+    }
+    throw error;
+  }
+}
+
+/**
+ * How to register here for an event of GenAI Fund's Luma calendar, with the signed-in person's own
+ * registration (BEY-245). Null for an event people register for on Luma. Read fresh on each visit:
+ * the status changes when GenAI Fund decides on Luma.
+ */
+export async function readEventRegistration(slug: string): Promise<EventRegistration | null> {
+  try {
+    const { data } = await getEventRegistration({
+      ...(await sessionRequest()),
+      path: { slug },
+    });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
     }
     throw error;
   }

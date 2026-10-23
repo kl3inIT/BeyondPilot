@@ -39,6 +39,8 @@ const areaPaths = {
     "Mcp",
     "Program",
     "Programs",
+    // The code typed in the card that registers for an event (BEY-245).
+    "SignIn.sent",
     "Solution",
     "Talent",
     "UseCases",
@@ -104,8 +106,9 @@ type Area = keyof typeof areaPaths;
 /**
  * The modules whose requests only an operator's screens make. The words for their failure codes are
  * a quarter of `Errors` and go to the admin area alone; elsewhere such a code gets the general words.
+ * A registration for an event is a visitor's request, so its codes go everywhere (BEY-245).
  */
-const operatorCodes = /^(AI|SEARCH|NOTIFICATION|PROGRAM)_/;
+const operatorCodes = /^(AI|SEARCH|NOTIFICATION|PROGRAM)_(?!REGISTRATION_)/;
 
 /** The given paths of the catalog; a path under a path that is also given is already included. */
 function pick(messages: Record<string, unknown>, paths: readonly string[]) {

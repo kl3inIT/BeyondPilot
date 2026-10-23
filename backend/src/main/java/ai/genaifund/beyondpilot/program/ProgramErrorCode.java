@@ -63,7 +63,22 @@ public enum ProgramErrorCode implements ErrorCode {
 			"Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma."),
 
 	LUMA_ENCRYPTION_KEY_MISSING("PROGRAM_LUMA_ENCRYPTION_KEY_MISSING", ErrorCategory.SERVICE_UNAVAILABLE,
-			"This environment cannot keep a Luma key yet. Ask the team to set its encryption key.");
+			"This environment cannot keep a Luma key yet. Ask the team to set its encryption key."),
+
+	REGISTRATION_NOT_HERE("PROGRAM_REGISTRATION_NOT_HERE", ErrorCategory.NOT_FOUND,
+			"People register for this event on Luma, not here."),
+
+	REGISTRATION_CLOSED("PROGRAM_REGISTRATION_CLOSED", ErrorCategory.CONFLICT,
+			"This event takes no more registrations."),
+
+	REGISTRATION_FORM_CHANGED("PROGRAM_REGISTRATION_FORM_CHANGED", ErrorCategory.CONFLICT,
+			"The host changed the questions of this event. Look at the form again, then register."),
+
+	REGISTRATION_ANSWERS_INVALID("PROGRAM_REGISTRATION_ANSWERS_INVALID", ErrorCategory.VALIDATION,
+			"An answer is missing or not one the question takes."),
+
+	REGISTRATION_EXISTS("PROGRAM_REGISTRATION_EXISTS", ErrorCategory.CONFLICT,
+			"You have already registered for this event.");
 
 	private final String code;
 	private final ErrorCategory category;

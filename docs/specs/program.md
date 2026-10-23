@@ -29,7 +29,8 @@ it asks applicants, and whether the public site shows it. It was delivered by
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
 `V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
 when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from.
-`V114__program_create_luma_connection.sql` creates `program_luma_connection`. The module owns all five ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
+`V114__program_create_luma_connection.sql` creates `program_luma_connection`, and `V115__program_create_luma_registrations.sql`
+adds `program.luma_form` and creates `program_luma_registration`. The module owns all six ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
   `ends_on`, `status`, `published_at`, `page_kind`, `external_url`, `cover_file_id`, the application window
@@ -37,13 +38,20 @@ when an operator featured the program and `V99__program_add_luma_event.sql` the 
   the titles an operator gave the dates the window puts on the timeline (`applications_open_title`,
   `applications_close_title`, `outcomes_due_title`, each null for the default words, at most 160 characters),
   `featured_at` (null while the program is not featured), `luma_event_id` (unique; null for a program an operator
-  created) and `luma_cover_url` (the image on Luma the cover was copied from), `version`, `created_at`, `updated_at`.
+  created), `luma_cover_url` (the image on Luma the cover was copied from) and `luma_form` (how people register for
+  the event here, as `LumaForm` writes it; null when they register on Luma), `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
 - **`program_luma_connection`.** At most one row (`id = 1`): the Luma key sealed with AES-256-GCM (`api_key`) and its last
   four characters, the calendar's `calendar_id` and `calendar_name`, the webhook BeyondPilot made (`webhook_id`, its
   secret sealed in `webhook_secret`, or why none was in `webhook_error`), `last_read_at`, `last_read_error`,
   `connected_by_account_id`, `created_at`, `updated_at`, `version`.
+- **`program_luma_registration`.** A person's registration for a Luma event, kept for good: `program_id`,
+  `account_id` (one per person and event), the `email` and `name` sent to Luma, the `answers` with their questions as
+  asked (JSON), `form_version`, the guest's `status` on Luma (`pending_approval`, `approved`, `waitlist`, `declined`,
+  `invited`), the `send_state` (`waiting`, `sent`, `failed` with `send_error`), `attempts`, `next_attempt_at`,
+  `sent_at`, `luma_guest_id`, `check_in_url`, a unique unguessable `ticket`, `emailed_status`, `created_at`,
+  `updated_at`, `version`.
 - **`program_question`.** Also keyed by `(program_id, position)`, but each question has an `id`, unique across all
   programs, because an application's answers name their question by it.
 
@@ -266,6 +274,13 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   `t` is within 15 minutes of now (`LumaSignature`), since Luma's retries keep their first `t`; it is then answered
   `204` and the calendar is read soon, once however many deliveries come. Anything else is answered `403`
   (`program.luma.webhook_refused`), never `410`, which would pause the webhook.
+- **Registering here.** A managed event without a price whose every question is of a kind Luma documents
+  (`LumaForm`, `LumaQuestion`) gets `luma_form` at each read: whether registration is open, whether each guest waits
+  for approval, the seats left and the waitlist, the questions, the hosts, the time zone, and the venue or the call with
+  whether Luma keeps it for guests. Only events this environment names take registrations here
+  (`beyondpilot.program.luma.registration-events`: an identifier each, or `*`; none by default, `*` in production, the
+  hidden test event on staging); their page is `standard`, any other keeps Luma's. See
+  [Registrations for Luma events](#registrations-for-luma-events).
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
   such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
   its Luma page. The **Luma** tab shows the calendar, the key's last four characters, whether the webhook exists, the
@@ -276,6 +291,39 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   (`program.luma.read_failed`) or "Luma refused the key". An event whose read, image or write fails is skipped and tried
   at the next read (`program.luma.event_failed`); the others go on. A read that changed something logs
   `program.luma.read` with its counts.
+
+## Registrations for Luma events
+
+People register on BeyondPilot for an event GenAI Fund manages on Luma, become users as they do, and are emailed what
+Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registration/design.md)).
+
+- **Form.** `GET /api/program/programs/{slug}/registration` (`EventRegistrations.registration`) gives the questions as
+  the host wrote them, a `formVersion` mark of them, `state` (`open`, `waitlist` when the event is full and its waitlist
+  on, `closed`), `approval`, `zone`, `hosts`, and the caller's registration. The venue and the call that Luma keeps for
+  guests are given only to a confirmed one (`placeKept` says they are kept). A text question labelled Name or Email is
+  `known` and answered from the person's own name and address.
+- **Registering.** `POST` the same path with the name, the `formVersion` and the answers. The questions are read again
+  from Luma first (the ones last read stand when Luma cannot be read); a form filled against others is refused
+  (`PROGRAM_REGISTRATION_FORM_CHANGED`) and the calendar is read soon. `RegistrationAnswers` checks each answer, since
+  Luma checks none: what is required is there, a choice is one the question offers, an address and a phone number are
+  ones. The registration is kept with the status Luma will be asked for: `waitlist` for a full event with a waitlist,
+  `pending_approval` when GenAI Fund approves each guest, `approved` otherwise. A second registration of the person is
+  refused (`PROGRAM_REGISTRATION_EXISTS`), as is one for an event that takes no more (`PROGRAM_REGISTRATION_CLOSED`).
+- **Sending.** `RegistrationSender` sends it after the commit, and every minute any that is due
+  (`beyondpilot.program.luma.send-interval`): `POST /v1/events/guests/add` with that status and `send_email: false`,
+  then the guest is read by address (`GET /v1/events/guests/get`), a few times since Luma adds in the background, and
+  its identifier, status and check-in address are kept. An attempt that fails waits 1, 5 and 15 minutes, then 1, 3 and 6
+  hours, then stops; an address Luma skips (unsubscribed, removed or blocked) and answers Luma refuses stop at once. Each
+  outcome is logged (`program.luma.registration_sent`, `registration_failed`, `registration_stopped`).
+- **Emails.** Once Luma has the guest, the person is told of its status once (`emailed_status`): received for
+  `pending_approval`, waitlisted for `waitlist`, confirmed for `approved` with the check-in code and the calendar file.
+  The kinds belong to `notification` (`EmailService.sendEventRegistration*`).
+- **Ticket.** `GET /api/program/tickets/{ticket}/check-in.png` draws a confirmed guest's check-in address as a QR code
+  (`CheckInCode`), and `GET /api/program/tickets/{ticket}/event.ics` gives the event as a calendar file with the venue
+  (`EventCalendar`); both open without a session, by the unguessable ticket, and answer `404` for any other.
+- **On the site.** The event's page reads as Luma's: cover and hosts, name, date in the event's own time, place, the
+  card to register and the description. A visitor types their name, address and answers, then the code emailed to them
+  in the same card, which signs them in; a new account agrees to the consent text there before anything is sent.
 
 ## Events
 
@@ -308,6 +356,10 @@ Admin paths need a session, an operator and, for a change, the CSRF header.
 | `DELETE /api/program/admin/luma`                  | `204`                                                                                                                                                                                           |
 | `POST /api/program/admin/luma/read`               | `LumaRead`: what the read changed; `400` `PROGRAM_LUMA_KEY_REFUSED`; `503` `PROGRAM_LUMA_NOT_CONFIGURED` where no calendar is connected, `PROGRAM_LUMA_UNREACHABLE` when Luma could not be read |
 | `POST /api/program/luma/webhook`                  | `204` a delivery signed by the connected calendar; `403` otherwise                                                                                                                              |
+| `GET /api/program/programs/{slug}/registration`   | `EventRegistration`; `404` `PROGRAM_NOT_FOUND`, `PROGRAM_REGISTRATION_NOT_HERE`                                                                                                                 |
+| `POST /api/program/programs/{slug}/registration`  | `EventRegistration` with the caller's, `received` until Luma has it; `400` `PROGRAM_REGISTRATION_ANSWERS_INVALID`; `401`; `409` `PROGRAM_REGISTRATION_EXISTS`, `_FORM_CHANGED`, `_CLOSED`       |
+| `GET /api/program/tickets/{ticket}/check-in.png`  | A confirmed guest's check-in code as PNG; `404` otherwise                                                                                                                                       |
+| `GET /api/program/tickets/{ticket}/event.ics`     | A confirmed guest's event as an iCalendar file; `404` otherwise                                                                                                                                 |
 
 The contract is `openapi.yml`.
 
@@ -315,26 +367,31 @@ The contract is `openapi.yml`.
 
 `ProgramErrorCode`, turned into RFC 9457 problems by `config.ApiExceptionHandler`:
 
-| Code                                  | Status | When                                                                                  |
-| ------------------------------------- | ------ | ------------------------------------------------------------------------------------- |
-| `PROGRAM_NOT_FOUND`                   | 404    | No program has this id, or no public program this address                             |
-| `PROGRAM_SLUG_TAKEN`                  | 409    | Another program has the address                                                       |
-| `PROGRAM_SLUG_FIXED`                  | 409    | A new address for a program that has been published                                   |
-| `PROGRAM_CHANGED_MEANWHILE`           | 409    | The `version` sent is not the program's                                               |
-| `PROGRAM_QUESTIONS_FIXED`             | 409    | The questions are saved after the applications opened                                 |
-| `PROGRAM_OPENING_FIXED`               | 409    | A save moves a passed opening or takes the window away                                |
-| `PROGRAM_PUBLISHED_INCOMPLETE`        | 400    | A save leaves a published program without what publishing asks for                    |
-| `PROGRAM_DAYS_OUT_OF_ORDER`           | 400    | `endsOn` before `startsOn`                                                            |
-| `PROGRAM_WINDOW_OUT_OF_ORDER`         | 400    | `closesAt` not after `opensAt`                                                        |
-| `PROGRAM_OUTCOMES_BEFORE_CLOSE`       | 400    | `outcomesDueOn` before the closing day in Vietnam                                     |
-| `PROGRAM_KEY_DATE_OUT_OF_ORDER`       | 400    | A key date ends before it starts                                                      |
-| `PROGRAM_EVENT_OUT_OF_ORDER`          | 400    | An event ends before it starts                                                        |
-| `PROGRAM_EVENT_CITY_REQUIRED`         | 400    | An event added or changed is held in person and names no city                         |
-| `PROGRAM_EXTERNAL_URL_REQUIRED`       | 400    | `external` page kind without `externalUrl`                                            |
-| `PROGRAM_CHOICES_REQUIRED`            | 400    | A `single_choice` or `multi_choice` question with fewer than two options              |
-| `PROGRAM_NOT_READY_TO_PUBLISH`        | 400    | Publishing while `publishIssues` is not empty                                         |
-| `PROGRAM_COVER_NOT_USABLE`            | 400    | The cover is not a stored `program_image` of the caller, or is another program's      |
-| `PROGRAM_LUMA_NOT_CONFIGURED`         | 503    | Pull from Luma where no calendar is connected                                         |
-| `PROGRAM_LUMA_UNREACHABLE`            | 503    | Pull from Luma, or connecting, when Luma could not be reached                         |
-| `PROGRAM_LUMA_KEY_REFUSED`            | 400    | Connecting with a key Luma refuses, or Pull from Luma with a key Luma no longer takes |
-| `PROGRAM_LUMA_ENCRYPTION_KEY_MISSING` | 503    | Connecting where `BEYONDPILOT_PROGRAM_ENCRYPTION_KEY` is not set                      |
+| Code                                   | Status | When                                                                                    |
+| -------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+| `PROGRAM_NOT_FOUND`                    | 404    | No program has this id, or no public program this address                               |
+| `PROGRAM_SLUG_TAKEN`                   | 409    | Another program has the address                                                         |
+| `PROGRAM_SLUG_FIXED`                   | 409    | A new address for a program that has been published                                     |
+| `PROGRAM_CHANGED_MEANWHILE`            | 409    | The `version` sent is not the program's                                                 |
+| `PROGRAM_QUESTIONS_FIXED`              | 409    | The questions are saved after the applications opened                                   |
+| `PROGRAM_OPENING_FIXED`                | 409    | A save moves a passed opening or takes the window away                                  |
+| `PROGRAM_PUBLISHED_INCOMPLETE`         | 400    | A save leaves a published program without what publishing asks for                      |
+| `PROGRAM_DAYS_OUT_OF_ORDER`            | 400    | `endsOn` before `startsOn`                                                              |
+| `PROGRAM_WINDOW_OUT_OF_ORDER`          | 400    | `closesAt` not after `opensAt`                                                          |
+| `PROGRAM_OUTCOMES_BEFORE_CLOSE`        | 400    | `outcomesDueOn` before the closing day in Vietnam                                       |
+| `PROGRAM_KEY_DATE_OUT_OF_ORDER`        | 400    | A key date ends before it starts                                                        |
+| `PROGRAM_EVENT_OUT_OF_ORDER`           | 400    | An event ends before it starts                                                          |
+| `PROGRAM_EVENT_CITY_REQUIRED`          | 400    | An event added or changed is held in person and names no city                           |
+| `PROGRAM_EXTERNAL_URL_REQUIRED`        | 400    | `external` page kind without `externalUrl`                                              |
+| `PROGRAM_CHOICES_REQUIRED`             | 400    | A `single_choice` or `multi_choice` question with fewer than two options                |
+| `PROGRAM_NOT_READY_TO_PUBLISH`         | 400    | Publishing while `publishIssues` is not empty                                           |
+| `PROGRAM_COVER_NOT_USABLE`             | 400    | The cover is not a stored `program_image` of the caller, or is another program's        |
+| `PROGRAM_LUMA_NOT_CONFIGURED`          | 503    | Pull from Luma where no calendar is connected                                           |
+| `PROGRAM_LUMA_UNREACHABLE`             | 503    | Pull from Luma, or connecting, when Luma could not be reached                           |
+| `PROGRAM_LUMA_KEY_REFUSED`             | 400    | Connecting with a key Luma refuses, or Pull from Luma with a key Luma no longer takes   |
+| `PROGRAM_LUMA_ENCRYPTION_KEY_MISSING`  | 503    | Connecting where `BEYONDPILOT_PROGRAM_ENCRYPTION_KEY` is not set                        |
+| `PROGRAM_REGISTRATION_NOT_HERE`        | 404    | People register for the event on Luma, or this environment takes no registration for it |
+| `PROGRAM_REGISTRATION_CLOSED`          | 409    | The event takes no more registrations                                                   |
+| `PROGRAM_REGISTRATION_FORM_CHANGED`    | 409    | The form was filled against questions the host has changed since                        |
+| `PROGRAM_REGISTRATION_ANSWERS_INVALID` | 400    | An answer is missing, too long, or not one its question takes                           |
+| `PROGRAM_REGISTRATION_EXISTS`          | 409    | The person already registered for the event                                             |

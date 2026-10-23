@@ -23,6 +23,7 @@ import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.program.luma.LumaApi;
 import ai.genaifund.beyondpilot.program.luma.LumaEvent;
+import ai.genaifund.beyondpilot.program.luma.LumaForm;
 import ai.genaifund.beyondpilot.program.luma.LumaHttp;
 import ai.genaifund.beyondpilot.program.luma.LumaProperties;
 import ai.genaifund.beyondpilot.program.persistence.LumaConnection;
@@ -47,11 +48,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Brings the events of the connected Luma calendar onto the site through Luma's API (BEY-190, BEY-245). Each event
- * still to come is a program of type event whose page is its Luma page. Luma owns what it supplies, so a change there
- * overwrites an operator's edit at the next read, and a read that changes nothing writes nothing. A public event is
- * published; a private or members-only one waits as a draft for an operator. The job never changes the status of a
- * program it already holds, except to unpublish one whose future event left the calendar. It reads every hour, and
- * soon after Luma's webhook says an event changed; with no calendar connected it does nothing.
+ * still to come is a program of type event; its page is here when people register for it here, Luma's otherwise.
+ * Luma owns what it supplies, so a change there overwrites an operator's edit at the next read, and a read that
+ * changes nothing writes nothing. A public event is published; a private or members-only one waits as a draft for
+ * an operator. The job never changes the status of a program it already holds, except to unpublish one whose future
+ * event left the calendar. It reads every hour, and soon after Luma's webhook says an event changed; with no
+ * calendar connected it does nothing.
  */
 @Component
 @EnableScheduling
@@ -74,6 +76,8 @@ class LumaCalendar {
 	private static final int MAX_EVENT_TITLE = 160;
 
 	private static final int MAX_SLUG = 60;
+
+	private final LumaProperties properties;
 
 	private final LumaApi api;
 
@@ -101,6 +105,7 @@ class LumaCalendar {
 	LumaCalendar(LumaProperties properties, LumaKeys keys, LumaConnectionRepository connections,
 			ProgramRepository programs, StorageService storage, AuditTrail audit, ApplicationEventPublisher events,
 			TransactionTemplate transactions) {
+		this.properties = properties;
 		this.api = new LumaApi(properties.api(), properties.timeout());
 		this.http = new LumaHttp(properties.hosts(), properties.timeout());
 		this.keys = keys;
@@ -253,7 +258,10 @@ class LumaCalendar {
 				description == null ? null : cut(description, MAX_ABOUT));
 		Instant ends = event.endsAt() == null ? event.startsAt() : event.endsAt();
 		program.runBetween(LocalDate.ofInstant(event.startsAt(), event.zone()), LocalDate.ofInstant(ends, event.zone()));
-		program.showAs(PageKind.EXTERNAL, event.page().toString());
+		// An event people register for here has its page here; any other keeps Luma's.
+		LumaForm form = event.form() != null && properties.registersHere(event.id()) ? event.form() : null;
+		program.registerAs(form == null ? null : form.json());
+		program.showAs(form == null ? PageKind.EXTERNAL : PageKind.STANDARD, event.page().toString());
 		program.schedule(program.getMilestones(),
 				List.of(new ProgramEvent(cut(event.name(), MAX_EVENT_TITLE), event.startsAt(), event.endsAt(),
 						event.online(), event.city(), event.country(), event.page().toString())));
@@ -290,12 +298,13 @@ class LumaCalendar {
 	/** What the job writes of a program, to tell whether a read changed it. */
 	private record Fields(String name, @Nullable String summary, @Nullable String about, @Nullable LocalDate startsOn,
 			@Nullable LocalDate endsOn, PageKind pageKind, @Nullable String externalUrl, List<ProgramEvent> events,
-			@Nullable UUID coverFileId) {
+			@Nullable UUID coverFileId, Optional<LumaForm> form) {
 
+		/** The form is compared as read: the database gives back its JSON in an order of its own. */
 		static Fields of(Program program) {
 			return new Fields(program.getName(), program.getSummary(), program.getAbout(), program.getStartsOn(),
 					program.getEndsOn(), program.getPageKind(), program.getExternalUrl(), program.getEvents(),
-					program.getCoverFileId());
+					program.getCoverFileId(), LumaForm.parse(program.getLumaForm()));
 		}
 	}
 

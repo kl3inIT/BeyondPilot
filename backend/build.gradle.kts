@@ -68,6 +68,7 @@ dependencies {
 	implementation(libs.httpclient5)
 	implementation(libs.jmustache)
 	implementation(libs.commonmark)
+	implementation(libs.qrcodegen)
 	implementation(libs.resend.java)
 	implementation(libs.brevo)
 	developmentOnly(libs.spring.boot.docker.compose)

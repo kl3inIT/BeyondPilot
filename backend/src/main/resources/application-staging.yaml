@@ -1,5 +1,11 @@
 # Staging runs with `production,staging`: the production settings and diagnosis logging for our own code. Email goes
 # through the provider operators configure in Admin › Email, as in production.
+beyondpilot:
+  program:
+    luma:
+      # Staging reads the real GenAI Fund calendar; people register here only for its hidden test event (BEY-245).
+      registration-events: evt-DCRVsSuHrK7voYF
+
 logging:
   level:
     ai.genaifund.beyondpilot: DEBUG

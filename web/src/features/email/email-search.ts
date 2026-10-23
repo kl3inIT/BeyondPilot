@@ -52,6 +52,9 @@ export const emailKinds = [
   "message_request_declined",
   "message_request_closed",
   "message_unread",
+  "event_registration_received",
+  "event_registration_waitlisted",
+  "event_registration_confirmed",
 ] as const;
 
 export type EmailKind = (typeof emailKinds)[number];

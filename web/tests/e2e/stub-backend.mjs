@@ -440,6 +440,108 @@ const publicPrograms = {
   },
 };
 
+// An event of the Luma calendar people register for here (BEY-245), apart from the programs the
+// lists and search show. A test that registers sets the cookie BEYONDPILOT_E2E_REGISTERED to the
+// status it wants, which the registration then reads back for that browser only.
+const lumaEvent = {
+  id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c09",
+  slug: "gaf-briefing",
+  name: "Product briefing",
+  type: "event",
+  partnerName: null,
+  summary: "A briefing for builders.",
+  about: "A briefing for builders.\nWith the product team.",
+  coverFileId: null,
+  phase: "upcoming",
+  status: "published",
+  startsOn: inDays(20).slice(0, 10),
+  endsOn: inDays(20).slice(0, 10),
+  pageKind: "standard",
+  externalUrl: "https://luma.com/gaf-briefing",
+  applications: null,
+  keyDates: [],
+  events: [
+    {
+      title: "Product briefing",
+      startsAt: inDays(20),
+      endsAt: null,
+      online: false,
+      city: "Ho Chi Minh City",
+      country: "Vietnam",
+      registrationUrl: "https://luma.com/gaf-briefing",
+    },
+  ],
+};
+
+function lumaEventRegistration(request, account) {
+  const status = /BEYONDPILOT_E2E_REGISTERED=([a-z_]+)/.exec(request.headers.cookie ?? "")?.[1];
+  const approved = status === "approved";
+  return {
+    formVersion: "v1",
+    state: "open",
+    approval: true,
+    zone: "Asia/Ho_Chi_Minh",
+    hosts: ["GenAI Fund"],
+    questions: [
+      {
+        id: "q-name",
+        label: "Name",
+        type: "text",
+        required: true,
+        multiline: false,
+        options: [],
+        multiple: false,
+        jobTitle: false,
+        known: "name",
+      },
+      {
+        id: "q-role",
+        label: "Your role",
+        type: "select",
+        required: true,
+        multiline: false,
+        options: ["Investor", "Builder"],
+        multiple: false,
+        jobTitle: false,
+      },
+      {
+        id: "q-company",
+        label: "Company",
+        type: "company",
+        required: true,
+        multiline: false,
+        options: [],
+        multiple: false,
+        jobTitle: true,
+      },
+      {
+        id: "q-terms",
+        label: "Terms and Conditions",
+        type: "terms",
+        required: true,
+        multiline: false,
+        options: [],
+        multiple: false,
+        jobTitle: false,
+        termsUrl: "https://genaifund.ai/terms.pdf",
+      },
+    ],
+    venue: approved ? "24 Nguyễn Thị Nghĩa, Quận 1" : null,
+    meetingUrl: null,
+    placeKept: !approved,
+    mine:
+      account && status
+        ? {
+            status,
+            name: "Linh Tran",
+            registeredAt: new Date().toISOString(),
+            checkInImageUrl: null,
+            calendarUrl: approved ? "/api/program/tickets/e2e/event.ics" : null,
+          }
+        : null,
+  };
+}
+
 function json(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json" });
   response.end(JSON.stringify(body));
@@ -677,6 +779,12 @@ createServer((request, response) => {
         ),
       }));
     return json(response, 200, { items });
+  }
+  if (url.pathname === "/api/program/programs/gaf-briefing/registration") {
+    return json(response, 200, lumaEventRegistration(request, account));
+  }
+  if (url.pathname === "/api/program/programs/gaf-briefing") {
+    return json(response, 200, lumaEvent);
   }
   if (url.pathname.startsWith("/api/program/programs/")) {
     const program = publicPrograms[url.pathname.split("/")[4]];

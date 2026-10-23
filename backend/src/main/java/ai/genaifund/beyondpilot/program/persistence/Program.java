@@ -19,7 +19,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -78,6 +80,14 @@ public class Program {
 
 	/** The image on Luma the cover was copied from; null when the cover is not Luma's. */
 	private @Nullable String lumaCoverUrl;
+
+	/**
+	 * How people register for the Luma event on BeyondPilot, as {@code LumaForm} writes it (BEY-245); null when they
+	 * register on Luma, or the program is not an event of Luma's.
+	 */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(columnDefinition = "jsonb")
+	private @Nullable String lumaForm;
 
 	private @Nullable Instant applicationsOpenAt;
 
@@ -164,6 +174,11 @@ public class Program {
 	/** A program read from Luma: the event it is, which never changes. */
 	public void readFromLuma(String eventId) {
 		this.lumaEventId = eventId;
+	}
+
+	/** How people register for the event here, as {@code LumaForm} writes it; null when they register on Luma. */
+	public void registerAs(@Nullable String lumaForm) {
+		this.lumaForm = lumaForm;
 	}
 
 	/** The cover, copied from this image on Luma. */
@@ -321,6 +336,10 @@ public class Program {
 
 	public @Nullable String getLumaCoverUrl() {
 		return lumaCoverUrl;
+	}
+
+	public @Nullable String getLumaForm() {
+		return lumaForm;
 	}
 
 	public @Nullable Instant getApplicationsOpenAt() {

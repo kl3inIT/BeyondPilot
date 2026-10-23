@@ -36,6 +36,7 @@ beyondpilot:
     luma:
       # No default: Luma's webhook must reach this site.
       site-url: ${BEYONDPILOT_SITE_URL}
+      registration-events: "*"
 
 logging:
   structured:

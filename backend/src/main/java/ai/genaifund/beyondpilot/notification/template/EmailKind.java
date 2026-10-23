@@ -172,7 +172,25 @@ public enum EmailKind {
 			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
 	MESSAGE_UNREAD("message_unread", EmailGroup.MESSAGES, true, null, Variable.optional("senderName", "Mei Tan"),
-			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages"));
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	EVENT_REGISTRATION_RECEIVED("event_registration_received", EmailGroup.EVENTS, true, null,
+			Variable.required("eventName", "TinyFish, Big Minds"),
+			Variable.optional("when", "Thu 30 Oct 2026, 18:30 GMT+7"), Variable.optional("where", "Ho Chi Minh City"),
+			Variable.optional("eventUrl", "https://beyondpilot.example/programs/gaf-tinyfish-vn")),
+
+	EVENT_REGISTRATION_WAITLISTED("event_registration_waitlisted", EmailGroup.EVENTS, true, null,
+			Variable.required("eventName", "TinyFish, Big Minds"),
+			Variable.optional("when", "Thu 30 Oct 2026, 18:30 GMT+7"), Variable.optional("where", "Ho Chi Minh City"),
+			Variable.optional("eventUrl", "https://beyondpilot.example/programs/gaf-tinyfish-vn")),
+
+	EVENT_REGISTRATION_CONFIRMED("event_registration_confirmed", EmailGroup.EVENTS, true, null,
+			Variable.required("eventName", "TinyFish, Big Minds"),
+			Variable.optional("when", "Thu 30 Oct 2026, 18:30 GMT+7"),
+			Variable.optional("where", "BỜM - Kitchen & Wine Bar, Ho Chi Minh City"),
+			Variable.optional("checkInImageUrl", "https://beyondpilot.example/api/program/tickets/sample/check-in.png"),
+			Variable.required("calendarUrl", "https://beyondpilot.example/api/program/tickets/sample/event.ics"),
+			Variable.optional("eventUrl", "https://beyondpilot.example/programs/gaf-tinyfish-vn"));
 
 	/**
 	 * Kinds that are no longer sent. They stay in the catalog so the log still names them, but they have no template

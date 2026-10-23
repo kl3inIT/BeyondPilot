@@ -53,6 +53,12 @@ public class EmailService {
 	/** The signed-in person's conversations on the site. */
 	private static final String MESSAGES = "/workspace/messages";
 
+	/** A program's page on the site, by its address. */
+	private static final String PROGRAMS = "/programs/";
+
+	/** A guest's check-in code and calendar file, by their ticket (BEY-245). */
+	private static final String TICKETS = "/api/program/tickets/";
+
 	/** What the log keeps of a sign-in code in place of the code. */
 	private static final String MASKED_CODE = "••••••";
 
@@ -396,6 +402,45 @@ public class EmailService {
 	@Transactional
 	public void sendUnreadMessages(String recipient, @Nullable String senderName) {
 		queue(EmailKind.MESSAGE_UNREAD, recipient, values("senderName", senderName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells a person that their registration for an event GenAI Fund approves each guest of reached Luma, where it waits
+	 * for review. The link opens the event's page, which shows where the registration stands.
+	 * @param when the start, in words and in the event's own time
+	 * @param where the city, or that it is online; null when Luma gives neither
+	 * @param slug the event's address under /programs
+	 */
+	@Transactional
+	public void sendEventRegistrationReceived(String recipient, String eventName, @Nullable String when,
+			@Nullable String where, String slug) {
+		queue(EmailKind.EVENT_REGISTRATION_RECEIVED, recipient, values("eventName", eventName, "when", when, "where",
+				where, "eventUrl", url(PROGRAMS + slug)));
+	}
+
+	/** Tells a person that the event was full and their registration is on its waitlist. */
+	@Transactional
+	public void sendEventRegistrationWaitlisted(String recipient, String eventName, @Nullable String when,
+			@Nullable String where, String slug) {
+		queue(EmailKind.EVENT_REGISTRATION_WAITLISTED, recipient, values("eventName", eventName, "when", when,
+				"where", where, "eventUrl", url(PROGRAMS + slug)));
+	}
+
+	/**
+	 * Tells a person that their seat at an event is confirmed, with the check-in code Luma's own email would have drawn
+	 * and the event as a calendar file. Both are read from the site by an unguessable ticket, so the email needs no
+	 * attachment.
+	 * @param where the venue or the city, or that it is online; null when Luma gives none
+	 * @param ticket the guest's ticket in the addresses of the code and the calendar file
+	 * @param checkInCode whether Luma gave a check-in address to draw as a code
+	 */
+	@Transactional
+	public void sendEventRegistrationConfirmed(String recipient, String eventName, @Nullable String when,
+			@Nullable String where, String slug, String ticket, boolean checkInCode) {
+		queue(EmailKind.EVENT_REGISTRATION_CONFIRMED, recipient,
+				values("eventName", eventName, "when", when, "where", where, "checkInImageUrl",
+						checkInCode ? url(TICKETS + ticket + "/check-in.png") : null, "calendarUrl",
+						url(TICKETS + ticket + "/event.ics"), "eventUrl", url(PROGRAMS + slug)));
 	}
 
 	/** Where an applicant reads their own application on the site. */
