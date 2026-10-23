@@ -296,6 +296,60 @@ class ProposalTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void anApplicantDeletesADraftForGoodWithTheFilesNothingElseNames() {
+		Form first = program("first-draft-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		Form second = program("second-draft-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String email = "mai@drafts.test";
+		String mai = TestSignIn.session(client, mail, email);
+		String draft = body(put(mai, first.path(),
+				withDeck(application(Map.of("firstName", "Mai"), null, answers(first, email), null), email))
+			.expectStatus()
+			.isOk());
+		String id = JsonPath.read(draft, "$.application.id");
+		UUID deck = UUID.fromString(JsonPath.read(draft, "$.application.deck.fileId"));
+		UUID proposalFile = UUID.fromString(JsonPath.read(draft, "$.application.answers['" + first.proposalFile() + "']"));
+		// The next application brings the same deck, then that program closes.
+		Map<String, Object> next = application(Map.of("firstName", "Mai"), null, Map.of(), null);
+		next.put("deckFileId", deck.toString());
+		String other = JsonPath.read(body(put(mai, second.path(), next).expectStatus().isOk()), "$.application.id");
+		jdbc.sql("update program set applications_close_at = now() - interval '1 minute' where id = ?")
+			.params(second.programId())
+			.update();
+
+		assertProblem(delete(TestSignIn.session(client, mail, "stranger@drafts.test"), API + "/applications/" + id),
+				404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		delete(mai, API + "/applications/" + id).expectStatus().isNoContent();
+		assertProblem(get(mai, API + "/applications/" + id), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		assertThat(stored(proposalFile)).isFalse();
+		// The other application still names the deck.
+		assertThat(stored(deck)).isTrue();
+
+		// A program that closed still lets its draft go.
+		delete(mai, API + "/applications/" + other).expectStatus().isNoContent();
+		assertThat(stored(deck)).isFalse();
+
+		// A submitted application is withdrawn instead, and stays so once changed again.
+		String sent = "sent@drafts.test";
+		String sender = TestSignIn.session(client, mail, sent);
+		post(sender, first.path() + "/organization", Map.of("kind", "individual", "name", "Sent Le", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		submitted(sender, sent, first, completeSolution(sender, sent, "Sent Copilot"));
+		String submittedId = JsonPath.read(body(get(sender, first.path()).expectStatus().isOk()), "$.application.id");
+		assertProblem(delete(sender, API + "/applications/" + submittedId), 409, "PROPOSAL_DRAFT_ONLY");
+		String withdrawn = body(post(sender, API + "/applications/" + submittedId + "/withdraw", null).expectStatus()
+			.isOk());
+		Map<String, Object> changed = application(contact(), null, Map.of(), versionOf(withdrawn));
+		assertThat(JsonPath.<String>read(body(put(sender, first.path(), changed).expectStatus().isOk()),
+				"$.application.status")).isEqualTo("draft");
+		assertProblem(delete(sender, API + "/applications/" + submittedId), 409, "PROPOSAL_DRAFT_ONLY");
+	}
+
+	private boolean stored(UUID file) {
+		return jdbc.sql("select exists (select 1 from storage_file where id = ?)").param(file).query(Boolean.class).single();
+	}
+
+	@Test
 	void aSubmissionNeedsEverythingTheProgramAsks() {
 		Form form = program("needs-challenge", true, Instant.now().plus(Duration.ofDays(10)));
 		String email = "team@needs.test";

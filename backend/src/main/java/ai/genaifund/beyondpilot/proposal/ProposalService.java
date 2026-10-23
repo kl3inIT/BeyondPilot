@@ -48,6 +48,7 @@ import ai.genaifund.beyondpilot.solution.OfferedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -422,6 +423,55 @@ public class ProposalService {
 			.addKeyValue("proposal_id", id)
 			.log("Application withdrawn");
 		return view(actor, form, proposal);
+	}
+
+	/**
+	 * Deletes the caller's application for good while it was never submitted, whether or not the program still takes
+	 * applications: nobody else has seen it. The files it names go too, unless something else names them.
+	 * @throws ProposalException when the caller has no such application, or it was submitted
+	 */
+	@Transactional
+	public void deleteDraft(Actor actor, UUID id) {
+		identity.requireActive(actor);
+		Proposal proposal = proposals.findForUpdate(id)
+			.filter(found -> found.getAccountId().equals(actor.accountId()))
+			.orElseThrow(() -> notFound(id));
+		if (!proposal.isUnsent()) {
+			throw new ProposalException(ProposalErrorCode.DRAFT_ONLY, "Application " + id + " was submitted");
+		}
+		List<UUID> named = new ArrayList<>();
+		if (proposal.getDeckFileId() != null) {
+			named.add(proposal.getDeckFileId());
+		}
+		for (String value : read(proposal.getAnswers()).values()) {
+			uuid(value).ifPresent(named::add);
+		}
+		proposals.delete(proposal);
+		proposals.flush();
+		// Only what the applicant uploaded for an application, and nothing else names now.
+		List<UUID> files = storage.describe(named)
+			.values()
+			.stream()
+			.filter(file -> file.purpose() == FilePurpose.APPLICATION_FILE
+					&& actor.accountId().equals(file.uploadedByAccountId()))
+			.map(StoredFile::id)
+			.filter(file -> !proposals.fileNamed(file))
+			.toList();
+		files.forEach(storage::delete);
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.draft.deleted")
+			.addKeyValue("proposal_id", id)
+			.addKeyValue("files_deleted", files.size())
+			.log("Draft application deleted");
+	}
+
+	private static Optional<UUID> uuid(String value) {
+		try {
+			return Optional.of(UUID.fromString(value));
+		}
+		catch (IllegalArgumentException notAFile) {
+			return Optional.empty();
+		}
 	}
 
 	/**

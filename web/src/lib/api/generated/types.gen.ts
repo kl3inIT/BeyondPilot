@@ -1053,7 +1053,7 @@ export type ApplyingOrganization = {
      */
     active: boolean;
     /**
-     * Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.
+     * Whether the person may still change who applies: they apply as themselves or through a team that is just them, and nothing was sent under its name yet.
      */
     changeable: boolean;
     country?: string | null;
@@ -13139,6 +13139,41 @@ export type ListMyApplicationsResponses = {
 
 export type ListMyApplicationsResponse = ListMyApplicationsResponses[keyof ListMyApplicationsResponses];
 
+export type DeleteDraftApplicationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/applications/{id}';
+};
+
+export type DeleteDraftApplicationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such application.
+     */
+    404: Problem;
+    /**
+     * It was submitted; a submitted one can be withdrawn instead.
+     */
+    409: Problem;
+};
+
+export type DeleteDraftApplicationError = DeleteDraftApplicationErrors[keyof DeleteDraftApplicationErrors];
+
+export type DeleteDraftApplicationResponses = {
+    /**
+     * The application and the files only it named are gone.
+     */
+    204: void;
+};
+
+export type DeleteDraftApplicationResponse = DeleteDraftApplicationResponses[keyof DeleteDraftApplicationResponses];
+
 export type GetMyApplicationData = {
     body?: never;
     path: {
@@ -13360,7 +13395,7 @@ export type LeaveApplyingAloneErrors = {
      */
     401: Problem;
     /**
-     * The program takes no applications now, the caller does not apply as themselves, or something was already sent under their name.
+     * The program takes no applications now, the caller applies neither as themselves nor through a team that is just them, or something was already sent under its name.
      */
     409: Problem;
 };

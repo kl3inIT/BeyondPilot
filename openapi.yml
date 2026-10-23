@@ -7728,6 +7728,41 @@ paths:
       tags:
       - Applications
   /api/proposal/applications/{id}:
+    delete:
+      operationId: deleteDraftApplication
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The application and the files only it named are gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such application.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It was submitted; a submitted one can be withdrawn instead.
+      security:
+      - session: []
+      summary: "Delete an application never submitted, for good"
+      tags:
+      - Applications
     get:
       operationId: getMyApplication
       parameters:
@@ -8003,11 +8038,13 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The program takes no applications now, the caller does not\
-            \ apply as themselves, or something was already sent under their name."
+          description: "The program takes no applications now, the caller applies\
+            \ neither as themselves nor through a team that is just them, or something\
+            \ was already sent under its name."
       security:
       - session: []
-      summary: "Stop applying as oneself, to apply for a company instead"
+      summary: "Stop applying as oneself or as a team of one, to apply for a company\
+        \ instead"
       tags:
       - Applications
   /api/proposal/review/applications/{id}:
@@ -16757,8 +16794,9 @@ components:
           description: "Whether it is active, meaning not taken down."
         changeable:
           type: boolean
-          description: "Whether the person applies as themselves and may still apply\
-            \ as a team or a company instead: nothing was sent under their name yet."
+          description: "Whether the person may still change who applies: they apply\
+            \ as themselves or through a team that is just them, and nothing was sent\
+            \ under its name yet."
         country:
           type:
           - string
