@@ -14,7 +14,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.PreDestroy;
@@ -78,6 +80,9 @@ class LumaCalendar {
 
 	private static final int MAX_SLUG = 60;
 
+	/** How long an event just created waits for a read of the whole calendar before leaving the event to it. */
+	private static final long BRING_WAIT_SECONDS = 3;
+
 	private final LumaProperties properties;
 
 	private final LumaApi api;
@@ -102,6 +107,9 @@ class LumaCalendar {
 	private final ExecutorService soon = Executors.newSingleThreadExecutor(Thread.ofVirtual().name("luma-read").factory());
 
 	private final AtomicBoolean queued = new AtomicBoolean();
+
+	/** Held by one read or one bring at a time, so two never write the same event together. */
+	private final ReentrantLock reading = new ReentrantLock();
 
 	LumaCalendar(LumaProperties properties, LumaKeys keys, LumaConnectionRepository connections,
 			ProgramRepository programs, StorageService storage, AuditTrail audit, ApplicationEventPublisher events,
@@ -162,7 +170,17 @@ class LumaCalendar {
 	 * nothing. One read runs at a time: an operator's read waits for the hourly one, so the two never write the same
 	 * event together.
 	 */
-	synchronized Read read(Instant now) {
+	Read read(Instant now) {
+		reading.lock();
+		try {
+			return readHeld(now);
+		}
+		finally {
+			reading.unlock();
+		}
+	}
+
+	private Read readHeld(Instant now) {
 		Optional<LumaConnection> connection = connections.current();
 		if (connection.isEmpty()) {
 			return Read.not(Outcome.NOT_CONNECTED);
@@ -226,16 +244,32 @@ class LumaCalendar {
 
 	/**
 	 * Brings one event of the calendar onto the site at once, as a read does, for an event just created from
-	 * BeyondPilot (BEY-250).
-	 * @return the program that holds it; empty when Luma has no such event
+	 * BeyondPilot (BEY-250). It waits a few seconds at most for a read of the whole calendar, which Luma's webhook for
+	 * the new event may have started, so the operator's app is not held while every event is read; the next read brings
+	 * the event then.
+	 * @return the program that holds it; empty when Luma has no such event, or when a read held the calendar too long
 	 */
-	synchronized Optional<UUID> bring(String key, String eventId) throws IOException {
-		Optional<LumaEvent> event = api.event(key, eventId);
-		if (event.isEmpty()) {
+	Optional<UUID> bring(String key, String eventId) throws IOException {
+		try {
+			if (!reading.tryLock(BRING_WAIT_SECONDS, TimeUnit.SECONDS)) {
+				return Optional.empty();
+			}
+		}
+		catch (InterruptedException interrupted) {
+			Thread.currentThread().interrupt();
 			return Optional.empty();
 		}
-		take(event.get());
-		return programs.findByLumaEventId(eventId).map(Program::getId);
+		try {
+			Optional<LumaEvent> event = api.event(key, eventId);
+			if (event.isEmpty()) {
+				return Optional.empty();
+			}
+			take(event.get());
+			return programs.findByLumaEventId(eventId).map(Program::getId);
+		}
+		finally {
+			reading.unlock();
+		}
 	}
 
 	/** Records on the connection when the calendar was last read, or why it could not be. */

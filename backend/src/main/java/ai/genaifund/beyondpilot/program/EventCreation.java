@@ -177,7 +177,8 @@ public class EventCreation {
 		identity.requireOperator(actor);
 		String name = event.name().strip();
 		String base = LumaCalendar.slugOf(name);
-		String slug = LumaCalendar.freeSlug(base.length() < 3 ? "event-" + base : base, programs);
+		String slug = LumaCalendar.freeSlug(base.isEmpty() ? "event" : base.length() < 3 ? "event-" + base : base,
+				programs);
 		AdminProgramResponse created = administration.create(actor, valid(new CreateProgramRequest(name, slug, "event")));
 		boolean online = event.venue() == null && event.city() == null;
 		String registration = event.registrationUrl();

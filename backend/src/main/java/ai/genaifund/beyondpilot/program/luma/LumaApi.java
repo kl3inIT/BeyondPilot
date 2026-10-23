@@ -237,7 +237,10 @@ public final class LumaApi {
 			body.put("description_md", event.description());
 		}
 		if (event.venue() != null) {
-			body.put("geo_address_json", Map.of("type", "manual", "address", event.venue()));
+			Map<String, Object> place = new LinkedHashMap<>();
+			place.put("type", "manual");
+			place.put("address", event.venue());
+			body.put("geo_address_json", place);
 			body.put("location_visibility", event.hideVenue() ? "guests-only" : "public");
 		}
 		if (event.meetingUrl() != null) {

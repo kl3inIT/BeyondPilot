@@ -288,7 +288,7 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   its Luma page. The **Luma** tab shows the calendar, the key's last four characters, whether the webhook exists, the
   last read or why it failed, and when it was connected.
 - **Now.** **Pull from Luma** runs the same read at once (`LumaAdministration.read`), for an operator who just published
-  an event; a read already running finishes first, since `read` is synchronized. The toast says what changed.
+  an event; a read already running finishes first, since one read holds the calendar at a time. The toast says what changed.
 - **Failures.** A calendar that cannot be read changes nothing and is said on the connection: "Luma could not be read"
   (`program.luma.read_failed`) or "Luma refused the key". An event whose read, image or write fails is skipped and tried
   at the next read (`program.luma.event_failed`); the others go on. A read that changed something logs
@@ -306,7 +306,9 @@ An operator creates an event from the operators' MCP server with `create_event` 
   carries whether guests wait for approval, and the questions, each mapped to Luma's kind (`text`, multi-line `text`,
   `select`, multiple `select`, `url`, `linkedin`, `agree-check`, `company`) with identifiers `bp-1`, `bp-2`…; a select
   needs two options. Then `LumaCalendar.bring` reads that one event as the calendar read does, so its draft program with
-  its form exists at once; when that read fails the hourly read brings it, and the answer holds no program. Luma is
+  its form exists at once. It waits at most three seconds for a read of the whole calendar already running (Luma's
+  webhook for the new event may start one); when it cannot read the event then, the next read brings it, and the answer
+  holds no program. Luma is
   called outside any transaction; the creation is audited as `program.luma_event_create` in one of its own. No
   connection is `PROGRAM_LUMA_NOT_CONFIGURED`, a refused key `PROGRAM_LUMA_KEY_REFUSED`, a refused event
   `PROGRAM_LUMA_EVENT_REFUSED`, and Luma out of reach `PROGRAM_LUMA_UNREACHABLE`; nothing is written here then.
