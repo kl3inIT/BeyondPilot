@@ -3107,6 +3107,7 @@
       },
       "tools": {
         "reads": "Reads",
+        "changes": "Changes records",
         "switch": "Turn {tool} on or off",
         "operator": {
           "title": "Operators' server",

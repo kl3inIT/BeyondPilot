@@ -21072,6 +21072,10 @@ components:
           description: Whether the server lists it and takes calls to it.
         name:
           type: string
+        readOnly:
+          type: boolean
+          description: "Whether the tool only reads; false for one that changes records,\
+            \ as its MCP annotations tell apps."
         server:
           type: string
           enum:
@@ -21084,6 +21088,7 @@ components:
       required:
       - enabled
       - name
+      - readOnly
       - server
     Me:
       type: object

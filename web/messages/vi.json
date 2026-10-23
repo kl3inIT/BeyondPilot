@@ -3107,6 +3107,7 @@
       },
       "tools": {
         "reads": "Chỉ đọc",
+        "changes": "Thay đổi dữ liệu",
         "switch": "Bật hoặc tắt {tool}",
         "operator": {
           "title": "Server cho operator",
