@@ -96,7 +96,7 @@ test.describe("Account", () => {
     await expect(page.getByRole("alertdialog")).toContainText(
       "Withdraw your consent to use the platform?",
     );
-    await page.getByRole("button", { name: "Keep my account" }).click();
+    await page.getByRole("button", { name: "Cancel" }).click();
     expect(recorded.every((choice) => choice.platform)).toBe(true);
   });
 });

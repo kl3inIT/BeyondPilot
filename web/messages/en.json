@@ -650,10 +650,10 @@
       "turnedOff": "{purpose} turned off.",
       "withdraw": {
         "title": "Withdraw your consent to use the platform?",
-        "description": "Your account is locked straight away, and you need to agree again to use BeyondPilot.",
-        "note": "We email you to confirm it and act on it within 15 days. This does not delete your data.",
-        "keep": "Keep my account",
-        "confirm": "Withdraw and lock"
+        "description": "You won't be able to use BeyondPilot until you agree again.",
+        "note": "We email you a confirmation. This does not delete your data.",
+        "keep": "Cancel",
+        "confirm": "Withdraw"
       }
     }
   },
@@ -3260,7 +3260,7 @@
         },
         "consent_withdrawn": {
           "name": "Consent withdrawn",
-          "description": "Sent to the person when they withdraw their consent to use the platform, which locks their account until they agree again."
+          "description": "Sent to the person when they withdraw their consent to use the platform, after which they cannot use BeyondPilot until they agree again."
         },
         "organization_invitation": {
           "name": "Organization invitation",
@@ -7327,7 +7327,7 @@
         {
           "heading": "Your consent",
           "body": [
-            "Before you use the platform, we ask you to agree to how we use your personal data, one purpose at a time: using the platform (required), sharing with a program's partners, judges and mentors (needed to apply to programs), AI suggestions and evaluation (optional), and updates and newsletters (optional). We keep a record of each choice and the version of the text you agreed to. You can change any choice in Settings; it takes effect at once and does not affect what was done before. Withdrawing your consent to use the platform locks your account until you agree again."
+            "Before you use the platform, we ask you to agree to how we use your personal data, one purpose at a time: using the platform (required), sharing with a program's partners, judges and mentors (needed to apply to programs), AI suggestions and evaluation (optional), and updates and newsletters (optional). We keep a record of each choice and the version of the text you agreed to. You can change any choice in Settings; it takes effect at once and does not affect what was done before. After you withdraw your consent to use the platform, you cannot use it until you agree again; your data is not deleted."
           ]
         },
         {

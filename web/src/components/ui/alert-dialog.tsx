@@ -72,7 +72,10 @@ function AlertDialogFooter({
   variant = "bar",
   ...props
 }: React.ComponentProps<"div"> & {
-  /** `plain` is the decision dialogs' footer: no bar, equal-width buttons. */
+  /**
+   * `plain` is the decision dialogs' footer: no bar, equal-width buttons, stacked as on a phone
+   * (the action above) when their labels do not fit side by side.
+   */
   variant?: "bar" | "plain";
 }) {
   return (
@@ -82,7 +85,7 @@ function AlertDialogFooter({
       className={cn(
         "flex flex-col-reverse gap-2",
         "data-[variant=bar]:-mx-4 data-[variant=bar]:-mb-4 data-[variant=bar]:rounded-b-xl data-[variant=bar]:border-t data-[variant=bar]:bg-muted/50 data-[variant=bar]:p-4 data-[variant=bar]:group-data-[size=sm]/alert-dialog-content:grid data-[variant=bar]:group-data-[size=sm]/alert-dialog-content:grid-cols-2 data-[variant=bar]:sm:flex-row data-[variant=bar]:sm:justify-end",
-        "data-[variant=plain]:sm:flex-row data-[variant=plain]:sm:*:flex-1",
+        "data-[variant=plain]:sm:flex-row data-[variant=plain]:sm:flex-wrap-reverse data-[variant=plain]:sm:*:flex-1",
         className,
       )}
       {...props}

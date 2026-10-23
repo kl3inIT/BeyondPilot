@@ -650,10 +650,10 @@
       "turnedOff": "Đã tắt {purpose}.",
       "withdraw": {
         "title": "Rút lại sự đồng ý sử dụng nền tảng?",
-        "description": "Tài khoản của bạn sẽ bị khóa ngay, và bạn cần đồng ý lại để dùng BeyondPilot.",
-        "note": "Chúng tôi gửi email xác nhận và thực hiện trong 15 ngày. Việc này không xóa dữ liệu của bạn.",
-        "keep": "Giữ tài khoản",
-        "confirm": "Rút lại và khóa"
+        "description": "Bạn sẽ không dùng được BeyondPilot cho tới khi đồng ý lại.",
+        "note": "Chúng tôi sẽ gửi email xác nhận. Việc này không xóa dữ liệu của bạn.",
+        "keep": "Hủy",
+        "confirm": "Rút lại"
       }
     }
   },
@@ -3260,7 +3260,7 @@
         },
         "consent_withdrawn": {
           "name": "Đã rút đồng ý",
-          "description": "Gửi cho người dùng khi họ rút đồng ý sử dụng nền tảng; tài khoản bị khoá cho tới khi họ đồng ý lại."
+          "description": "Gửi cho người dùng khi họ rút đồng ý sử dụng nền tảng; sau đó họ không dùng được BeyondPilot cho tới khi đồng ý lại."
         },
         "organization_invitation": {
           "name": "Lời mời vào tổ chức",
@@ -7327,7 +7327,7 @@
         {
           "heading": "Sự đồng ý của bạn",
           "body": [
-            "Trước khi bạn dùng nền tảng, chúng tôi xin bạn đồng ý với cách chúng tôi dùng dữ liệu cá nhân, theo từng mục đích: sử dụng nền tảng (bắt buộc), chia sẻ với đối tác, giám khảo và mentor của chương trình (cần để ứng tuyển), AI gợi ý và đánh giá (không bắt buộc), nhận tin tức và bản tin (không bắt buộc). Chúng tôi lưu lại mỗi lựa chọn cùng phiên bản văn bản bạn đã đồng ý. Bạn có thể đổi bất kỳ lựa chọn nào trong Cài đặt; thay đổi có hiệu lực ngay và không ảnh hưởng tới những gì đã thực hiện trước đó. Rút lại sự đồng ý sử dụng nền tảng sẽ khóa tài khoản cho tới khi bạn đồng ý lại."
+            "Trước khi bạn dùng nền tảng, chúng tôi xin bạn đồng ý với cách chúng tôi dùng dữ liệu cá nhân, theo từng mục đích: sử dụng nền tảng (bắt buộc), chia sẻ với đối tác, giám khảo và mentor của chương trình (cần để ứng tuyển), AI gợi ý và đánh giá (không bắt buộc), nhận tin tức và bản tin (không bắt buộc). Chúng tôi lưu lại mỗi lựa chọn cùng phiên bản văn bản bạn đã đồng ý. Bạn có thể đổi bất kỳ lựa chọn nào trong Cài đặt; thay đổi có hiệu lực ngay và không ảnh hưởng tới những gì đã thực hiện trước đó. Sau khi rút lại sự đồng ý sử dụng nền tảng, bạn không dùng được nền tảng cho tới khi đồng ý lại; dữ liệu của bạn không bị xóa."
           ]
         },
         {
