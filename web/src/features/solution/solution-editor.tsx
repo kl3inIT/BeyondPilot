@@ -692,15 +692,7 @@ function SolutionEditor({
             {/* A refused solution is read as it was reviewed; its fields take no input. */}
             <fieldset disabled={finallyRefused} className="min-w-0">
               <FieldGroup>
-                {step === "basics" && (
-                  <BasicsStep
-                    form={form}
-                    errorOf={errorOf}
-                    solutionId={solution.id}
-                    organizationId={solution.organizationId}
-                    operator={operator}
-                  />
-                )}
+                {step === "basics" && <BasicsStep form={form} errorOf={errorOf} />}
                 {step === "fit" && <FitStep form={form} errorOf={errorOf} />}
                 {step === "evidence" && (
                   <EvidenceStep

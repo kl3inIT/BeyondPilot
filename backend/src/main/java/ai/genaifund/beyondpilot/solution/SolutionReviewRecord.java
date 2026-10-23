@@ -19,7 +19,7 @@ public record SolutionReviewRecord(UUID id, String slug, String name, UUID organ
 		@Nullable String maturity, @Nullable String traction, List<String> builtWith, List<String> industries,
 		List<String> focusAreas, List<String> languages, List<String> deployment, @Nullable String channels,
 		@Nullable String bestCustomerProfile, @Nullable String website, @Nullable String demoUrl,
-		@Nullable String deck, @Nullable Backing backing, List<String> offers, String status,
+		@Nullable String deck, @Nullable Backing backing, String status,
 		@Nullable String decisionReason, @Nullable String decisionMessage, @Nullable Instant suspendedAt,
 		@Nullable String suspensionReason, @Nullable String suspensionMessage, boolean listed,
 		@Nullable Instant featuredAt, boolean complete, @Nullable Instant submittedAt, @Nullable String submittedBy,

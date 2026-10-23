@@ -40,7 +40,7 @@ const item = (fields) => ({
   timelineMinWeeks: null,
   timelineMaxWeeks: null,
   organizationLogoFileId: null,
-  offers: [],
+  perks: [],
   ...fields,
 });
 

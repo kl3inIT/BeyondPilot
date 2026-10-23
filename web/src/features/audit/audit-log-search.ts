@@ -60,6 +60,15 @@ export const auditActions = [
   "solution.enrich",
   "solution.export",
   "solution.offers_export",
+  "perk.create",
+  "perk.update",
+  "perk.publish",
+  "perk.archive",
+  "perk.delete",
+  "perk.codes_load",
+  "perk.request_grant",
+  "perk.request_decline",
+  "perk.claims_export",
   "use_case.create",
   "use_case.submit",
   "use_case.draft",
@@ -148,12 +157,12 @@ export const auditActions = [
 /**
  * The areas of the admin sidebar the actions belong to, in its order, each with the first words of
  * its actions' names. An operator and an account are both accounts; what is done to a program's
- * applications and judges is done on the program's pages.
+ * applications and judges is done on the program's pages; perks are a tab of AI solutions.
  */
 const actionAreas = [
   ["programs", ["program", "proposal"]],
   ["useCases", ["use_case", "use_case_proposal"]],
-  ["solutions", ["solution"]],
+  ["solutions", ["solution", "perk"]],
   ["talent", ["talent"]],
   ["organizations", ["organization"]],
   ["programMessages", ["messaging"]],

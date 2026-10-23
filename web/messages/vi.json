@@ -520,13 +520,6 @@
     "SOLUTION_DEPLOYMENT_WITHDRAWN": "Triển khai khách hàng này đã được gỡ khỏi trang. Hãy khôi phục trước.",
     "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "Triển khai khách hàng này đã trở lại trên giải pháp.",
     "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
-    "SOLUTION_OFFER_NOT_FOUND": "Ưu đãi này không còn tồn tại. Hãy tải lại trang.",
-    "SOLUTION_OFFER_ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại. Hãy tải lại trang.",
-    "SOLUTION_OFFER_ARRANGED": "GenAI Fund đã thỏa thuận ưu đãi này, nên chỉ GenAI Fund thay đổi được.",
-    "SOLUTION_OFFER_TITLE_TAKEN": "Đã có một ưu đãi khác ghi giống hệt.",
-    "SOLUTION_OFFER_IN_USE": "Vẫn còn giải pháp đi kèm ưu đãi này. Hãy gỡ ưu đãi khỏi các giải pháp đó trước.",
-    "SOLUTION_OFFER_CHANGED_MEANWHILE": "Có người vừa lưu ưu đãi này. Hãy tải lại trang rồi sửa lại.",
-    "SOLUTION_OFFER_NOT_USABLE": "Một ưu đãi đã chọn không còn tồn tại. Hãy tải lại trang rồi chọn lại.",
     "STORAGE_MEDIA_TYPE_NOT_ALLOWED": "Ở đây không tải lên được loại tệp này. Hãy chọn tệp khác.",
     "STORAGE_FILE_TOO_LARGE": "Tệp này lớn hơn giới hạn ở đây. Hãy chọn tệp nhỏ hơn.",
     "STORAGE_UPLOAD_NOT_PERMITTED": "Bạn không được tải lên loại tệp này.",
@@ -565,7 +558,27 @@
     "PROGRAM_LUMA_NOT_CONFIGURED": "Chưa kết nối lịch Luma nào. Dán API key của lịch ở tab Luma của Chương trình.",
     "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút.",
     "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "Môi trường này chưa lưu được key Luma. Nhờ đội kỹ thuật đặt khóa mã hóa.",
-    "PROGRAM_LUMA_KEY_REFUSED": "Luma từ chối key này. Sao chép lại key từ Settings › Developer của lịch trên Luma."
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma từ chối key này. Sao chép lại key từ Settings › Developer của lịch trên Luma.",
+    "PERK_NOT_FOUND": "Perk này không còn nữa. Hãy tải lại trang.",
+    "PERK_ORGANIZATION_NOT_FOUND": "Tổ chức này không còn nữa. Hãy tải lại trang.",
+    "PERK_MEMBER_REQUIRED": "Chỉ thành viên của một tổ chức trên BeyondPilot mới làm được việc này.",
+    "PERK_ARRANGED": "GenAI Fund sắp xếp perk này, nên chỉ GenAI Fund được sửa, lưu trữ hoặc xoá nó.",
+    "PERK_CHANGED_MEANWHILE": "Có người vừa lưu perk này. Hãy tải lại trang rồi sửa lại.",
+    "PERK_TITLE_TAKEN": "Tổ chức đã có một perk khác cùng tên. Hãy đặt tên khác.",
+    "PERK_PROGRAM_NOT_FOUND": "Hãy chọn chương trình có các đội được nhận perk.",
+    "PERK_DATES_NOT_VALID": "Ngày kết thúc đang trước ngày bắt đầu.",
+    "PERK_QUESTIONS_NOT_VALID": "Mỗi câu hỏi chỉ được hỏi một lần. Hãy tải lại trang rồi thử lại.",
+    "PERK_SOLUTION_NOT_USABLE": "Perk chỉ đi kèm giải pháp của tổ chức tặng nó. Hãy tải lại trang rồi chọn lại.",
+    "PERK_INCOMPLETE": "Hãy thêm những gì cách nhận này cần: đường dẫn, mã, hoặc mã trong danh sách trước khi đăng.",
+    "PERK_IN_USE": "Đã có đội nhận perk này. Hãy lưu trữ thay vì xoá, để các đội giữ những gì đã nhận.",
+    "PERK_NOT_AVAILABLE": "Perk này hiện không nhận được: chưa mở, đã kết thúc, hoặc không còn được đăng.",
+    "PERK_ORGANIZATION_REQUIRED": "Perk được nhận cho một tổ chức. Hãy tạo hoặc tham gia một tổ chức trước.",
+    "PERK_NOT_ELIGIBLE": "Perk này dành cho các đội khác.",
+    "PERK_NO_PLACES_LEFT": "Mọi suất của perk này đã được nhận hết.",
+    "PERK_ANSWERS_NOT_VALID": "Hãy trả lời mọi câu bắt buộc, mỗi câu trong giới hạn độ dài.",
+    "PERK_NOT_A_CODE_LIST": "Chỉ nạp mã cho perk được tặng bằng danh sách mã.",
+    "PERK_REQUEST_NOT_FOUND": "Yêu cầu này không còn nữa. Hãy tải lại trang.",
+    "PERK_REQUEST_DECIDED": "Có người vừa trả lời yêu cầu này. Hãy tải lại danh sách."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -1475,6 +1488,17 @@
         },
         "audit": {
           "export": "Tải nhật ký thao tác"
+        },
+        "perk": {
+          "create": "Thêm perk",
+          "update": "Sửa perk",
+          "publish": "Đăng perk",
+          "archive": "Lưu trữ perk",
+          "delete": "Xoá perk",
+          "codes_load": "Nạp mã cho perk",
+          "request_grant": "Duyệt yêu cầu perk",
+          "request_decline": "Từ chối yêu cầu perk",
+          "claims_export": "Tải danh sách người nhận perk"
         }
       },
       "activity": {
@@ -1646,6 +1670,17 @@
         },
         "audit": {
           "export": "Tải nhật ký thao tác"
+        },
+        "perk": {
+          "create": "Thêm perk <resource></resource>",
+          "update": "Sửa perk <resource></resource>",
+          "publish": "Đăng perk <resource></resource>",
+          "archive": "Lưu trữ perk <resource></resource>",
+          "delete": "Xoá perk <resource></resource>",
+          "codes_load": "Nạp mã cho perk <resource></resource>",
+          "request_grant": "Duyệt một yêu cầu cho perk <resource></resource>",
+          "request_decline": "Từ chối một yêu cầu cho perk <resource></resource>",
+          "claims_export": "Tải danh sách người nhận perk <resource></resource>"
         }
       },
       "columns": {
@@ -1744,7 +1779,7 @@
           "label": "Các phần của tổ chức này",
           "profile": "Hồ sơ",
           "members": "Thành viên",
-          "offers": "Ưu đãi"
+          "perks": "Perk"
         },
         "viewPage": "Xem trang",
         "takenDown": {
@@ -1874,7 +1909,7 @@
       "title": "Giải pháp",
       "tabs": {
         "solutions": "Giải pháp",
-        "offers": "Ưu đãi"
+        "perks": "Perk"
       },
       "columns": {
         "solution": "Giải pháp",
@@ -2016,52 +2051,8 @@
           "funding": "Ví dụ Seed."
         }
       },
-      "offers": {
-        "title": "Ưu đãi",
-        "lead": "Những gì đi kèm giải pháp, hiện trên thẻ và trang của nó. Chủ giải pháp cũng chọn được trong trình soạn.",
-        "field": "Ưu đãi",
-        "hint": "Tối đa {max}, từ các ưu đãi của tổ chức sở hữu giải pháp.",
-        "save": "Lưu ưu đãi",
-        "saved": "Đã lưu ưu đãi cho {name}."
-      },
       "actions": {
         "organization": "Mở tổ chức"
-      }
-    },
-    "offers": {
-      "metaTitle": "Ưu đãi · BeyondPilot",
-      "title": "Ưu đãi",
-      "columns": {
-        "writer": "Tổ chức",
-        "state": "Trạng thái"
-      },
-      "filters": {
-        "search": "Tìm ưu đãi",
-        "state": {
-          "label": "Trạng thái",
-          "all": "Mọi trạng thái"
-        }
-      },
-      "noMatch": "Không có ưu đãi nào khớp với tìm kiếm.",
-      "empty": "Ưu đãi được viết ở hồ sơ của tổ chức cung cấp, hoặc do tổ chức tự viết cho giải pháp của mình.",
-      "organizationEmpty": "Thêm những gì tổ chức này cung cấp kèm giải pháp, ví dụ credit GenAI Fund đã thỏa thuận với họ.",
-      "detail": {
-        "back": "Ưu đãi",
-        "fields": {
-          "writer": "Tổ chức cung cấp",
-          "address": "Nhận tại",
-          "created": "Ngày tạo",
-          "updated": "Sửa lần cuối"
-        },
-        "solutions": {
-          "title": "Giải pháp đi kèm",
-          "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
-          "columns": {
-            "solution": "Giải pháp",
-            "organization": "Tổ chức",
-            "review": "Duyệt"
-          }
-        }
       }
     },
     "talent": {
@@ -3193,7 +3184,7 @@
           "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
           "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
           "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: giải pháp, talent, use case và customer deployment.",
-          "list_records": "Liệt kê tổ chức, giải pháp, talent, use case hoặc offer ở mọi trạng thái, như các danh sách admin.",
+          "list_records": "Liệt kê tổ chức, giải pháp, nhân tài, use case hoặc perk ở mọi trạng thái, như các danh sách quản trị.",
           "get_record": "Đọc một bản ghi trong số đó, kèm trạng thái, quyết định gần nhất và lịch sử duyệt.",
           "list_proposals": "Liệt kê các đề xuất nhà cung cấp AI gửi cho một use case, kèm quyết định cho từng đề xuất.",
           "get_proposal": "Đọc một đề xuất: nhà cung cấp, giải pháp đề xuất, người gửi, deck và quyết định.",
@@ -3469,6 +3460,18 @@
         "message_unread": {
           "name": "Tin chưa đọc",
           "description": "Gửi khi có tin nhắn đến cho người không đang mở BeyondPilot, một lần cho tới khi họ đọc. Người vận hành của GenAI Fund không nhận email này."
+        },
+        "perk_request_waiting": {
+          "name": "Yêu cầu perk đang chờ",
+          "description": "Gửi cho mọi thành viên của tổ chức tặng perk khi một đội gửi yêu cầu cần duyệt hoặc từ chối."
+        },
+        "perk_request_granted": {
+          "name": "Yêu cầu perk được duyệt",
+          "description": "Gửi cho người gửi yêu cầu perk khi đối tác duyệt yêu cầu."
+        },
+        "perk_request_declined": {
+          "name": "Yêu cầu perk bị từ chối",
+          "description": "Gửi cho người gửi yêu cầu perk khi đối tác từ chối yêu cầu."
         }
       },
       "status": {
@@ -4223,7 +4226,8 @@
       "profile": "Hồ sơ",
       "members": "Thành viên",
       "solutions": "Giải pháp",
-      "useCases": "Use case"
+      "useCases": "Use case",
+      "perks": "Perk"
     },
     "status": {
       "suspended": "Đã gỡ xuống",
@@ -4810,81 +4814,25 @@
       "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
-      "backing": "GenAI Fund xác nhận:"
+      "backing": "GenAI Fund xác nhận:",
+      "tabs": {
+        "label": "Danh mục",
+        "solutions": "Giải pháp",
+        "perks": "Perk"
+      }
     },
-    "offers": {
-      "label": "Ưu đãi:",
-      "title": "Ưu đãi",
-      "claim": "Nhận ưu đãi",
-      "claimNamed": "Nhận ưu đãi: {offer} (mở trong tab mới)",
-      "several": "{count} ưu đãi",
+    "perks": {
+      "label": "Perk:",
+      "title": "Perk",
+      "open": "Nhận perk",
+      "openNamed": "Nhận perk: {perk}",
+      "several": "{count} perk",
       "more": "+{count} nữa",
-      "moreOffers": "+{count} ưu đãi nữa",
-      "newTab": "mở trong tab mới",
+      "morePerks": "+{count} perk nữa",
+      "fromGenAiFund": "Từ GenAI Fund",
       "group": {
         "fund": "Do GenAI Fund sắp xếp",
         "own": "Từ {organization}"
-      },
-      "picker": {
-        "placeholder": "Chọn ưu đãi",
-        "noMatch": "Không có ưu đãi nào khớp.",
-        "remove": "Gỡ {name}",
-        "add": "Ưu đãi mới…",
-        "fromGenAiFund": "{title} (GenAI Fund)",
-        "closed": "{title} (đã đóng)"
-      },
-      "form": {
-        "newTitle": "Ưu đãi mới",
-        "editTitle": "Sửa ưu đãi",
-        "title": "Ưu đãi",
-        "titleTaken": "Đã có một ưu đãi khác ghi giống hệt.",
-        "url": "Liên kết",
-        "urlInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://.",
-        "fromGenAiFund": "GenAI Fund đã thỏa thuận ưu đãi này với tổ chức; thẻ sẽ mang dấu của GenAI Fund",
-        "cancel": "Hủy",
-        "create": "Thêm ưu đãi",
-        "save": "Lưu"
-      },
-      "done": {
-        "created": "Đã thêm {name}.",
-        "saved": "Đã lưu {name}.",
-        "deleted": "Đã xóa {name}.",
-        "closed": "{name} không còn nhận thêm giải pháp mới.",
-        "reopened": "{name} nhận giải pháp mới trở lại."
-      },
-      "fromGenAiFund": "Từ GenAI Fund",
-      "state": {
-        "open": "Đang mở",
-        "closed": "Đã đóng"
-      },
-      "manage": {
-        "title": "Ưu đãi",
-        "create": "Ưu đãi mới",
-        "columns": {
-          "offer": "Ưu đãi",
-          "url": "Nhận tại",
-          "solutions": "Giải pháp",
-          "actions": "Thao tác",
-          "state": "Trạng thái"
-        },
-        "solutions": "{count, plural, =0 {Chưa giải pháp nào đi kèm} other {# giải pháp}}",
-        "openNamed": "Thao tác với {name}",
-        "actions": {
-          "edit": "Sửa…",
-          "delete": "Xóa…",
-          "close": "Đóng với giải pháp mới",
-          "reopen": "Mở với giải pháp mới"
-        },
-        "empty": {
-          "title": "Chưa có ưu đãi nào",
-          "own": "Viết những gì đi kèm giải pháp của bạn, ví dụ gói pilot, rồi chọn ưu đãi đó ở giải pháp."
-        },
-        "confirmDelete": {
-          "title": "Xóa {name}?",
-          "lead": "Không giải pháp nào đi kèm ưu đãi này. Ưu đãi sẽ bị xóa hẳn.",
-          "confirm": "Xóa ưu đãi",
-          "cancel": "Hủy"
-        }
       }
     },
     "filters": {
@@ -5037,7 +4985,8 @@
       "references": {
         "title": "Khách hàng tham chiếu và trường hợp thực tế"
       },
-      "sharedByLink": "Chia sẻ qua liên kết: giải pháp này chưa được công bố."
+      "sharedByLink": "Chia sẻ qua liên kết: giải pháp này chưa được công bố.",
+      "newTab": "mở trong thẻ mới"
     },
     "mine": {
       "metaTitle": "Giải pháp · BeyondPilot",
@@ -5174,8 +5123,6 @@
         "builtWith": "Xây dựng bằng",
         "builtWithPlaceholder": "Thêm mô hình, công cụ hoặc framework",
         "builtWithHint": "Nhấn Enter sau mỗi mục, tối đa {max}.",
-        "offers": "Ưu đãi",
-        "offersHint": "Những gì khách hàng nhận kèm, ví dụ credit cloud. Chọn tối đa {max} ưu đãi của tổ chức bạn, hoặc viết ưu đãi mới.",
         "removeTag": "Gỡ {name}",
         "industries": "Ngành",
         "industriesPlaceholder": "Thêm ngành",
@@ -5395,6 +5342,313 @@
         "save": "Gửi duyệt"
       },
       "limitReached": "Đã đạt giới hạn {max} triển khai khách hàng."
+    }
+  },
+  "Perk": {
+    "card": {
+      "fromGenAiFund": "Từ GenAI Fund",
+      "until": "Đến {date}",
+      "ended": "Kết thúc {date}"
+    },
+    "standing": {
+      "claim": {
+        "taken": "Đã nhận",
+        "waiting": "Đã gửi yêu cầu",
+        "granted": "Được duyệt",
+        "declined": "Bị từ chối"
+      },
+      "eligible": "Đang mở",
+      "sign_in": "Đăng nhập để nhận",
+      "organization": "Dành cho tổ chức",
+      "not_applied": "Dành cho đội đăng ký",
+      "not_shortlisted": "Dành cho đội lọt vòng",
+      "not_started": "Chưa mở",
+      "ended": "Đã kết thúc",
+      "full": "Đã hết suất",
+      "claimed": "Đã nhận",
+      "archived": "Đã lưu trữ"
+    },
+    "audience": {
+      "everyone": "Mọi người",
+      "members": "Các đội trên BeyondPilot",
+      "applicants": "Đội đăng ký {program}",
+      "shortlisted": "Đội lọt vòng {program}"
+    },
+    "catalogue": {
+      "metaTitle": "Perk · BeyondPilot",
+      "lead": "Tín dụng, giảm giá và dịch vụ từ đối tác cho các đội trên BeyondPilot và các đội trong chương trình của GenAI Fund.",
+      "count": "{count} perk",
+      "showEnded": "Hiện perk đã kết thúc",
+      "hideEnded": "Ẩn perk đã kết thúc",
+      "empty": {
+        "title": "Chưa có perk",
+        "description": "Perk của đối tác dành cho các đội sẽ hiện ở đây khi được đăng."
+      }
+    },
+    "page": {
+      "by": "Của {name}",
+      "fromGenAiFund": "Do GenAI Fund sắp xếp",
+      "about": "Về perk này",
+      "steps": "Cách nhận",
+      "terms": "Điều khoản",
+      "termsLink": "Đọc toàn bộ điều khoản",
+      "solutions": "Đi kèm",
+      "limit": {
+        "person": "Mỗi người một lần",
+        "organization": "Mỗi tổ chức một lần"
+      },
+      "facts": {
+        "audience": "Ai được nhận",
+        "program": "Về {program}",
+        "limit": "Số lần",
+        "places": "Số suất",
+        "placesLeft": "{count, plural, =0 {Hết suất} other {Còn #}}",
+        "starts": "Mở",
+        "ends": "Đóng"
+      }
+    },
+    "claim": {
+      "title": "Nhận perk này",
+      "heldTitle": "Perk của đội bạn",
+      "state": {
+        "taken": "Đã nhận",
+        "waiting": "Đã gửi yêu cầu",
+        "granted": "Được duyệt",
+        "declined": "Bị từ chối"
+      },
+      "copyCode": "Sao chép mã",
+      "redeem": "Đổi mã",
+      "open": "Mở trang của đối tác",
+      "note": {
+        "taken": "{name} đã nhận ngày {date}.",
+        "waiting": "{name} đã gửi yêu cầu ngày {date}. Đối tác sẽ trả lời qua email.",
+        "granted": "{name} đã gửi yêu cầu ngày {date} và đối tác đã duyệt.",
+        "declined": "{name} đã gửi yêu cầu ngày {date} và đối tác đã từ chối."
+      },
+      "send": "Gửi yêu cầu",
+      "approval": "Đối tác đọc câu trả lời rồi duyệt hoặc từ chối yêu cầu. Bạn sẽ được báo qua email.",
+      "noApproval": "Yêu cầu được duyệt ngay khi bạn gửi.",
+      "done": {
+        "sent": "Đã gửi yêu cầu. Đối tác sẽ trả lời qua email.",
+        "granted": "Bạn đã nhận perk."
+      },
+      "take": {
+        "link": "Nhận perk",
+        "code": "Lấy mã",
+        "codes": "Lấy một mã",
+        "request": "Gửi yêu cầu"
+      },
+      "signIn": "Đăng nhập để nhận",
+      "organizationAction": "Thiết lập tổ chức",
+      "why": {
+        "eligible": "",
+        "sign_in": "Perk được nhận cho một đội. Hãy đăng nhập để nhận.",
+        "organization": "Perk được nhận cho một tổ chức. Hãy tạo hoặc tham gia một tổ chức trước.",
+        "not_applied": "Perk này dành cho các đội đã đăng ký {program}.",
+        "not_shortlisted": "Perk này dành cho các đội lọt vòng {program}.",
+        "not_started": "Perk này chưa mở.",
+        "ended": "Perk này đã kết thúc.",
+        "full": "Mọi suất của perk này đã được nhận hết.",
+        "claimed": "Đội bạn đã nhận perk này.",
+        "archived": "Perk này không còn được tặng."
+      }
+    },
+    "program": {
+      "title": "Perk",
+      "lead": "Những gì đối tác tặng các đội của chương trình này."
+    },
+    "form": {
+      "parts": {
+        "what": "Perk là gì",
+        "how": "Cách nhận",
+        "who": "Ai được nhận, và khi nào",
+        "terms": "Điều khoản",
+        "shown": "Hiện ở đâu"
+      },
+      "title": "Tên",
+      "value": "Giá trị",
+      "valueHint": "Con số hiện lớn trên thẻ, như $1,000 hoặc giảm 20%.",
+      "summary": "Tóm tắt",
+      "about": "Giới thiệu",
+      "way": {
+        "label": "Cách nhận",
+        "link": {
+          "label": "Một đường dẫn",
+          "what": "Các đội mở trang của đối tác."
+        },
+        "code": {
+          "label": "Một mã",
+          "what": "Mọi đội nhận cùng một mã."
+        },
+        "codes": {
+          "label": "Danh sách mã",
+          "what": "Mỗi đội nhận một mã riêng từ danh sách."
+        },
+        "request": {
+          "label": "Một yêu cầu",
+          "what": "Các đội trả lời câu hỏi của bạn rồi bạn duyệt hoặc từ chối."
+        }
+      },
+      "url": "Trang của đối tác",
+      "urlHint": "Các đội được nhận perk sẽ mở trang này. Bắt đầu bằng https://.",
+      "code": "Mã",
+      "codesHint": {
+        "own": "GenAI Fund nạp danh sách mã bạn gửi. Hãy gửi mã cho đầu mối GenAI Fund của bạn.",
+        "admin": "Nạp mã trên trang này sau khi lưu perk."
+      },
+      "redeemUrl": "Nơi đổi mã",
+      "questions": {
+        "label": "Câu hỏi",
+        "question": "Câu hỏi {number}",
+        "remove": "Xoá câu hỏi {number}",
+        "multiline": "Trả lời nhiều dòng",
+        "required": "Bắt buộc",
+        "add": "Thêm câu hỏi"
+      },
+      "requireApproval": "Tôi duyệt hoặc từ chối từng yêu cầu",
+      "steps": "Các bước",
+      "stepsHint": "Cách nhận, mỗi dòng một bước.",
+      "audience": {
+        "label": "Ai được nhận",
+        "everyone": "Mọi người, đăng nhập hay không",
+        "members": "Các đội trên BeyondPilot",
+        "applicants": "Các đội đã đăng ký một chương trình",
+        "shortlisted": "Các đội lọt vòng một chương trình"
+      },
+      "program": "Chương trình",
+      "choose": "Chọn",
+      "perPerson": "Mỗi người một lần, thay vì mỗi tổ chức một lần",
+      "places": "Số suất",
+      "placesHint": "Bao nhiêu đội được nhận. Để trống nếu không giới hạn.",
+      "startsOn": "Mở từ ngày",
+      "endsOn": "Đóng vào ngày",
+      "endsOnHint": "Đóng vào cuối ngày đó, giờ Việt Nam.",
+      "terms": "Điều khoản",
+      "termsUrl": "Toàn bộ điều khoản",
+      "solutions": "Giải pháp đi kèm",
+      "shownOnPrograms": "Chương trình hiện perk trên trang",
+      "fromGenAiFund": "GenAI Fund sắp xếp perk này; thẻ của nó mang dấu GenAI Fund",
+      "create": "Lưu bản nháp",
+      "save": "Lưu",
+      "saved": "Đã lưu perk.",
+      "errors": {
+        "https": "Hãy nhập địa chỉ đầy đủ bắt đầu bằng https://.",
+        "steps": "Viết tối đa {count} bước, mỗi bước tối đa {max} ký tự.",
+        "questions": "Hãy thêm ít nhất một câu hỏi."
+      }
+    },
+    "manage": {
+      "metaTitle": "Perk · BeyondPilot",
+      "title": "Perk",
+      "new": "Perk mới",
+      "back": "Perk",
+      "adminBack": "Perk",
+      "by": "Do {name} tặng",
+      "view": "Xem trang",
+      "publish": "Đăng",
+      "archive": "Lưu trữ",
+      "delete": "Xoá",
+      "cancel": "Huỷ",
+      "arranged": "GenAI Fund sắp xếp perk này, nên chỉ GenAI Fund được sửa. Bạn trả lời các yêu cầu của nó ở đây.",
+      "empty": "Chưa có perk. Hãy thêm cho một tổ chức ở đây, hoặc trên hồ sơ của tổ chức đó.",
+      "organizationEmpty": "Tổ chức này chưa tặng perk nào.",
+      "waiting": "{count} yêu cầu",
+      "state": {
+        "draft": "Bản nháp",
+        "published": "Đã đăng",
+        "archived": "Đã lưu trữ"
+      },
+      "way": {
+        "link": "Đường dẫn",
+        "code": "Mã",
+        "codes": "Danh sách mã",
+        "request": "Yêu cầu"
+      },
+      "columns": {
+        "perk": "Perk",
+        "organization": "Tổ chức",
+        "state": "Trạng thái",
+        "way": "Cách nhận",
+        "taken": "Đã nhận",
+        "ends": "Đóng"
+      },
+      "confirmArchive": {
+        "title": "Lưu trữ {name}?",
+        "lead": "Không đội nào nhận thêm được. Các đội đã nhận vẫn giữ những gì đã nhận."
+      },
+      "confirmDelete": {
+        "title": "Xoá {name}?",
+        "lead": "Chưa ai nhận perk này. Perk sẽ bị xoá hẳn."
+      },
+      "done": {
+        "publish": "Đã đăng {name}.",
+        "archive": "Đã lưu trữ {name}.",
+        "delete": "Đã xoá {name}."
+      },
+      "create": {
+        "action": "Perk mới",
+        "title": "Perk mới",
+        "organization": "Tổ chức tặng perk",
+        "organizationPlaceholder": "Tìm tổ chức",
+        "organizationRequired": "Hãy chọn tổ chức.",
+        "submit": "Tiếp tục",
+        "cancel": "Huỷ"
+      },
+      "claims": {
+        "title": "Ai đã nhận",
+        "count": "{count, plural, =0 {Chưa ai} other {# đội}}",
+        "empty": "Chưa ai nhận perk này.",
+        "grant": "Duyệt",
+        "decline": "Từ chối",
+        "state": {
+          "taken": "Đã nhận",
+          "waiting": "Đang chờ",
+          "granted": "Được duyệt",
+          "declined": "Bị từ chối"
+        },
+        "columns": {
+          "person": "Người",
+          "organization": "Tổ chức",
+          "state": "Trạng thái",
+          "at": "Ngày",
+          "actions": "Thao tác"
+        },
+        "done": {
+          "granted": "Đã duyệt yêu cầu của {name}.",
+          "declined": "Đã từ chối yêu cầu của {name}."
+        }
+      },
+      "codes": {
+        "title": "Mã",
+        "held": "{loaded, plural, =0 {Chưa nạp mã} other {Đã nạp # mã}}, còn {left} mã chưa tặng.",
+        "label": "Mã cần thêm",
+        "hint": "Mỗi dòng một mã. Mã perk đã có sẽ được bỏ qua.",
+        "submit": "Nạp mã",
+        "invalid": "Dán tối đa {count} mã, mỗi mã tối đa {max} ký tự, mỗi dòng một mã.",
+        "done": "{added, plural, =0 {Không có mã mới} other {Đã thêm # mã}}; còn {free} mã chưa tặng."
+      }
+    },
+    "team": {
+      "metaTitle": "Perk · BeyondPilot",
+      "got": {
+        "title": "Perk đội bạn đã nhận",
+        "browse": "Xem các perk",
+        "byLine": "{name}, {date}",
+        "columns": {
+          "perk": "Perk",
+          "partner": "Đối tác",
+          "state": "Trạng thái",
+          "by": "Người nhận"
+        },
+        "empty": {
+          "title": "Chưa có perk",
+          "description": "Đối tác tặng tín dụng, giảm giá và dịch vụ cho các đội trên BeyondPilot."
+        }
+      },
+      "given": {
+        "title": "Perk bạn tặng",
+        "empty": "Tặng các đội trên BeyondPilot một thứ của bạn, như bản dùng thử hoặc giảm giá."
+      }
     }
   },
   "Talent": {

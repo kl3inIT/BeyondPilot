@@ -23,33 +23,62 @@ const lumenHealth = {
 };
 const organizations = [pocketPolicy, lumenHealth];
 
-// The offers GenAI Fund keeps. Policy Chat comes with one, so the gift on its card is the link itself;
-// Clinic Triage comes with two, so the gift opens their list.
+// The perks partners give. Policy Chat goes with one, so the gift on its card is the link to it;
+// Clinic Triage goes with two, so the gift opens their list.
 const cloudCredits = {
-  id: "0ffe7a11-0000-4000-8000-000000000001",
-  title: "$1,000 in cloud credits",
-  url: "https://offers.example/cloud-credits",
+  slug: "cloud-credits",
+  title: "Cloud credits",
+  value: "$1,000",
   fromGenAiFund: true,
 };
 const supportHours = {
-  id: "0ffe7a11-0000-4000-8000-000000000002",
+  slug: "onboarding-support",
   title: "Ten hours of onboarding support",
-  url: "https://offers.example/onboarding",
-  // Written by the organization of the solution, so it carries no mark of GenAI Fund.
+  value: null,
+  // Given by the organization of the solution, so it carries no mark of GenAI Fund.
   fromGenAiFund: false,
 };
-export const offers = [cloudCredits, supportHours];
-const offersBySlug = {
+const perksBySlug = {
   "policy-chat": [cloudCredits],
   "clinic-triage": [cloudCredits, supportHours],
 };
-/** The offers a solution comes with as the public reads them: what each is called and where it is claimed. */
-const offersOf = (slug) =>
-  (offersBySlug[slug] ?? []).map(({ title, url, fromGenAiFund }) => ({
-    title,
-    url,
-    fromGenAiFund,
-  }));
+/** The perks a solution goes with, as its card and its page read them. */
+export const perksOf = (slug) => perksBySlug[slug] ?? [];
+
+/** A perk's page as a visitor reads it: who may get it, and that signing in gets it. */
+const cloudCreditsPage = {
+  card: {
+    id: "9e4c0000-0000-4000-8000-000000000001",
+    ...cloudCredits,
+    summary: "Credits for the first year of hosting.",
+    organizationName: pocketPolicy.name,
+    organizationSlug: pocketPolicy.slug,
+    organizationLogoFileId: null,
+    audience: "members",
+    programName: null,
+    programSlug: null,
+    way: "codes",
+    endsAt: null,
+    ended: false,
+    full: false,
+    standing: "sign_in",
+    claimState: null,
+  },
+  about: "Hosting credits for the teams on BeyondPilot.",
+  steps: ["Get a code here.", "Redeem it on the partner's console."],
+  terms: null,
+  termsUrl: null,
+  url: null,
+  startsAt: null,
+  questions: [],
+  requireApproval: false,
+  perPerson: false,
+  placesLeft: 40,
+  solutions: [
+    { id: "5c000000-0000-4000-8000-000000000001", name: "Policy Chat", slug: "policy-chat" },
+  ],
+  claim: null,
+};
 
 function solution(organization, name, more) {
   return {
@@ -184,7 +213,6 @@ const summaryOf = (item) => ({
   customerDeployments: deploymentsOf(item.slug).length,
   // GenAI Fund features one solution; the stub orders nothing by it.
   featured: item.slug === "policy-chat",
-  offers: offersOf(item.slug),
 });
 
 function person(name, more) {
@@ -426,12 +454,24 @@ export function answerDirectory(url) {
     return found ? [200, found] : missing;
   }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
+  if (area === "perk" && list === "solutions") {
+    const slugs = query.getAll("slugs").flatMap((value) => value.split(","));
+    return [200, slugs.map((each) => ({ slug: each, perks: perksOf(each) }))];
+  }
+  // No program's page shows a perk in these tests.
+  if (area === "perk" && list === "programs" && slug) {
+    return [200, []];
+  }
+  if (area === "perk" && list === "perks") {
+    if (slug) {
+      return slug === cloudCredits.slug ? [200, cloudCreditsPage] : missing;
+    }
+    return [200, [cloudCreditsPage.card]];
+  }
   if (area === "solution" && list === "solutions") {
     if (slug) {
       const found = [...solutions, unlisted].find((item) => item.slug === slug);
-      return found
-        ? [200, { ...found, customerDeployments: deploymentsOf(slug), offers: offersOf(slug) }]
-        : missing;
+      return found ? [200, { ...found, customerDeployments: deploymentsOf(slug) }] : missing;
     }
     const items = solutions.filter(
       (item) =>
@@ -509,7 +549,7 @@ export function directorySearchItems(url) {
     city: record.city ?? null,
     photoFileId: record.photoFileId ?? null,
     featured: record.featured ?? false,
-    offers: record.offers ?? [],
+    perks: perksOf(record.slug),
     coverFileId: solutions.find((entry) => entry.slug === record.slug)?.coverFileId ?? null,
     backing: null,
     projectCount: record.projectCount ?? null,

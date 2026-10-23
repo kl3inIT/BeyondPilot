@@ -8,7 +8,8 @@ describe("auditResourceRoute", () => {
   it.each([
     ["organization", `/admin/organizations/${id}`],
     ["solution", `/admin/solutions/${id}`],
-    ["solution_offer", `/admin/solutions/offers/${id}`],
+    ["solution_offer", `/admin/solutions/perks/${id}`],
+    ["perk", `/admin/solutions/perks/${id}`],
     ["talent", `/admin/talent/${id}`],
     ["use_case", `/admin/use-cases/${id}`],
     ["program", `/admin/programs/${id}/settings`],
@@ -63,6 +64,7 @@ describe("auditResourceRoute", () => {
   it.each([
     ["talent.delete", "talent"],
     ["solution.offer_delete", "solution_offer"],
+    ["perk.delete", "perk"],
   ])("leaves the resource of %s as text: the record is gone", (action, type) => {
     expect(auditResourceRoute({ action, resource: { type, id } })).toBeNull();
   });

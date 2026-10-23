@@ -5,8 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminOrganizationPage } from "@/features/organization/admin-organization-page";
 import { loadAdminOrganizationSearch } from "@/features/organization/admin-organization-search";
 import { readAdminOrganization } from "@/features/organization/organization-queries";
-import { AdminOrganizationOffers } from "@/features/solution/admin-organization-offers";
-import { readAdminOffers } from "@/features/solution/solution-queries";
+import { AdminOrganizationPerks } from "@/features/perk/admin-organization-perks";
+import { readAdminPerks } from "@/features/perk/perk-queries";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes, titleSuffix } from "@/lib/site";
 
@@ -33,11 +33,11 @@ export default async function AdminOrganizationRoute({
   setRequestLocale(locale);
   await requireRole("operator", `${siteRoutes.adminOrganizations}/${id}`);
   const { tab, page, size, sort } = await loadAdminOrganizationSearch(searchParams);
-  const [detail, every] = await Promise.all([readAdminOrganization(id), readAdminOffers()]);
+  const [detail, every] = await Promise.all([readAdminOrganization(id), readAdminPerks()]);
   if (!detail) {
     notFound();
   }
-  const offers = every.filter((offer) => offer.organizationId === id);
+  const perks = every.filter((perk) => perk.organizationId === id);
 
   return (
     <AdminOrganizationPage
@@ -46,8 +46,8 @@ export default async function AdminOrganizationRoute({
       page={page}
       size={size}
       sort={sort}
-      offers={<AdminOrganizationOffers organizationId={id} offers={offers} />}
-      offerCount={offers.length}
+      perks={<AdminOrganizationPerks organizationId={id} perks={perks} />}
+      perkCount={perks.length}
     />
   );
 }

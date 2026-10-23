@@ -520,13 +520,6 @@
     "SOLUTION_DEPLOYMENT_WITHDRAWN": "This customer deployment is removed from the page. Restore it first.",
     "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
     "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
-    "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
-    "SOLUTION_OFFER_ORGANIZATION_NOT_FOUND": "This organization no longer exists. Reload the page.",
-    "SOLUTION_OFFER_ARRANGED": "GenAI Fund arranged this offer, so only GenAI Fund changes it.",
-    "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
-    "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
-    "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
-    "SOLUTION_OFFER_NOT_USABLE": "One of the chosen offers no longer exists. Reload the page and choose again.",
     "STORAGE_MEDIA_TYPE_NOT_ALLOWED": "This kind of file cannot be uploaded here. Choose another file.",
     "STORAGE_FILE_TOO_LARGE": "This file is larger than the limit here. Choose a smaller one.",
     "STORAGE_UPLOAD_NOT_PERMITTED": "You cannot upload this kind of file.",
@@ -565,7 +558,27 @@
     "PROGRAM_LUMA_NOT_CONFIGURED": "No Luma calendar is connected. Paste the calendar's API key on the Luma tab of Programs.",
     "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes.",
     "PROGRAM_LUMA_ENCRYPTION_KEY_MISSING": "This environment cannot keep a Luma key yet. Ask the team to set its encryption key.",
-    "PROGRAM_LUMA_KEY_REFUSED": "Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma."
+    "PROGRAM_LUMA_KEY_REFUSED": "Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma.",
+    "PERK_NOT_FOUND": "This perk no longer exists. Reload the page.",
+    "PERK_ORGANIZATION_NOT_FOUND": "This organization no longer exists. Reload the page.",
+    "PERK_MEMBER_REQUIRED": "Only a member of an organization on BeyondPilot can do this.",
+    "PERK_ARRANGED": "GenAI Fund arranged this perk, so only GenAI Fund changes, archives or deletes it.",
+    "PERK_CHANGED_MEANWHILE": "Someone else saved this perk in the meantime. Reload the page and make your changes again.",
+    "PERK_TITLE_TAKEN": "Another perk of this organization already has this title. Name this one differently.",
+    "PERK_PROGRAM_NOT_FOUND": "Choose the program whose teams may get it.",
+    "PERK_DATES_NOT_VALID": "The end is before the start.",
+    "PERK_QUESTIONS_NOT_VALID": "Each question is asked once. Reload the page and try again.",
+    "PERK_SOLUTION_NOT_USABLE": "A perk goes only with solutions of the organization that gives it. Reload the page and choose again.",
+    "PERK_INCOMPLETE": "Add what this way of getting it needs: its link, its code, or codes in its list before it is published.",
+    "PERK_IN_USE": "Teams have already got this perk. Archive it instead, which keeps what they got.",
+    "PERK_NOT_AVAILABLE": "This perk is not available now: it has not started, has ended, or is no longer published.",
+    "PERK_ORGANIZATION_REQUIRED": "A perk is got for an organization. Create or join one first.",
+    "PERK_NOT_ELIGIBLE": "This perk is for other teams.",
+    "PERK_NO_PLACES_LEFT": "Every place of this perk has been taken.",
+    "PERK_ANSWERS_NOT_VALID": "Answer every required question, each within its length.",
+    "PERK_NOT_A_CODE_LIST": "Codes are loaded only for a perk given as a list of codes.",
+    "PERK_REQUEST_NOT_FOUND": "This request no longer exists. Reload the page.",
+    "PERK_REQUEST_DECIDED": "Someone else has answered this request in the meantime. Reload the list."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -1475,6 +1488,17 @@
         },
         "audit": {
           "export": "Downloaded the audit log"
+        },
+        "perk": {
+          "create": "Added a perk",
+          "update": "Changed a perk",
+          "publish": "Published a perk",
+          "archive": "Archived a perk",
+          "delete": "Deleted a perk",
+          "codes_load": "Loaded the codes of a perk",
+          "request_grant": "Granted a perk request",
+          "request_decline": "Declined a perk request",
+          "claims_export": "Downloaded who got a perk"
         }
       },
       "activity": {
@@ -1646,6 +1670,17 @@
         },
         "audit": {
           "export": "Downloaded the audit log"
+        },
+        "perk": {
+          "create": "Added the perk <resource></resource>",
+          "update": "Changed the perk <resource></resource>",
+          "publish": "Published the perk <resource></resource>",
+          "archive": "Archived the perk <resource></resource>",
+          "delete": "Deleted the perk <resource></resource>",
+          "codes_load": "Loaded codes into the perk <resource></resource>",
+          "request_grant": "Granted a request for the perk <resource></resource>",
+          "request_decline": "Declined a request for the perk <resource></resource>",
+          "claims_export": "Downloaded who got the perk <resource></resource>"
         }
       },
       "columns": {
@@ -1744,7 +1779,7 @@
           "label": "Sections of this organization",
           "profile": "Profile",
           "members": "Members",
-          "offers": "Offers"
+          "perks": "Perks"
         },
         "viewPage": "View page",
         "takenDown": {
@@ -1874,7 +1909,7 @@
       "title": "Solutions",
       "tabs": {
         "solutions": "Solutions",
-        "offers": "Offers"
+        "perks": "Perks"
       },
       "columns": {
         "solution": "Solution",
@@ -2016,52 +2051,8 @@
           "funding": "Such as Seed."
         }
       },
-      "offers": {
-        "title": "Offers",
-        "lead": "What the solution comes with, shown on its card and page. Its owners choose these in their editor too.",
-        "field": "Offers",
-        "hint": "Up to {max}, from the offers its organization gives.",
-        "save": "Save offers",
-        "saved": "Offers saved for {name}."
-      },
       "actions": {
         "organization": "Open the organization"
-      }
-    },
-    "offers": {
-      "metaTitle": "Offers · BeyondPilot",
-      "title": "Offers",
-      "columns": {
-        "writer": "Organization",
-        "state": "Status"
-      },
-      "filters": {
-        "search": "Search offers",
-        "state": {
-          "label": "Status",
-          "all": "All statuses"
-        }
-      },
-      "noMatch": "No offer matches the search.",
-      "empty": "Offers are written on the record of their organization, or by the organization for its own solutions.",
-      "organizationEmpty": "Add what this organization gives with its solutions, such as credits GenAI Fund arranged with it.",
-      "detail": {
-        "back": "Offers",
-        "fields": {
-          "writer": "Given by",
-          "address": "Claimed at",
-          "created": "Created",
-          "updated": "Last changed"
-        },
-        "solutions": {
-          "title": "Solutions that come with it",
-          "empty": "No solution comes with this offer.",
-          "columns": {
-            "solution": "Solution",
-            "organization": "Organization",
-            "review": "Review"
-          }
-        }
       }
     },
     "talent": {
@@ -3193,7 +3184,7 @@
           "get_application": "Reads one application in full: what the applicant sent, every score and the files it holds.",
           "read_application_file": "Shows the pages of an application's PDF, such as its deck, as pictures with their text.",
           "list_pending_reviews": "Lists what waits for review: solutions, talent, use cases and customer deployments.",
-          "list_records": "Lists organizations, solutions, talent, use cases or offers in any status, as the admin lists do.",
+          "list_records": "Lists organizations, solutions, talent, use cases or perks in any status, as the admin lists do.",
           "get_record": "Reads one of them with its status, latest decision and review history.",
           "list_proposals": "Lists the proposals AI providers sent to a use case, with the decision on each.",
           "get_proposal": "Reads one proposal: the provider, the solutions offered, who sent it, its deck and the decision.",
@@ -3469,6 +3460,18 @@
         "message_unread": {
           "name": "Unread message",
           "description": "Sent when a message arrives for someone who does not have BeyondPilot open, once until they read it. GenAI Fund's operators are not emailed."
+        },
+        "perk_request_waiting": {
+          "name": "Perk request waiting",
+          "description": "Sent to every member of the organization that gives a perk when a team sends a request it must grant or decline."
+        },
+        "perk_request_granted": {
+          "name": "Perk request granted",
+          "description": "Sent to the person who sent a request for a perk when its partner grants it."
+        },
+        "perk_request_declined": {
+          "name": "Perk request declined",
+          "description": "Sent to the person who sent a request for a perk when its partner declines it."
         }
       },
       "status": {
@@ -4223,7 +4226,8 @@
       "profile": "Profile",
       "members": "Members",
       "solutions": "Solutions",
-      "useCases": "Use cases"
+      "useCases": "Use cases",
+      "perks": "Perks"
     },
     "status": {
       "suspended": "Taken down",
@@ -4810,81 +4814,25 @@
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
       "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
-      "backing": "Confirmed by GenAI Fund:"
+      "backing": "Confirmed by GenAI Fund:",
+      "tabs": {
+        "label": "Directory",
+        "solutions": "Solutions",
+        "perks": "Perks"
+      }
     },
-    "offers": {
-      "label": "Offer:",
-      "title": "Offers",
-      "claim": "Claim offer",
-      "claimNamed": "Claim the offer: {offer} (opens in a new tab)",
-      "several": "{count} offers",
+    "perks": {
+      "label": "Perk:",
+      "title": "Perks",
+      "open": "Get perk",
+      "openNamed": "Get the perk: {perk}",
+      "several": "{count} perks",
       "more": "+{count} more",
-      "moreOffers": "+{count} more offers",
-      "newTab": "opens in a new tab",
+      "morePerks": "+{count} more perks",
+      "fromGenAiFund": "From GenAI Fund",
       "group": {
         "fund": "Arranged by GenAI Fund",
         "own": "From {organization}"
-      },
-      "picker": {
-        "placeholder": "Choose offers",
-        "noMatch": "No offer matches.",
-        "remove": "Remove {name}",
-        "add": "New offer…",
-        "fromGenAiFund": "{title} (GenAI Fund)",
-        "closed": "{title} (closed)"
-      },
-      "form": {
-        "newTitle": "New offer",
-        "editTitle": "Edit offer",
-        "title": "Offer",
-        "titleTaken": "Another offer already reads the same.",
-        "url": "Link",
-        "urlInvalid": "Enter a full address that starts with https://.",
-        "fromGenAiFund": "GenAI Fund agreed this offer with the organization; its card shows GenAI Fund's mark",
-        "cancel": "Cancel",
-        "create": "Add offer",
-        "save": "Save"
-      },
-      "done": {
-        "created": "{name} added.",
-        "saved": "{name} saved.",
-        "deleted": "{name} deleted.",
-        "closed": "{name} is closed to new solutions.",
-        "reopened": "{name} is open to new solutions again."
-      },
-      "fromGenAiFund": "From GenAI Fund",
-      "state": {
-        "open": "Open",
-        "closed": "Closed"
-      },
-      "manage": {
-        "title": "Offers",
-        "create": "New offer",
-        "columns": {
-          "offer": "Offer",
-          "url": "Claimed at",
-          "solutions": "Solutions",
-          "actions": "Actions",
-          "state": "Status"
-        },
-        "solutions": "{count, plural, =0 {No solution comes with it} one {# solution} other {# solutions}}",
-        "openNamed": "Actions for {name}",
-        "actions": {
-          "edit": "Edit…",
-          "delete": "Delete…",
-          "close": "Close to new solutions",
-          "reopen": "Open to new solutions"
-        },
-        "empty": {
-          "title": "No offers yet",
-          "own": "Write what your solutions come with, such as a pilot package, then choose it on a solution."
-        },
-        "confirmDelete": {
-          "title": "Delete {name}?",
-          "lead": "No solution comes with this offer. It is deleted for good.",
-          "confirm": "Delete offer",
-          "cancel": "Cancel"
-        }
       }
     },
     "filters": {
@@ -5037,7 +4985,8 @@
       "references": {
         "title": "Customer references & case studies"
       },
-      "sharedByLink": "Shared by link: this solution has not been published."
+      "sharedByLink": "Shared by link: this solution has not been published.",
+      "newTab": "opens in a new tab"
     },
     "mine": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -5174,8 +5123,6 @@
         "builtWith": "Built with",
         "builtWithPlaceholder": "Add a model, tool or framework",
         "builtWithHint": "Press Enter after each one, up to {max}.",
-        "offers": "Offers",
-        "offersHint": "What a customer gets with it, such as cloud credits. Choose up to {max} of your organization's offers, or write a new one.",
         "removeTag": "Remove {name}",
         "industries": "Industries",
         "industriesPlaceholder": "Add an industry",
@@ -5395,6 +5342,313 @@
         "save": "Send for review"
       },
       "limitReached": "The limit of {max} customer deployments is reached."
+    }
+  },
+  "Perk": {
+    "card": {
+      "fromGenAiFund": "From GenAI Fund",
+      "until": "Until {date}",
+      "ended": "Ended {date}"
+    },
+    "standing": {
+      "claim": {
+        "taken": "Got",
+        "waiting": "Request sent",
+        "granted": "Granted",
+        "declined": "Declined"
+      },
+      "eligible": "Open",
+      "sign_in": "Sign in to get",
+      "organization": "For organizations",
+      "not_applied": "For applicants",
+      "not_shortlisted": "For the shortlist",
+      "not_started": "Not open yet",
+      "ended": "Ended",
+      "full": "All taken",
+      "claimed": "Got",
+      "archived": "Archived"
+    },
+    "audience": {
+      "everyone": "Everyone",
+      "members": "Teams on BeyondPilot",
+      "applicants": "Applicants to {program}",
+      "shortlisted": "The shortlist of {program}"
+    },
+    "catalogue": {
+      "metaTitle": "Perks · BeyondPilot",
+      "lead": "Credits, discounts and services from partners for the teams on BeyondPilot, and for the teams of GenAI Fund's programs.",
+      "count": "{count, plural, one {# perk} other {# perks}}",
+      "showEnded": "Show ended perks",
+      "hideEnded": "Hide ended perks",
+      "empty": {
+        "title": "No perks yet",
+        "description": "Partners' perks for teams appear here once they are published."
+      }
+    },
+    "page": {
+      "by": "By {name}",
+      "fromGenAiFund": "Arranged by GenAI Fund",
+      "about": "About this perk",
+      "steps": "How to get it",
+      "terms": "Terms",
+      "termsLink": "Read the full terms",
+      "solutions": "Goes with",
+      "limit": {
+        "person": "Once per person",
+        "organization": "Once per organization"
+      },
+      "facts": {
+        "audience": "Who can get it",
+        "program": "About {program}",
+        "limit": "How often",
+        "places": "Places",
+        "placesLeft": "{count, plural, =0 {None left} one {# left} other {# left}}",
+        "starts": "Opens",
+        "ends": "Closes"
+      }
+    },
+    "claim": {
+      "title": "Get this perk",
+      "heldTitle": "Your team's perk",
+      "state": {
+        "taken": "Got",
+        "waiting": "Request sent",
+        "granted": "Granted",
+        "declined": "Declined"
+      },
+      "copyCode": "Copy code",
+      "redeem": "Redeem the code",
+      "open": "Open the partner's page",
+      "note": {
+        "taken": "{name} got it on {date}.",
+        "waiting": "{name} sent the request on {date}. The partner answers by email.",
+        "granted": "{name} sent the request on {date}, and the partner granted it.",
+        "declined": "{name} sent the request on {date}, and the partner declined it."
+      },
+      "send": "Send request",
+      "approval": "The partner reads your answers and grants or declines the request. You are told by email.",
+      "noApproval": "Your request is granted when you send it.",
+      "done": {
+        "sent": "Request sent. The partner answers by email.",
+        "granted": "You got the perk."
+      },
+      "take": {
+        "link": "Get perk",
+        "code": "Get the code",
+        "codes": "Get a code",
+        "request": "Send request"
+      },
+      "signIn": "Sign in to get it",
+      "organizationAction": "Set up your organization",
+      "why": {
+        "eligible": "",
+        "sign_in": "Perks are got for a team. Sign in to get this one.",
+        "organization": "A perk is got for an organization. Create or join one first.",
+        "not_applied": "This perk is for the teams that applied to {program}.",
+        "not_shortlisted": "This perk is for the teams shortlisted in {program}.",
+        "not_started": "This perk is not open yet.",
+        "ended": "This perk has ended.",
+        "full": "Every place of this perk has been taken.",
+        "claimed": "Your team got this perk.",
+        "archived": "This perk is no longer given."
+      }
+    },
+    "program": {
+      "title": "Perks",
+      "lead": "What partners give the teams of this program."
+    },
+    "form": {
+      "parts": {
+        "what": "What it is",
+        "how": "How it is got",
+        "who": "Who can get it, and when",
+        "terms": "Terms",
+        "shown": "Where it is shown"
+      },
+      "title": "Title",
+      "value": "Value",
+      "valueHint": "The figure its card shows large, such as $1,000 or 20% off.",
+      "summary": "Summary",
+      "about": "About",
+      "way": {
+        "label": "Way of getting it",
+        "link": {
+          "label": "A link",
+          "what": "Teams open the partner's page."
+        },
+        "code": {
+          "label": "One code",
+          "what": "Every team gets the same code."
+        },
+        "codes": {
+          "label": "A list of codes",
+          "what": "Each team gets a code of its own from a list."
+        },
+        "request": {
+          "label": "A request",
+          "what": "Teams answer your questions and you grant or decline."
+        }
+      },
+      "url": "Partner's page",
+      "urlHint": "Teams who may get the perk open it. It starts with https://.",
+      "code": "Code",
+      "codesHint": {
+        "own": "GenAI Fund loads the list of codes you give it. Send them to your GenAI Fund contact.",
+        "admin": "Load the codes on this page once the perk is saved."
+      },
+      "redeemUrl": "Where the code is redeemed",
+      "questions": {
+        "label": "Questions",
+        "question": "Question {number}",
+        "remove": "Remove question {number}",
+        "multiline": "Answer of several lines",
+        "required": "Required",
+        "add": "Add question"
+      },
+      "requireApproval": "I grant or decline each request",
+      "steps": "Steps",
+      "stepsHint": "How to get it, one step a line.",
+      "audience": {
+        "label": "Who can get it",
+        "everyone": "Everyone, signed in or not",
+        "members": "Teams on BeyondPilot",
+        "applicants": "Teams that applied to a program",
+        "shortlisted": "Teams shortlisted in a program"
+      },
+      "program": "Program",
+      "choose": "Choose",
+      "perPerson": "Once per person, rather than once per organization",
+      "places": "Places",
+      "placesHint": "How many may get it. Leave it empty for no limit.",
+      "startsOn": "Opens on",
+      "endsOn": "Closes on",
+      "endsOnHint": "It closes at the end of that day, Vietnam time.",
+      "terms": "Terms",
+      "termsUrl": "Full terms",
+      "solutions": "Solutions it goes with",
+      "shownOnPrograms": "Programs whose page shows it",
+      "fromGenAiFund": "GenAI Fund arranged this perk; its card shows GenAI Fund's mark",
+      "create": "Save as draft",
+      "save": "Save",
+      "saved": "Perk saved.",
+      "errors": {
+        "https": "Enter a full address that starts with https://.",
+        "steps": "Write up to {count} steps of up to {max} characters each.",
+        "questions": "Add at least one question."
+      }
+    },
+    "manage": {
+      "metaTitle": "Perks · BeyondPilot",
+      "title": "Perks",
+      "new": "New perk",
+      "back": "Perks",
+      "adminBack": "Perks",
+      "by": "Given by {name}",
+      "view": "View page",
+      "publish": "Publish",
+      "archive": "Archive",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "arranged": "GenAI Fund arranged this perk, so only GenAI Fund changes it. You answer its requests here.",
+      "empty": "No perks yet. Add one for an organization here, or on the organization's record.",
+      "organizationEmpty": "This organization gives no perks yet.",
+      "waiting": "{count, plural, one {# request} other {# requests}}",
+      "state": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "way": {
+        "link": "Link",
+        "code": "Code",
+        "codes": "Code list",
+        "request": "Request"
+      },
+      "columns": {
+        "perk": "Perk",
+        "organization": "Organization",
+        "state": "Status",
+        "way": "Way",
+        "taken": "Got",
+        "ends": "Closes"
+      },
+      "confirmArchive": {
+        "title": "Archive {name}?",
+        "lead": "No more teams can get it. The teams that got it keep what they got."
+      },
+      "confirmDelete": {
+        "title": "Delete {name}?",
+        "lead": "Nobody got this perk. It is deleted for good."
+      },
+      "done": {
+        "publish": "{name} is published.",
+        "archive": "{name} is archived.",
+        "delete": "{name} deleted."
+      },
+      "create": {
+        "action": "New perk",
+        "title": "New perk",
+        "organization": "Organization that gives it",
+        "organizationPlaceholder": "Search organizations",
+        "organizationRequired": "Choose the organization.",
+        "submit": "Continue",
+        "cancel": "Cancel"
+      },
+      "claims": {
+        "title": "Who got it",
+        "count": "{count, plural, =0 {Nobody yet} one {# team} other {# teams}}",
+        "empty": "Nobody got this perk yet.",
+        "grant": "Grant",
+        "decline": "Decline",
+        "state": {
+          "taken": "Got",
+          "waiting": "Waiting",
+          "granted": "Granted",
+          "declined": "Declined"
+        },
+        "columns": {
+          "person": "Person",
+          "organization": "Organization",
+          "state": "Status",
+          "at": "Date",
+          "actions": "Actions"
+        },
+        "done": {
+          "granted": "Granted {name}'s request.",
+          "declined": "Declined {name}'s request."
+        }
+      },
+      "codes": {
+        "title": "Codes",
+        "held": "{loaded, plural, =0 {No codes loaded} one {# code loaded} other {# codes loaded}}, {left} not given yet.",
+        "label": "Codes to add",
+        "hint": "One code a line. A code the perk already holds is skipped.",
+        "submit": "Load codes",
+        "invalid": "Paste up to {count} codes of up to {max} characters, one a line.",
+        "done": "{added, plural, =0 {No new code} one {# code added} other {# codes added}}; {free} not given yet."
+      }
+    },
+    "team": {
+      "metaTitle": "Perks · BeyondPilot",
+      "got": {
+        "title": "Perks your team got",
+        "browse": "Browse perks",
+        "byLine": "{name}, {date}",
+        "columns": {
+          "perk": "Perk",
+          "partner": "Partner",
+          "state": "Status",
+          "by": "Got by"
+        },
+        "empty": {
+          "title": "No perks yet",
+          "description": "Partners give credits, discounts and services to teams on BeyondPilot."
+        }
+      },
+      "given": {
+        "title": "Perks you give",
+        "empty": "Give the teams on BeyondPilot something of yours, such as a trial or a discount."
+      }
     }
   },
   "Talent": {

@@ -229,7 +229,6 @@ describe("solutionBodyOf", () => {
     logo: null,
     cover: { fileId: "cover-file" },
     images: [{ fileId: "image-1" }, { fileId: "image-2" }],
-    offers: [{ id: "offer-1" }],
     listed: true,
     version: 5,
   } as unknown as Solution;
@@ -262,7 +261,6 @@ describe("solutionBodyOf", () => {
       logoFileId: null,
       coverFileId: "cover-file",
       imageFileIds: ["image-1", "image-2"],
-      offerIds: ["offer-1"],
       listed: true,
       version: 5,
     });

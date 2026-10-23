@@ -46,7 +46,7 @@ test.describe("solutions directory", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("a solution that comes with offers carries a gift that leads to where they are claimed", async ({
+  test("a solution that goes with perks carries a gift that leads to their pages", async ({
     page,
     isMobile,
   }) => {
@@ -54,57 +54,72 @@ test.describe("solutions directory", () => {
     const card = (name: string) =>
       page.getByRole("article").filter({ has: page.getByRole("link", { name, exact: true }) });
 
-    // One offer: the gift is the link itself, to another site in a new tab, and the card says the offer.
-    const claim = card("Policy Chat").getByRole("link", {
-      name: /^Claim the offer: \$1,000 in cloud credits/,
+    // One perk: the gift is the link to its page, and the card names the perk.
+    const gift = card("Policy Chat").getByRole("link", {
+      name: "Get the perk: $1,000 · Cloud credits",
     });
-    await expect(claim).toHaveAttribute("href", "https://offers.example/cloud-credits");
-    await expect(claim).toHaveAttribute("target", "_blank");
-    await expect(claim).toHaveAttribute("rel", "noopener noreferrer nofollow");
-    await expect(card("Policy Chat").getByText("$1,000 in cloud credits")).toBeVisible();
-    // The gift is its own link above the one that covers the card, so a press on it does not open the solution.
-    await expect(claim).toBeVisible();
+    await expect(gift).toHaveAttribute("href", "/solutions/perks/cloud-credits");
+    await expect(card("Policy Chat").getByText("$1,000 · Cloud credits")).toBeVisible();
 
     // Several: the card names the first and counts the rest, and the gift opens their list, each a link.
     await expect(
-      card("Clinic Triage").getByRole("paragraph").filter({ hasText: "$1,000 in cloud credits" }),
+      card("Clinic Triage").getByRole("paragraph").filter({ hasText: "$1,000 · Cloud credits" }),
     ).toContainText("+1 more");
-    // The count opens the offers the line does not name: under the pointer, or on a tap where there is none.
-    const more = card("Clinic Triage").getByRole("button", { name: "+1 more offers" });
+    // The count opens the perks the line does not name: under the pointer, or on a tap where there is none.
+    const more = card("Clinic Triage").getByRole("button", { name: "+1 more perks" });
     const listed = page.getByRole("link", { name: /^Ten hours of onboarding support/ });
     await (isMobile ? more.tap() : more.hover());
-    await expect(listed).toHaveAttribute("href", "https://offers.example/onboarding");
-    // It closes the way it opened.
+    await expect(listed).toHaveAttribute("href", "/solutions/perks/onboarding-support");
     await (isMobile ? more.tap() : page.mouse.move(0, 0));
     await expect(listed).toHaveCount(0);
-    // The gift shows how many there are, so it is not read as a link to one.
-    await expect(card("Clinic Triage").getByRole("button", { name: "2 offers" })).toHaveText("2");
-    await card("Clinic Triage").getByRole("button", { name: "2 offers" }).click();
-    const second = page.getByRole("link", { name: /^Ten hours of onboarding support/ });
-    await expect(second).toHaveAttribute("href", "https://offers.example/onboarding");
-    await expect(second).toHaveAttribute("target", "_blank");
+    await card("Clinic Triage").getByRole("button", { name: "2 perks" }).click();
+    await expect(
+      page.getByRole("link", { name: /^Ten hours of onboarding support/ }),
+    ).toHaveAttribute("href", "/solutions/perks/onboarding-support");
     await expectNoSeriousA11yViolations(page);
     await page.keyboard.press("Escape");
-    await expect(page).toHaveURL("/solutions");
 
-    // A solution that comes with none has no gift.
-    await expect(card("Claims Vision").getByRole("link", { name: /Claim the offer/ })).toHaveCount(
-      0,
-    );
-    await expect(card("Claims Vision").getByRole("button", { name: /offers$/ })).toHaveCount(0);
+    // A solution that goes with none has no gift.
+    await expect(card("Claims Vision").getByRole("link", { name: /^Get the perk/ })).toHaveCount(0);
 
-    // Its page names each offer beside the action that claims it.
+    // Its page lists each perk, by where it comes from, with the way to its page.
     await page.goto("/solutions/clinic-triage");
-    const offers = page.getByRole("region", { name: "Offers" });
-    await expect(offers.getByText("Ten hours of onboarding support")).toBeVisible();
+    const perks = page.getByRole("region", { name: "Perks" });
+    await expect(perks.getByText("Ten hours of onboarding support")).toBeVisible();
     await expect(
-      offers.getByRole("link", { name: /^Claim the offer: \$1,000 in cloud credits/ }),
-    ).toHaveAttribute("href", "https://offers.example/cloud-credits");
-    await expect(offers.getByRole("link", { name: /^Claim the offer/ })).toHaveCount(2);
+      perks.getByRole("link", { name: "Get the perk: $1,000 · Cloud credits" }),
+    ).toHaveAttribute("href", "/solutions/perks/cloud-credits");
+    await expect(perks.getByRole("link", { name: /^Get the perk/ })).toHaveCount(2);
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/solutions/claims-vision");
-    await expect(page.getByRole("region", { name: "Offers" })).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "Perks" })).toHaveCount(0);
+  });
+
+  test("a visitor reads a perk and who may get it, and is asked to sign in to get it", async ({
+    page,
+  }) => {
+    await page.goto("/solutions/perks");
+    await expect(page.getByRole("link", { name: "Cloud credits" })).toHaveAttribute(
+      "href",
+      "/solutions/perks/cloud-credits",
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    await page.goto("/solutions/perks/cloud-credits");
+    await expect(page.getByRole("heading", { level: 1, name: "Cloud credits" })).toBeVisible();
+    await expect(page.getByText("Teams on BeyondPilot", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Sign in to get it" })).toHaveAttribute(
+      "href",
+      "/sign-in?returnTo=%2Fsolutions%2Fperks%2Fcloud-credits",
+    );
+    await expect(page.getByRole("link", { name: "Policy Chat" })).toHaveAttribute(
+      "href",
+      "/solutions/policy-chat",
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    expect((await page.goto("/solutions/perks/no-such-perk"))?.status()).toBe(404);
   });
 
   test("search, a facet and the order are the address, and the server answers them", async ({

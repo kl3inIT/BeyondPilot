@@ -1033,6 +1033,80 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	/** Sets a program's criteria and answers their identifiers in order. */
+	@Test
+	void aPerkForTheShortlistOpensToTheTeamsShortlistedOnceTheOutcomesAreReleased() {
+		Form form = program("perk-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		Applicant chosen = applicant(form, "chosen@perk-shortlist.test", "Chosen Perk Builder");
+		Applicant other = applicant(form, "other@perk-shortlist.test", "Other Perk Builder");
+		String outsider = TestSignIn.session(client, mail, "outsider@perk-outsider.test");
+		post(outsider, form.path() + "/organization", Map.of("kind", "individual", "name", "Perk Outsider", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		String partner = TestSignIn.session(client, mail, "partner@perk-partner.test");
+		post(partner, form.path() + "/organization", Map.of("kind", "individual", "name", "Perk Partner", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		UUID giver = UUID.fromString(JsonPath.read(body(get(partner, "/api/organization/mine").expectStatus().isOk()),
+				"$.organization.id"));
+		String forShortlist = programPerk(giver, "Credits for the shortlist", "shortlisted", form.programId());
+		String forApplicants = programPerk(giver, "Credits for applicants", "applicants", form.programId());
+		String perks = "/api/perk/perks/";
+
+		// The program's page shows the perks for its teams, to anyone.
+		assertThat(JsonPath.<List<String>>read(body(client.get()
+			.uri("/api/perk/programs/perk-challenge")
+			.exchange()
+			.expectStatus()
+			.isOk()), "$[*].slug")).containsExactlyInAnyOrder(forShortlist, forApplicants);
+
+		// Applying is enough for the applicants' perk; a team that did not apply is told it is for applicants.
+		post(chosen.session(), perks + forApplicants + "/claims", Map.of("answers", Map.of())).expectStatus().isCreated();
+		assertThat(JsonPath.<String>read(body(get(outsider, perks + forApplicants).expectStatus().isOk()),
+				"$.card.standing")).isEqualTo("not_applied");
+		assertProblem(post(outsider, perks + forApplicants + "/claims", Map.of("answers", Map.of())), 403,
+				"PERK_NOT_ELIGIBLE");
+
+		// A shortlist is GenAI Fund's own until the outcomes are released.
+		shortlist(form, chosen.id());
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(other.id()), "not_selected"))
+			.expectStatus()
+			.isOk();
+		assertProblem(post(chosen.session(), perks + forShortlist + "/claims", Map.of("answers", Map.of())), 403,
+				"PERK_NOT_ELIGIBLE");
+		close(form);
+		post(operator, REVIEW + form.programId() + "/release", emails()).expectStatus().isOk();
+
+		assertThat(JsonPath.<String>read(body(post(chosen.session(), perks + forShortlist + "/claims",
+				Map.of("answers", Map.of()))
+			.expectStatus()
+			.isCreated()), "$.code")).isEqualTo("SHORTLIST-ONLY");
+		assertThat(JsonPath.<String>read(body(get(other.session(), perks + forShortlist).expectStatus().isOk()),
+				"$.card.standing")).isEqualTo("not_shortlisted");
+		assertProblem(post(other.session(), perks + forShortlist + "/claims", Map.of("answers", Map.of())), 403,
+				"PERK_NOT_ELIGIBLE");
+	}
+
+	/** A published perk an operator wrote for a program's teams, with a code; answers its address. */
+	private String programPerk(UUID organization, String title, String audience, UUID programId) {
+		Map<String, Object> perk = new HashMap<>();
+		perk.put("title", title);
+		perk.put("steps", List.of());
+		perk.put("audience", audience);
+		perk.put("programId", programId);
+		perk.put("way", "code");
+		perk.put("code", "shortlisted".equals(audience) ? "SHORTLIST-ONLY" : "APPLICANTS");
+		perk.put("questions", List.of());
+		perk.put("requireApproval", true);
+		perk.put("perPerson", false);
+		perk.put("solutionIds", List.of());
+		String created = body(post(operator, "/api/perk/admin/perks", Map.of("organizationId", organization, "perk",
+				perk, "fromGenAiFund", true, "shownOnProgramIds", List.of()))
+			.expectStatus()
+			.isCreated());
+		post(operator, "/api/perk/admin/perks/" + JsonPath.read(created, "$.id") + "/publish", null).expectStatus().isOk();
+		return JsonPath.read(created, "$.slug");
+	}
+
 	private List<String> criteriaOf(Form form, String... names) {
 		return JsonPath.read(body(put(operator, REVIEW + form.programId() + "/criteria", criteria(names))
 			.expectStatus()

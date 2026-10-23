@@ -71,5 +71,5 @@ public record SearchItem(
 		@Schema(types = { "integer", "null" }, format = "int32", description = "A use case's maximum delivery time in weeks.") @Nullable Integer timelineMaxWeeks,
 		@Schema(types = { "string", "null" }, format = "uuid", description = "The logo of a use case's organization, absent when anonymous.") @Nullable UUID organizationLogoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The offers a solution comes with, by title.") List<SearchOffer> offers) {
+				description = "The open perks a solution goes with, those GenAI Fund arranged first.") List<SearchPerk> perks) {
 }

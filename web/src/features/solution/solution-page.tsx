@@ -41,14 +41,14 @@ import { Separator } from "@/components/ui/separator";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import type { PublicSolution } from "@/lib/api/generated";
+import type { PublicSolution, SolutionPerkLine } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentCard } from "./customer-deployment-card";
 import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionGallery } from "./solution-gallery";
 import { SolutionLogo } from "./solution-logo";
-import { OfferPanel } from "./solution-offers";
+import { PerkPanel } from "./solution-perks";
 import { SolutionSection } from "./solution-section";
 
 /** How many chips a heading group names before the rest waits under "+N more". */
@@ -133,6 +133,8 @@ type SolutionPageProps = {
    * screen that returns there. Absent for the company's own people and on a page shared by a link.
    */
   contactHref?: string;
+  /** The open perks it goes with; none on a page shared by a link. */
+  perks?: SolutionPerkLine[];
 };
 
 /**
@@ -140,7 +142,7 @@ type SolutionPageProps = {
  * it says and its proof, beside the one way to reach its company and its facts. An absent value
  * keeps its criterion visible without inventing a placeholder.
  */
-function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
+function SolutionPage({ solution, editHref, contactHref, perks = [] }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -667,10 +669,10 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
               )}
             </div>
           )}
-          {solution.offers.length > 0 && (
+          {perks.length > 0 && (
             <>
               <Separator />
-              <OfferPanel offers={solution.offers} organization={solution.organizationName} />
+              <PerkPanel perks={perks} organization={solution.organizationName} />
             </>
           )}
           <Separator />

@@ -77,28 +77,6 @@ export type AddMatchingCandidate = {
 };
 
 /**
- * A new offer an operator writes for the organization that gives it.
- */
-export type AdminCreateOffer = {
-    /**
-     * Whether GenAI Fund arranged it with the organization, which its card marks.
-     */
-    fromGenAiFund: boolean;
-    /**
-     * The organization that gives it; only its solutions come with it.
-     */
-    organizationId: string;
-    /**
-     * The line that names it on a card.
-     */
-    title: string;
-    /**
-     * The https address where it is claimed.
-     */
-    url: string;
-};
-
-/**
  * An organization an operator creates for a company that is not here yet. It is active from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
@@ -149,71 +127,6 @@ export type AdminCreateSolution = {
      * The organization the solution belongs to.
      */
     organizationId: string;
-};
-
-/**
- * An offer as an operator reads it, with the organization that gives it.
- */
-export type AdminOffer = {
-    /**
-     * True once it is closed to new solutions; the solutions that come with it keep it.
-     */
-    closed: boolean;
-    /**
-     * True when GenAI Fund arranged it with the organization, which its card marks.
-     */
-    fromGenAiFund: boolean;
-    id: string;
-    /**
-     * The organization that gives it.
-     */
-    organizationId: string;
-    /**
-     * The name of that organization.
-     */
-    organizationName: string;
-    /**
-     * How many solutions come with it; it is deleted only when none does.
-     */
-    solutions: number;
-    title: string;
-    updatedAt: string;
-    url: string;
-    /**
-     * Sent back with a save, which is refused when the offer changed since.
-     */
-    version: number;
-};
-
-/**
- * An offer with the solutions that come with it, as an operator reads its record.
- */
-export type AdminOfferDetail = {
-    createdAt: string;
-    offer: AdminOffer;
-    /**
-     * The solutions that come with it, by name.
-     */
-    solutionList: Array<AdminOfferSolution>;
-};
-
-/**
- * A solution that comes with an offer, as the operators' record of it lists it.
- */
-export type AdminOfferSolution = {
-    id: string;
-    name: string;
-    organizationId: string;
-    organizationName: string;
-    slug: string;
-    /**
-     * Where it stands in review, as the solution records it.
-     */
-    status: string;
-    /**
-     * When GenAI Fund took it down, while it is down; its status stays approved.
-     */
-    suspendedAt?: string | null;
 };
 
 /**
@@ -426,28 +339,6 @@ export type AdminProgramSummary = {
 };
 
 /**
- * An offer as an operator's form holds it.
- */
-export type AdminSaveOffer = {
-    /**
-     * Whether GenAI Fund arranged it with the organization, which its card marks.
-     */
-    fromGenAiFund: boolean;
-    /**
-     * The line that names it on a card.
-     */
-    title: string;
-    /**
-     * The https address where it is claimed.
-     */
-    url: string;
-    /**
-     * The version the form read; a save is refused when the offer changed since.
-     */
-    version?: number | null;
-};
-
-/**
  * The profile of an organization and its verified domain, as an operator saves them.
  */
 export type AdminSaveOrganization = {
@@ -456,6 +347,25 @@ export type AdminSaveOrganization = {
      */
     emailDomain?: string | null;
     profile: SaveOrganization;
+};
+
+/**
+ * A perk as an operator's form holds it.
+ */
+export type AdminSavePerk = {
+    /**
+     * True when GenAI Fund arranged it, which its card marks.
+     */
+    fromGenAiFund: boolean;
+    /**
+     * The organization that gives it; read when it is created only.
+     */
+    organizationId?: string | null;
+    perk: SavePerk;
+    /**
+     * The programs whose page shows it beside the perks for their teams.
+     */
+    shownOnProgramIds: Array<string>;
 };
 
 /**
@@ -1113,7 +1023,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1310,6 +1220,18 @@ export type ChooseEmbeddingModel = {
      * The version of the search settings it was read at.
      */
     version: number;
+};
+
+/**
+ * What a person sends to get a perk: for a request, the answers to its questions.
+ */
+export type ClaimPerk = {
+    /**
+     * The answers by question identifier; empty for any other perk.
+     */
+    answers: {
+        [key: string]: string;
+    };
 };
 
 /**
@@ -1846,6 +1768,17 @@ export type Decide = {
      * Private; the applicant never sees it.
      */
     reason?: string | null;
+};
+
+/**
+ * A partner's answer to a waiting request.
+ */
+export type DecideClaim = {
+    granted: boolean;
+    /**
+     * The version the list read; an answer is refused when the request changed since.
+     */
+    version: number;
 };
 
 /**
@@ -2566,24 +2499,6 @@ export type ExportApplicationsRequest = {
 };
 
 /**
- * The offers a download holds, in the order the list shows them.
- */
-export type ExportOffers = {
-    /**
-     * The offers, in the list's order; one that does not exist is left out.
-     */
-    ids: Array<string>;
-    /**
-     * The search the list was narrowed by, said in the file.
-     */
-    q?: string | null;
-    /**
-     * The state the list was narrowed to, said in the file.
-     */
-    state?: string | null;
-};
-
-/**
  * The programs a download holds, in the order the list shows them.
  */
 export type ExportPrograms = {
@@ -2715,6 +2630,34 @@ export type LastMessage = {
      * Who wrote it, as they are shown; null until they gave a name.
      */
     senderName?: string | null;
+};
+
+/**
+ * Single-use codes for a perk given as a list, one to each claim.
+ */
+export type LoadCodes = {
+    /**
+     * The codes; one the perk already holds is skipped.
+     */
+    codes: Array<string>;
+};
+
+/**
+ * What a load of codes did.
+ */
+export type LoadedCodes = {
+    /**
+     * How many were new.
+     */
+    added: number;
+    /**
+     * How many are not given yet.
+     */
+    free: number;
+    /**
+     * How many the perk holds.
+     */
+    loaded: number;
 };
 
 export type LumaCalendar = {
@@ -3863,29 +3806,6 @@ export type OcrSettings = {
 };
 
 /**
- * An offer a solution comes with, such as cloud credits.
- */
-export type Offer = {
-    /**
-     * True once it is closed to new solutions; the solutions that come with it keep it.
-     */
-    closed: boolean;
-    /**
-     * True when GenAI Fund arranged it with the organization; false for one the organization wrote alone.
-     */
-    fromGenAiFund: boolean;
-    id: string;
-    /**
-     * The line that names it, such as "$1,000 in cloud credits".
-     */
-    title: string;
-    /**
-     * The https address where it is claimed.
-     */
-    url: string;
-};
-
-/**
  * An organization as the people who belong to it, and operators, see it.
  */
 export type Organization = {
@@ -4091,28 +4011,257 @@ export type OrganizationSearch = {
 };
 
 /**
- * An offer an organization gives with its solutions, as its members read it.
+ * A perk as a list of the perks given shows it.
  */
-export type OwnOffer = {
+export type OwnPerk = {
+    audience: 'everyone' | 'members' | 'applicants' | 'shortlisted';
     /**
-     * True once it is closed to new solutions; the solutions that come with it keep it.
+     * How many codes are not given yet, for a perk given as a list.
      */
-    closed: boolean;
-    /**
-     * True when GenAI Fund arranged it, which only GenAI Fund then changes.
-     */
+    codesLeft?: number | null;
+    endsAt?: string | null;
     fromGenAiFund: boolean;
     id: string;
+    organizationId: string;
+    organizationName: string;
+    places?: number | null;
+    slug: string;
+    state: 'draft' | 'published' | 'archived';
     /**
-     * How many of the organization's solutions come with it; it is deleted only when none does.
+     * How many claims hold a place.
      */
-    solutions: number;
+    taken: number;
     title: string;
-    url: string;
+    updatedAt: string;
+    value?: string | null;
     /**
-     * Sent back with a save, which is refused when the offer changed since.
+     * How many requests wait for an answer.
      */
+    waiting: number;
+    way: 'link' | 'code' | 'codes' | 'request';
+};
+
+/**
+ * A perk as its form reads it, with what it holds.
+ */
+export type Perk = {
+    about?: string | null;
+    audience: 'everyone' | 'members' | 'applicants' | 'shortlisted';
+    code?: string | null;
+    /**
+     * How many of them are not given yet.
+     */
+    codesLeft: number;
+    /**
+     * How many codes it holds, for a perk given as a list.
+     */
+    codesLoaded: number;
+    /**
+     * False for a member when GenAI Fund arranged it.
+     */
+    editable: boolean;
+    endsAt?: string | null;
+    fromGenAiFund: boolean;
+    id: string;
+    organizationId: string;
+    organizationName: string;
+    perPerson: boolean;
+    places?: number | null;
+    programId?: string | null;
+    questions: Array<PerkQuestion>;
+    redeemUrl?: string | null;
+    requireApproval: boolean;
+    shownOnProgramIds: Array<string>;
+    slug: string;
+    solutionIds: Array<string>;
+    startsAt?: string | null;
+    state: 'draft' | 'published' | 'archived';
+    steps: Array<string>;
+    summary?: string | null;
+    /**
+     * How many claims hold a place.
+     */
+    taken: number;
+    terms?: string | null;
+    termsUrl?: string | null;
+    title: string;
+    updatedAt: string;
+    url?: string | null;
+    value?: string | null;
     version: number;
+    /**
+     * How many requests wait for an answer.
+     */
+    waiting: number;
+    way: 'link' | 'code' | 'codes' | 'request';
+};
+
+/**
+ * A published perk as the catalogue and a program's page show it.
+ */
+export type PerkCard = {
+    audience: 'everyone' | 'members' | 'applicants' | 'shortlisted';
+    /**
+     * What the caller holds of it; null for nothing, and for someone signed out.
+     */
+    claimState?: 'taken' | 'waiting' | 'granted' | 'declined';
+    /**
+     * True once its end has passed; it can no longer be got.
+     */
+    ended: boolean;
+    endsAt?: string | null;
+    /**
+     * True when GenAI Fund arranged it.
+     */
+    fromGenAiFund: boolean;
+    /**
+     * True when every place is taken.
+     */
+    full: boolean;
+    id: string;
+    /**
+     * The partner's logo.
+     */
+    organizationLogoFileId?: string | null;
+    organizationName: string;
+    organizationSlug: string;
+    programName?: string | null;
+    programSlug?: string | null;
+    slug: string;
+    /**
+     * Whether the caller may get it now, or why not.
+     */
+    standing: 'eligible' | 'sign_in' | 'organization' | 'not_applied' | 'not_shortlisted' | 'not_started' | 'ended' | 'full' | 'claimed' | 'archived';
+    summary?: string | null;
+    title: string;
+    value?: string | null;
+    way: 'link' | 'code' | 'codes' | 'request';
+};
+
+/**
+ * What the caller holds of a perk.
+ */
+export type PerkClaim = {
+    /**
+     * The code it got, for a code perk.
+     */
+    code?: string | null;
+    decidedAt?: string | null;
+    id: string;
+    /**
+     * Where the code is redeemed.
+     */
+    redeemUrl?: string | null;
+    state: 'taken' | 'waiting' | 'granted' | 'declined';
+    takenAt: string;
+    /**
+     * Who got it.
+     */
+    takenBy: string;
+    /**
+     * The partner's page, for a link perk.
+     */
+    url?: string | null;
+};
+
+/**
+ * One claim of a perk as its partner reads it.
+ */
+export type PerkClaimRow = {
+    /**
+     * The answers by question identifier.
+     */
+    answers: {
+        [key: string]: string;
+    };
+    code?: string | null;
+    createdAt: string;
+    decidedAt?: string | null;
+    decidedBy?: string | null;
+    id: string;
+    organizationName: string;
+    personEmail: string;
+    personName: string;
+    state: 'taken' | 'waiting' | 'granted' | 'declined';
+    version: number;
+};
+
+/**
+ * One choice of a perk's form.
+ */
+export type PerkOption = {
+    id: string;
+    name: string;
+};
+
+/**
+ * What a perk's form chooses from: the giving organization's solutions and the programs.
+ */
+export type PerkOptions = {
+    programs: Array<PerkOption>;
+    solutions: Array<PerkOption>;
+};
+
+/**
+ * A published perk's page, and what the caller may do with it.
+ */
+export type PerkPage = {
+    about?: string | null;
+    card: PerkCard;
+    /**
+     * What the caller holds of it.
+     */
+    claim?: PerkClaim | null;
+    perPerson: boolean;
+    /**
+     * How many places are left; null when it has no limit.
+     */
+    placesLeft?: number | null;
+    /**
+     * What a request asks.
+     */
+    questions: Array<PerkQuestion>;
+    requireApproval: boolean;
+    /**
+     * The listed solutions it goes with.
+     */
+    solutions: Array<PerkSolution>;
+    startsAt?: string | null;
+    steps: Array<string>;
+    terms?: string | null;
+    termsUrl?: string | null;
+    /**
+     * The partner's page, for a link perk for everyone; for any other perk it comes with a claim.
+     */
+    url?: string | null;
+};
+
+/**
+ * A question a request perk asks.
+ */
+export type PerkQuestion = {
+    /**
+     * Its identifier, kept across saves so the answers already sent stay with it; left out for a new question.
+     */
+    id?: string | null;
+    /**
+     * What it asks.
+     */
+    label: string;
+    /**
+     * True for an answer of several lines, up to 2,000 characters; otherwise one line of up to 200.
+     */
+    multiline: boolean;
+    required: boolean;
+};
+
+/**
+ * A solution a perk goes with.
+ */
+export type PerkSolution = {
+    id: string;
+    name: string;
+    slug: string;
 };
 
 /**
@@ -4740,24 +4889,6 @@ export type PublicCustomerDeploymentList = {
 };
 
 /**
- * An offer a solution comes with, as anyone reads it.
- */
-export type PublicOffer = {
-    /**
-     * True when GenAI Fund arranged it with the solution's organization, which its card marks; false for one the organization wrote alone.
-     */
-    fromGenAiFund: boolean;
-    /**
-     * The line that names it, such as "$1,000 in cloud credits".
-     */
-    title: string;
-    /**
-     * The https address where it is claimed.
-     */
-    url: string;
-};
-
-/**
  * An organization as anyone reads it.
  */
 export type PublicOrganization = {
@@ -4843,10 +4974,6 @@ export type PublicSolution = {
      * Customers named by the company; these are not reviewed customer deployments.
      */
     notablePayingCustomers?: string | null;
-    /**
-     * The offers it comes with, by title.
-     */
-    offers: Array<PublicOffer>;
     /**
      * Its exact imported company-size label; null for an organization that has not supplied one.
      */
@@ -4938,10 +5065,6 @@ export type PublicSolutionSummary = {
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
-    /**
-     * The offers it comes with, by title; its card links to each.
-     */
-    offers: Array<PublicOffer>;
     organizationName: string;
     /**
      * The address of the organization's public page.
@@ -6048,24 +6171,6 @@ export type SaveOcrProvider = {
 };
 
 /**
- * An offer as its form holds it.
- */
-export type SaveOffer = {
-    /**
-     * The line that names it on a card.
-     */
-    title: string;
-    /**
-     * The https address where it is claimed.
-     */
-    url: string;
-    /**
-     * The version the form read; left out for a new offer.
-     */
-    version?: number | null;
-};
-
-/**
  * The profile of an organization as its Profile screen holds it.
  */
 export type SaveOrganization = {
@@ -6137,6 +6242,81 @@ export type SaveOrganizationBasics = {
      * Required for a company; omitted for other types.
      */
     website?: string | null;
+};
+
+/**
+ * A perk as its form holds it. What its way of getting it does not use is ignored.
+ */
+export type SavePerk = {
+    /**
+     * What it is, in full.
+     */
+    about?: string | null;
+    audience: 'everyone' | 'members' | 'applicants' | 'shortlisted';
+    /**
+     * The code its audience gets, for a code perk.
+     */
+    code?: string | null;
+    endsAt?: string | null;
+    /**
+     * True when it is got once per person; otherwise once per organization.
+     */
+    perPerson: boolean;
+    /**
+     * How many may get it; null for as many as come. A link perk has no places.
+     */
+    places?: number | null;
+    /**
+     * The program whose applicants or shortlist may get it.
+     */
+    programId?: string | null;
+    /**
+     * What a request asks, for a request perk.
+     */
+    questions: Array<PerkQuestion>;
+    /**
+     * Where a code is redeemed.
+     */
+    redeemUrl?: string | null;
+    /**
+     * For a request perk: true when its partner grants or declines each request; otherwise a request is granted when it is sent.
+     */
+    requireApproval: boolean;
+    /**
+     * The solutions of its organization it goes with.
+     */
+    solutionIds: Array<string>;
+    startsAt?: string | null;
+    /**
+     * How to get it, in order.
+     */
+    steps: Array<string>;
+    /**
+     * One or two sentences under its title.
+     */
+    summary?: string | null;
+    terms?: string | null;
+    /**
+     * The https address of its full terms.
+     */
+    termsUrl?: string | null;
+    /**
+     * What it is called.
+     */
+    title: string;
+    /**
+     * The partner's https page, for a link perk.
+     */
+    url?: string | null;
+    /**
+     * The figure its card shows large, such as $1,000.
+     */
+    value?: string | null;
+    /**
+     * The version the form read; left out for a new perk. A save is refused when the perk changed since.
+     */
+    version?: number | null;
+    way: 'link' | 'code' | 'codes' | 'request';
 };
 
 /**
@@ -6254,10 +6434,6 @@ export type SaveSolution = {
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
-    /**
-     * The offers it comes with, of those its organization gives; empty for none.
-     */
-    offerIds: Array<string>;
     problemsSolved?: string | null;
     /**
      * Two or three sentences shown in lists.
@@ -6488,10 +6664,6 @@ export type SearchItem = {
      */
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     /**
-     * The offers a solution comes with, by title.
-     */
-    offers: Array<SearchOffer>;
-    /**
      * The logo of a use case's organization, absent when anonymous.
      */
     organizationLogoFileId?: string | null;
@@ -6499,6 +6671,10 @@ export type SearchItem = {
      * The address of the page of a solution's organization.
      */
     organizationSlug?: string | null;
+    /**
+     * The open perks a solution goes with, those GenAI Fund arranged first.
+     */
+    perks: Array<SearchPerk>;
     /**
      * Where a program stands now.
      */
@@ -6564,18 +6740,22 @@ export type SearchItem = {
 };
 
 /**
- * An offer a solution in the results comes with.
+ * An open perk a solution in the results goes with.
  */
-export type SearchOffer = {
+export type SearchPerk = {
     /**
      * True when GenAI Fund arranged it.
      */
     fromGenAiFund: boolean;
+    /**
+     * Its address, /solutions/perks/{slug}.
+     */
+    slug: string;
     title: string;
     /**
-     * The https address where it is claimed.
+     * The figure its card shows, such as $1,000.
      */
-    url: string;
+    value?: string | null;
 };
 
 /**
@@ -6738,20 +6918,6 @@ export type SetDocumentReader = {
 };
 
 /**
- * Closes an offer to new solutions, or opens it again.
- */
-export type SetOfferClosedRequest = {
-    /**
-     * True to close it, false to open it. Asking for the state it has changes nothing.
-     */
-    closed: boolean;
-    /**
-     * The version the form read; the change is refused when the offer changed since.
-     */
-    version: number;
-};
-
-/**
  * Turns semantic search on or off. Off, search matches keywords only and nothing is sent to the provider.
  */
 export type SetSemanticSearch = {
@@ -6760,16 +6926,6 @@ export type SetSemanticSearch = {
      * The version of the search settings it was read at.
      */
     version: number;
-};
-
-/**
- * The offers a solution comes with, as an operator chooses them.
- */
-export type SetSolutionOffers = {
-    /**
-     * Offers its organization gives; empty for none.
-     */
-    offerIds: Array<string>;
 };
 
 /**
@@ -6862,10 +7018,6 @@ export type Solution = {
      */
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
-    /**
-     * The offers it comes with, by title.
-     */
-    offers: Array<Offer>;
     organizationId: string;
     organizationName: string;
     problemsSolved?: string | null;
@@ -6960,6 +7112,27 @@ export type SolutionOption = {
     name: string;
     problemsSolved?: string | null;
     summary?: string | null;
+};
+
+/**
+ * One perk on a solution's card.
+ */
+export type SolutionPerkLine = {
+    fromGenAiFund: boolean;
+    slug: string;
+    title: string;
+    value?: string | null;
+};
+
+/**
+ * The open perks a solution goes with, as its card shows them.
+ */
+export type SolutionPerks = {
+    perks: Array<SolutionPerkLine>;
+    /**
+     * The solution's address.
+     */
+    slug: string;
 };
 
 /**
@@ -7297,6 +7470,17 @@ export type TalentSummary = {
      */
     suspendedAt?: string | null;
     updatedAt: string;
+};
+
+/**
+ * A perk the caller's organization got, with what it holds.
+ */
+export type TeamClaim = {
+    claim: PerkClaim;
+    partnerName: string;
+    slug: string;
+    title: string;
+    value?: string | null;
 };
 
 /**
@@ -8238,7 +8422,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case; with `actions`, the events of those actions too.
          */
@@ -8246,7 +8430,7 @@ export type ListAuditEventsData = {
         /**
          * Actions whose names the search matches, in the reader's language: an event of one of them matches the search as well as one whose people or resource match `q`.
          */
-        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
+        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
         /**
          * The `older` cursor of a page: the events before it. Used when both cursors are given.
          */
@@ -8712,7 +8896,7 @@ export type ExportAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case; with `actions`, the events of those actions too.
          */
@@ -8720,7 +8904,7 @@ export type ExportAuditEventsData = {
         /**
          * Actions whose names the search matches, in the reader's language: an event of one of them matches the search as well as one whose people or resource match `q`.
          */
-        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
+        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
         /**
          * The file: xlsx, an Excel workbook to read, or csv for another tool.
          */
@@ -12664,6 +12848,1004 @@ export type GetOrganizationResponses = {
 
 export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
 
+export type ListAdminPerksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/perk/admin/perks';
+};
+
+export type ListAdminPerksErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminPerksError = ListAdminPerksErrors[keyof ListAdminPerksErrors];
+
+export type ListAdminPerksResponses = {
+    /**
+     * The perks.
+     */
+    200: Array<OwnPerk>;
+};
+
+export type ListAdminPerksResponse = ListAdminPerksResponses[keyof ListAdminPerksResponses];
+
+export type CreateAdminPerkData = {
+    body: AdminSavePerk;
+    path?: never;
+    query?: never;
+    url: '/api/perk/admin/perks';
+};
+
+export type CreateAdminPerkErrors = {
+    /**
+     * A field is blank, too long or not an https address, or the program, the dates, the solutions, the questions, or the link or code the perk needs do not hold.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * Another perk of the organization reads the same.
+     */
+    409: Problem;
+};
+
+export type CreateAdminPerkError = CreateAdminPerkErrors[keyof CreateAdminPerkErrors];
+
+export type CreateAdminPerkResponses = {
+    /**
+     * The draft.
+     */
+    201: Perk;
+};
+
+export type CreateAdminPerkResponse = CreateAdminPerkResponses[keyof CreateAdminPerkResponses];
+
+export type GetAdminPerkOptionsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The organization that gives the perk.
+         */
+        organizationId: string;
+    };
+    url: '/api/perk/admin/perks/options';
+};
+
+export type GetAdminPerkOptionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetAdminPerkOptionsError = GetAdminPerkOptionsErrors[keyof GetAdminPerkOptionsErrors];
+
+export type GetAdminPerkOptionsResponses = {
+    /**
+     * The choices.
+     */
+    200: PerkOptions;
+};
+
+export type GetAdminPerkOptionsResponse = GetAdminPerkOptionsResponses[keyof GetAdminPerkOptionsResponses];
+
+export type DeleteAdminPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}';
+};
+
+export type DeleteAdminPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+    /**
+     * Teams got the perk; archive it instead.
+     */
+    409: Problem;
+};
+
+export type DeleteAdminPerkError = DeleteAdminPerkErrors[keyof DeleteAdminPerkErrors];
+
+export type DeleteAdminPerkResponses = {
+    /**
+     * The perk is gone.
+     */
+    204: void;
+};
+
+export type DeleteAdminPerkResponse = DeleteAdminPerkResponses[keyof DeleteAdminPerkResponses];
+
+export type GetAdminPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}';
+};
+
+export type GetAdminPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+};
+
+export type GetAdminPerkError = GetAdminPerkErrors[keyof GetAdminPerkErrors];
+
+export type GetAdminPerkResponses = {
+    /**
+     * The perk.
+     */
+    200: Perk;
+};
+
+export type GetAdminPerkResponse = GetAdminPerkResponses[keyof GetAdminPerkResponses];
+
+export type SaveAdminPerkData = {
+    body: AdminSavePerk;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}';
+};
+
+export type SaveAdminPerkErrors = {
+    /**
+     * A field is blank, too long or not an https address, or the program, the dates, the solutions, the questions, or the link or code the perk needs do not hold.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+    /**
+     * The perk changed since it was read, or another reads the same.
+     */
+    409: Problem;
+};
+
+export type SaveAdminPerkError = SaveAdminPerkErrors[keyof SaveAdminPerkErrors];
+
+export type SaveAdminPerkResponses = {
+    /**
+     * The perk as saved, with its new version.
+     */
+    200: Perk;
+};
+
+export type SaveAdminPerkResponse = SaveAdminPerkResponses[keyof SaveAdminPerkResponses];
+
+export type ArchiveAdminPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}/archive';
+};
+
+export type ArchiveAdminPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+};
+
+export type ArchiveAdminPerkError = ArchiveAdminPerkErrors[keyof ArchiveAdminPerkErrors];
+
+export type ArchiveAdminPerkResponses = {
+    /**
+     * The perk, archived.
+     */
+    200: Perk;
+};
+
+export type ArchiveAdminPerkResponse = ArchiveAdminPerkResponses[keyof ArchiveAdminPerkResponses];
+
+export type ListAdminPerkClaimsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}/claims';
+};
+
+export type ListAdminPerkClaimsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+};
+
+export type ListAdminPerkClaimsError = ListAdminPerkClaimsErrors[keyof ListAdminPerkClaimsErrors];
+
+export type ListAdminPerkClaimsResponses = {
+    /**
+     * The claims, the latest first.
+     */
+    200: Array<PerkClaimRow>;
+};
+
+export type ListAdminPerkClaimsResponse = ListAdminPerkClaimsResponses[keyof ListAdminPerkClaimsResponses];
+
+export type ExportAdminPerkClaimsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/perk/admin/perks/{id}/claims/export';
+};
+
+export type ExportAdminPerkClaimsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+};
+
+export type ExportAdminPerkClaimsError = ExportAdminPerkClaimsErrors[keyof ExportAdminPerkClaimsErrors];
+
+export type ExportAdminPerkClaimsResponses = {
+    /**
+     * The claims, the latest first, with a column for each question. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminPerkClaimsResponse = ExportAdminPerkClaimsResponses[keyof ExportAdminPerkClaimsResponses];
+
+export type DecideAdminPerkRequestData = {
+    body: DecideClaim;
+    path: {
+        id: string;
+        claimId: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}/claims/{claimId}';
+};
+
+export type DecideAdminPerkRequestErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk or request.
+     */
+    404: Problem;
+    /**
+     * The request was decided or changed since it was read.
+     */
+    409: Problem;
+};
+
+export type DecideAdminPerkRequestError = DecideAdminPerkRequestErrors[keyof DecideAdminPerkRequestErrors];
+
+export type DecideAdminPerkRequestResponses = {
+    /**
+     * The request as decided.
+     */
+    200: PerkClaimRow;
+};
+
+export type DecideAdminPerkRequestResponse = DecideAdminPerkRequestResponses[keyof DecideAdminPerkRequestResponses];
+
+export type LoadPerkCodesData = {
+    body: LoadCodes;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}/codes';
+};
+
+export type LoadPerkCodesErrors = {
+    /**
+     * No code is given, too many are, or one is blank or too long.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+    /**
+     * The perk is not given as a list of codes.
+     */
+    409: Problem;
+};
+
+export type LoadPerkCodesError = LoadPerkCodesErrors[keyof LoadPerkCodesErrors];
+
+export type LoadPerkCodesResponses = {
+    /**
+     * What the load did, and what the list holds.
+     */
+    200: LoadedCodes;
+};
+
+export type LoadPerkCodesResponse = LoadPerkCodesResponses[keyof LoadPerkCodesResponses];
+
+export type PublishAdminPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/admin/perks/{id}/publish';
+};
+
+export type PublishAdminPerkErrors = {
+    /**
+     * The perk lacks what its way of getting it needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such perk.
+     */
+    404: Problem;
+};
+
+export type PublishAdminPerkError = PublishAdminPerkErrors[keyof PublishAdminPerkErrors];
+
+export type PublishAdminPerkResponses = {
+    /**
+     * The perk, published.
+     */
+    200: Perk;
+};
+
+export type PublishAdminPerkResponse = PublishAdminPerkResponses[keyof PublishAdminPerkResponses];
+
+export type ListTeamClaimsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/perk/claims';
+};
+
+export type ListTeamClaimsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListTeamClaimsError = ListTeamClaimsErrors[keyof ListTeamClaimsErrors];
+
+export type ListTeamClaimsResponses = {
+    /**
+     * The perks and what the team holds of each.
+     */
+    200: Array<TeamClaim>;
+};
+
+export type ListTeamClaimsResponse = ListTeamClaimsResponses[keyof ListTeamClaimsResponses];
+
+export type ListMyPerksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/perk/mine';
+};
+
+export type ListMyPerksErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListMyPerksError = ListMyPerksErrors[keyof ListMyPerksErrors];
+
+export type ListMyPerksResponses = {
+    /**
+     * The perks, the most recently changed first.
+     */
+    200: Array<OwnPerk>;
+};
+
+export type ListMyPerksResponse = ListMyPerksResponses[keyof ListMyPerksResponses];
+
+export type CreateMyPerkData = {
+    body: SavePerk;
+    path?: never;
+    query?: never;
+    url: '/api/perk/mine';
+};
+
+export type CreateMyPerkErrors = {
+    /**
+     * A field is blank, too long or not an https address, or the program, the dates, the solutions, the questions, or the link or code the perk needs do not hold.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+    /**
+     * Another perk of the organization reads the same.
+     */
+    409: Problem;
+};
+
+export type CreateMyPerkError = CreateMyPerkErrors[keyof CreateMyPerkErrors];
+
+export type CreateMyPerkResponses = {
+    /**
+     * The draft.
+     */
+    201: Perk;
+};
+
+export type CreateMyPerkResponse = CreateMyPerkResponses[keyof CreateMyPerkResponses];
+
+export type GetMyPerkOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/perk/mine/options';
+};
+
+export type GetMyPerkOptionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+};
+
+export type GetMyPerkOptionsError = GetMyPerkOptionsErrors[keyof GetMyPerkOptionsErrors];
+
+export type GetMyPerkOptionsResponses = {
+    /**
+     * The choices.
+     */
+    200: PerkOptions;
+};
+
+export type GetMyPerkOptionsResponse = GetMyPerkOptionsResponses[keyof GetMyPerkOptionsResponses];
+
+export type DeleteMyPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}';
+};
+
+export type DeleteMyPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * GenAI Fund arranged the perk, so only an operator changes it.
+     */
+    403: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+    /**
+     * Teams got the perk; archive it instead.
+     */
+    409: Problem;
+};
+
+export type DeleteMyPerkError = DeleteMyPerkErrors[keyof DeleteMyPerkErrors];
+
+export type DeleteMyPerkResponses = {
+    /**
+     * The perk is gone.
+     */
+    204: void;
+};
+
+export type DeleteMyPerkResponse = DeleteMyPerkResponses[keyof DeleteMyPerkResponses];
+
+export type GetMyPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}';
+};
+
+export type GetMyPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+};
+
+export type GetMyPerkError = GetMyPerkErrors[keyof GetMyPerkErrors];
+
+export type GetMyPerkResponses = {
+    /**
+     * The perk.
+     */
+    200: Perk;
+};
+
+export type GetMyPerkResponse = GetMyPerkResponses[keyof GetMyPerkResponses];
+
+export type SaveMyPerkData = {
+    body: SavePerk;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}';
+};
+
+export type SaveMyPerkErrors = {
+    /**
+     * A field is blank, too long or not an https address, or the program, the dates, the solutions, the questions, or the link or code the perk needs do not hold.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * GenAI Fund arranged the perk, so only an operator changes it.
+     */
+    403: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+    /**
+     * The perk changed since it was read, or another reads the same.
+     */
+    409: Problem;
+};
+
+export type SaveMyPerkError = SaveMyPerkErrors[keyof SaveMyPerkErrors];
+
+export type SaveMyPerkResponses = {
+    /**
+     * The perk as saved, with its new version.
+     */
+    200: Perk;
+};
+
+export type SaveMyPerkResponse = SaveMyPerkResponses[keyof SaveMyPerkResponses];
+
+export type ArchiveMyPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}/archive';
+};
+
+export type ArchiveMyPerkErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * GenAI Fund arranged the perk, so only an operator changes it.
+     */
+    403: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+};
+
+export type ArchiveMyPerkError = ArchiveMyPerkErrors[keyof ArchiveMyPerkErrors];
+
+export type ArchiveMyPerkResponses = {
+    /**
+     * The perk, archived.
+     */
+    200: Perk;
+};
+
+export type ArchiveMyPerkResponse = ArchiveMyPerkResponses[keyof ArchiveMyPerkResponses];
+
+export type ListMyPerkClaimsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}/claims';
+};
+
+export type ListMyPerkClaimsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+};
+
+export type ListMyPerkClaimsError = ListMyPerkClaimsErrors[keyof ListMyPerkClaimsErrors];
+
+export type ListMyPerkClaimsResponses = {
+    /**
+     * The claims, the latest first.
+     */
+    200: Array<PerkClaimRow>;
+};
+
+export type ListMyPerkClaimsResponse = ListMyPerkClaimsResponses[keyof ListMyPerkClaimsResponses];
+
+export type ExportMyPerkClaimsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/perk/mine/{id}/claims/export';
+};
+
+export type ExportMyPerkClaimsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+};
+
+export type ExportMyPerkClaimsError = ExportMyPerkClaimsErrors[keyof ExportMyPerkClaimsErrors];
+
+export type ExportMyPerkClaimsResponses = {
+    /**
+     * The claims, the latest first, with a column for each question. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportMyPerkClaimsResponse = ExportMyPerkClaimsResponses[keyof ExportMyPerkClaimsResponses];
+
+export type DecideMyPerkRequestData = {
+    body: DecideClaim;
+    path: {
+        id: string;
+        claimId: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}/claims/{claimId}';
+};
+
+export type DecideMyPerkRequestErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * There is no such perk or request.
+     */
+    404: Problem;
+    /**
+     * The request was decided or changed since it was read.
+     */
+    409: Problem;
+};
+
+export type DecideMyPerkRequestError = DecideMyPerkRequestErrors[keyof DecideMyPerkRequestErrors];
+
+export type DecideMyPerkRequestResponses = {
+    /**
+     * The request as decided.
+     */
+    200: PerkClaimRow;
+};
+
+export type DecideMyPerkRequestResponse = DecideMyPerkRequestResponses[keyof DecideMyPerkRequestResponses];
+
+export type PublishMyPerkData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/perk/mine/{id}/publish';
+};
+
+export type PublishMyPerkErrors = {
+    /**
+     * The perk lacks what its way of getting it needs.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * GenAI Fund arranged the perk, so only an operator changes it.
+     */
+    403: Problem;
+    /**
+     * The caller's organization gives no such perk.
+     */
+    404: Problem;
+};
+
+export type PublishMyPerkError = PublishMyPerkErrors[keyof PublishMyPerkErrors];
+
+export type PublishMyPerkResponses = {
+    /**
+     * The perk, published.
+     */
+    200: Perk;
+};
+
+export type PublishMyPerkResponse = PublishMyPerkResponses[keyof PublishMyPerkResponses];
+
+export type ListPerksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Whether the perks that ended are listed too.
+         */
+        ended?: boolean;
+    };
+    url: '/api/perk/perks';
+};
+
+export type ListPerksResponses = {
+    /**
+     * The perks.
+     */
+    200: Array<PerkCard>;
+};
+
+export type ListPerksResponse = ListPerksResponses[keyof ListPerksResponses];
+
+export type GetPerkData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/perk/perks/{slug}';
+};
+
+export type GetPerkErrors = {
+    /**
+     * No perk is published at this address.
+     */
+    404: Problem;
+};
+
+export type GetPerkError = GetPerkErrors[keyof GetPerkErrors];
+
+export type GetPerkResponses = {
+    /**
+     * The perk.
+     */
+    200: PerkPage;
+};
+
+export type GetPerkResponse = GetPerkResponses[keyof GetPerkResponses];
+
+export type ClaimPerkData = {
+    body: ClaimPerk;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/perk/perks/{slug}/claims';
+};
+
+export type ClaimPerkErrors = {
+    /**
+     * The answers do not hold.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller acts for no organization, or the perk is for other teams.
+     */
+    403: Problem;
+    /**
+     * No perk is published at this address.
+     */
+    404: Problem;
+    /**
+     * The perk is not open now, or every place is taken.
+     */
+    409: Problem;
+};
+
+export type ClaimPerkError = ClaimPerkErrors[keyof ClaimPerkErrors];
+
+export type ClaimPerkResponses = {
+    /**
+     * What the team holds of the perk.
+     */
+    201: PerkClaim;
+};
+
+export type ClaimPerkResponse = ClaimPerkResponses[keyof ClaimPerkResponses];
+
+export type ListProgramPerksData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/perk/programs/{slug}';
+};
+
+export type ListProgramPerksResponses = {
+    /**
+     * The perks; none for a program that is not published.
+     */
+    200: Array<PerkCard>;
+};
+
+export type ListProgramPerksResponse = ListProgramPerksResponses[keyof ListProgramPerksResponses];
+
+export type ListSolutionPerksData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * The solutions' addresses, up to 100.
+         */
+        slugs: Array<string>;
+    };
+    url: '/api/perk/solutions';
+};
+
+export type ListSolutionPerksErrors = {
+    /**
+     * Too many solutions are named.
+     */
+    400: Problem;
+};
+
+export type ListSolutionPerksError = ListSolutionPerksErrors[keyof ListSolutionPerksErrors];
+
+export type ListSolutionPerksResponses = {
+    /**
+     * The perks of each solution that has any.
+     */
+    200: Array<SolutionPerks>;
+};
+
+export type ListSolutionPerksResponse = ListSolutionPerksResponses[keyof ListSolutionPerksResponses];
+
 export type DisconnectLumaData = {
     body?: never;
     path?: never;
@@ -15361,270 +16543,6 @@ export type RejectCustomerDeploymentResponses = {
 
 export type RejectCustomerDeploymentResponse = RejectCustomerDeploymentResponses[keyof RejectCustomerDeploymentResponses];
 
-export type ListAdminOffersData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/solution/admin/offers';
-};
-
-export type ListAdminOffersErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-};
-
-export type ListAdminOffersError = ListAdminOffersErrors[keyof ListAdminOffersErrors];
-
-export type ListAdminOffersResponses = {
-    /**
-     * The offers, by title.
-     */
-    200: Array<AdminOffer>;
-};
-
-export type ListAdminOffersResponse = ListAdminOffersResponses[keyof ListAdminOffersResponses];
-
-export type CreateOfferData = {
-    body: AdminCreateOffer;
-    path?: never;
-    query?: never;
-    url: '/api/solution/admin/offers';
-};
-
-export type CreateOfferErrors = {
-    /**
-     * The title is blank or too long, or the address is not an https one.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such organization.
-     */
-    404: Problem;
-    /**
-     * Another offer of the organization reads the same.
-     */
-    409: Problem;
-};
-
-export type CreateOfferError = CreateOfferErrors[keyof CreateOfferErrors];
-
-export type CreateOfferResponses = {
-    /**
-     * The offer.
-     */
-    201: AdminOffer;
-};
-
-export type CreateOfferResponse = CreateOfferResponses[keyof CreateOfferResponses];
-
-export type ExportAdminOffersData = {
-    body: ExportOffers;
-    path?: never;
-    query?: {
-        /**
-         * The file: xlsx, an Excel workbook to read, or csv for another tool.
-         */
-        format?: 'xlsx' | 'csv';
-    };
-    url: '/api/solution/admin/offers/export';
-};
-
-export type ExportAdminOffersErrors = {
-    /**
-     * A member or the format is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-};
-
-export type ExportAdminOffersError = ExportAdminOffersErrors[keyof ExportAdminOffersErrors];
-
-export type ExportAdminOffersResponses = {
-    /**
-     * The offers the body names, in its order, one row each. The download is recorded.
-     */
-    200: Blob | File;
-};
-
-export type ExportAdminOffersResponse = ExportAdminOffersResponses[keyof ExportAdminOffersResponses];
-
-export type DeleteOfferData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/offers/{id}';
-};
-
-export type DeleteOfferErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such offer.
-     */
-    404: Problem;
-    /**
-     * A solution still comes with the offer.
-     */
-    409: Problem;
-};
-
-export type DeleteOfferError = DeleteOfferErrors[keyof DeleteOfferErrors];
-
-export type DeleteOfferResponses = {
-    /**
-     * The offer is gone.
-     */
-    204: void;
-};
-
-export type DeleteOfferResponse = DeleteOfferResponses[keyof DeleteOfferResponses];
-
-export type GetAdminOfferData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/offers/{id}';
-};
-
-export type GetAdminOfferErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such offer.
-     */
-    404: Problem;
-};
-
-export type GetAdminOfferError = GetAdminOfferErrors[keyof GetAdminOfferErrors];
-
-export type GetAdminOfferResponses = {
-    /**
-     * The offer and its solutions, by name.
-     */
-    200: AdminOfferDetail;
-};
-
-export type GetAdminOfferResponse = GetAdminOfferResponses[keyof GetAdminOfferResponses];
-
-export type SaveOfferData = {
-    body: AdminSaveOffer;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/offers/{id}';
-};
-
-export type SaveOfferErrors = {
-    /**
-     * The title is blank or too long, or the address is not an https one.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such offer.
-     */
-    404: Problem;
-    /**
-     * The offer changed since it was read, or another reads the same.
-     */
-    409: Problem;
-};
-
-export type SaveOfferError = SaveOfferErrors[keyof SaveOfferErrors];
-
-export type SaveOfferResponses = {
-    /**
-     * The offer as saved, with its new version.
-     */
-    200: AdminOffer;
-};
-
-export type SaveOfferResponse = SaveOfferResponses[keyof SaveOfferResponses];
-
-export type SetOfferClosedData = {
-    body: SetOfferClosedRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/offers/{id}/closed';
-};
-
-export type SetOfferClosedErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such offer.
-     */
-    404: Problem;
-    /**
-     * The offer changed since it was read.
-     */
-    409: Problem;
-};
-
-export type SetOfferClosedError = SetOfferClosedErrors[keyof SetOfferClosedErrors];
-
-export type SetOfferClosedResponses = {
-    /**
-     * The offer as saved, with its new version.
-     */
-    200: AdminOffer;
-};
-
-export type SetOfferClosedResponse = SetOfferClosedResponses[keyof SetOfferClosedResponses];
-
 export type ListAdminSolutionsData = {
     body?: never;
     path?: never;
@@ -16126,45 +17044,6 @@ export type FeatureSolutionResponses = {
 };
 
 export type FeatureSolutionResponse = FeatureSolutionResponses[keyof FeatureSolutionResponses];
-
-export type ChooseSolutionOffersData = {
-    body: SetSolutionOffers;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/admin/solutions/{id}/offers';
-};
-
-export type ChooseSolutionOffersErrors = {
-    /**
-     * More than five offers, or one that is not in the list.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such submitted solution.
-     */
-    404: Problem;
-};
-
-export type ChooseSolutionOffersError = ChooseSolutionOffersErrors[keyof ChooseSolutionOffersErrors];
-
-export type ChooseSolutionOffersResponses = {
-    /**
-     * The solution comes with the offers named.
-     */
-    204: void;
-};
-
-export type ChooseSolutionOffersResponse = ChooseSolutionOffersResponses[keyof ChooseSolutionOffersResponses];
 
 export type PublishAdminSolutionData = {
     body?: never;
@@ -16870,220 +17749,6 @@ export type WithdrawCustomerDeploymentResponses = {
 };
 
 export type WithdrawCustomerDeploymentResponse = WithdrawCustomerDeploymentResponses[keyof WithdrawCustomerDeploymentResponses];
-
-export type ListSolutionOffersData = {
-    body?: never;
-    path?: never;
-    query: {
-        solutionId: string;
-    };
-    url: '/api/solution/offers';
-};
-
-export type ListSolutionOffersErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller writes no such solution.
-     */
-    404: Problem;
-};
-
-export type ListSolutionOffersError = ListSolutionOffersErrors[keyof ListSolutionOffersErrors];
-
-export type ListSolutionOffersResponses = {
-    /**
-     * The offers, by title.
-     */
-    200: Array<Offer>;
-};
-
-export type ListSolutionOffersResponse = ListSolutionOffersResponses[keyof ListSolutionOffersResponses];
-
-export type CreateOwnOfferData = {
-    body: SaveOffer;
-    path?: never;
-    query?: never;
-    url: '/api/solution/offers';
-};
-
-export type CreateOwnOfferErrors = {
-    /**
-     * The title is blank or too long, or the address is not an https one.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no organization.
-     */
-    403: Problem;
-    /**
-     * Another offer of the organization reads the same.
-     */
-    409: Problem;
-};
-
-export type CreateOwnOfferError = CreateOwnOfferErrors[keyof CreateOwnOfferErrors];
-
-export type CreateOwnOfferResponses = {
-    /**
-     * The offer.
-     */
-    201: Offer;
-};
-
-export type CreateOwnOfferResponse = CreateOwnOfferResponses[keyof CreateOwnOfferResponses];
-
-export type ListOwnOffersData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/solution/offers/mine';
-};
-
-export type ListOwnOffersErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-};
-
-export type ListOwnOffersError = ListOwnOffersErrors[keyof ListOwnOffersErrors];
-
-export type ListOwnOffersResponses = {
-    /**
-     * The offers; none for a caller who belongs to no organization.
-     */
-    200: Array<OwnOffer>;
-};
-
-export type ListOwnOffersResponse = ListOwnOffersResponses[keyof ListOwnOffersResponses];
-
-export type DeleteOwnOfferData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/offers/{id}';
-};
-
-export type DeleteOwnOfferErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
-     */
-    403: Problem;
-    /**
-     * The caller's organization wrote no such offer.
-     */
-    404: Problem;
-    /**
-     * A solution still comes with the offer.
-     */
-    409: Problem;
-};
-
-export type DeleteOwnOfferError = DeleteOwnOfferErrors[keyof DeleteOwnOfferErrors];
-
-export type DeleteOwnOfferResponses = {
-    /**
-     * The offer is gone.
-     */
-    204: void;
-};
-
-export type DeleteOwnOfferResponse = DeleteOwnOfferResponses[keyof DeleteOwnOfferResponses];
-
-export type SaveOwnOfferData = {
-    body: SaveOffer;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/offers/{id}';
-};
-
-export type SaveOwnOfferErrors = {
-    /**
-     * The title is blank or too long, or the address is not an https one.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
-     */
-    403: Problem;
-    /**
-     * The caller's organization wrote no such offer.
-     */
-    404: Problem;
-    /**
-     * The offer changed since it was read, or another reads the same.
-     */
-    409: Problem;
-};
-
-export type SaveOwnOfferError = SaveOwnOfferErrors[keyof SaveOwnOfferErrors];
-
-export type SaveOwnOfferResponses = {
-    /**
-     * The offer as saved, with its new version.
-     */
-    200: OwnOffer;
-};
-
-export type SaveOwnOfferResponse = SaveOwnOfferResponses[keyof SaveOwnOfferResponses];
-
-export type SetOwnOfferClosedData = {
-    body: SetOfferClosedRequest;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/solution/offers/{id}/closed';
-};
-
-export type SetOwnOfferClosedErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
-     */
-    403: Problem;
-    /**
-     * The caller's organization wrote no such offer.
-     */
-    404: Problem;
-    /**
-     * The offer changed since it was read.
-     */
-    409: Problem;
-};
-
-export type SetOwnOfferClosedError = SetOwnOfferClosedErrors[keyof SetOwnOfferClosedErrors];
-
-export type SetOwnOfferClosedResponses = {
-    /**
-     * The offer as saved, with its new version.
-     */
-    200: OwnOffer;
-};
-
-export type SetOwnOfferClosedResponse = SetOwnOfferClosedResponses[keyof SetOwnOfferClosedResponses];
 
 export type ListSolutionsData = {
     body?: never;

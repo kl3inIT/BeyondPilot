@@ -5,9 +5,10 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import type { PublicSolutionList } from "@/lib/api/generated";
+import type { PublicSolutionList, SolutionPerkLine } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { DirectoryTabs } from "./directory-tabs";
 import { SolutionCard } from "./solution-card";
 import { solutionsSearch, type SolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
@@ -17,6 +18,8 @@ const address = createSerializer(solutionsSearch);
 
 type SolutionsPageProps = {
   solutions: PublicSolutionList;
+  /** The open perks of the solutions on the page, by solution address. */
+  perks: Record<string, SolutionPerkLine[]>;
   search: SolutionsSearch;
 };
 
@@ -24,7 +27,7 @@ type SolutionsPageProps = {
  * AI solutions: the public directory of what GenAI Fund approved, by name. The list arrives already
  * read; search, the facets and paging are the URL.
  */
-function SolutionsPage({ solutions, search }: SolutionsPageProps) {
+function SolutionsPage({ solutions, perks, search }: SolutionsPageProps) {
   const t = useTranslations("Solution.directory");
   const filtered =
     search.q.trim() !== "" ||
@@ -41,6 +44,7 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
         </h1>
         <p className="max-w-180 text-base text-muted-foreground md:text-lg">{t("lead")}</p>
       </header>
+      <DirectoryTabs current="solutions" />
       <SolutionsToolbar
         list="directory"
         count={shown > 0 ? t("showing", { shown, total: solutions.total }) : null}
@@ -50,7 +54,11 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {solutions.items.map((solution, index) => (
             <li key={solution.slug} className="flex min-w-0">
-              <SolutionCard solution={solution} preload={index === 0} />
+              <SolutionCard
+                solution={solution}
+                perks={perks[solution.slug]}
+                preload={index === 0}
+              />
             </li>
           ))}
         </ul>

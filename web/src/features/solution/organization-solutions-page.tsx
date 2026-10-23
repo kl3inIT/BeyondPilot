@@ -8,11 +8,10 @@ import { isActive } from "@/features/organization/organization-format";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
-import type { MyOrganization, MySolutions, Organization, OwnOffer } from "@/lib/api/generated";
+import type { MyOrganization, MySolutions, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { CreateSolution } from "./create-solution";
-import { OrganizationOffers } from "./organization-offers";
 import {
   sortOrganizationSolutions,
   type OrganizationSolutionsSearch,
@@ -23,8 +22,6 @@ import { SolutionListingCell, SolutionNameCell, SolutionReviewCell } from "./sol
 type OrganizationSolutionsPageProps = {
   mine: MyOrganization & { organization: Organization };
   solutions: MySolutions;
-  /** The offers the organization wrote for its solutions. */
-  offers: OwnOffer[];
   /** How many members the organization has, for the tab beside this one. */
   members: number;
   /** How many use cases it has, when it is an enterprise that is not taken down. */
@@ -41,7 +38,6 @@ type OrganizationSolutionsPageProps = {
 function OrganizationSolutionsPage({
   mine,
   solutions,
-  offers,
   members,
   useCases,
   search,
@@ -137,7 +133,6 @@ function OrganizationSolutionsPage({
           />
         )}
       </OrganizationSection>
-      <OrganizationOffers offers={offers} editable={solutions.editable} />
     </OrganizationFrame>
   );
 }

@@ -1,7 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
-import { answerOfferList, cloudCredits } from "./offers";
 import { answerDecisions, refusal } from "./reviews";
 import { signInAs } from "./session";
 import { answerUploads, pixel, serveStoredImages } from "./stored-files";
@@ -53,15 +52,7 @@ async function answerEditor(page: Page, id: string, status: "draft" | "needs_cha
     }
     const submitted = request.url().endsWith("/submit");
     if (body) {
-      const {
-        version: read,
-        deckFileId,
-        logoFileId,
-        coverFileId,
-        imageFileIds,
-        offerIds,
-        ...fields
-      } = body;
+      const { version: read, deckFileId, logoFileId, coverFileId, imageFileIds, ...fields } = body;
       version = Number(read) + 1;
       const image = (fileId: unknown, fileName: string) =>
         fileId ? { fileId, fileName, sizeBytes: 86016 } : null;
@@ -72,12 +63,6 @@ async function answerEditor(page: Page, id: string, status: "draft" | "needs_cha
         images: ((imageFileIds as string[] | undefined) ?? []).map((fileId, index) =>
           image(fileId, `fraud-lens-${index + 1}.png`),
         ),
-        // The backend answers the offers a save names as the list holds them.
-        offers: ((offerIds as string[] | undefined) ?? []).map((offerId) => ({
-          id: offerId,
-          title: "$1,000 in cloud credits",
-          url: "https://offers.example/cloud-credits",
-        })),
         deck: deckFileId
           ? {
               fileId: deckFileId,
@@ -140,7 +125,6 @@ test.describe("workspace solutions", () => {
     await expect(shown("Draft · 1 of 7 required fields filled")).toBeVisible();
     await expect(shown("Sent back: It is Policy Chat under another name.")).toBeVisible();
     // A table at every width: on a phone it scrolls sideways.
-    // The solutions' own table; the organization's offers have theirs under it.
     await expect(page.getByRole("region", { name: "Solutions" }).getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
@@ -372,135 +356,6 @@ test.describe("workspace solutions", () => {
       call: `POST /api/solution/mine/${fraudLens}/submit`,
       body: null,
     });
-  });
-
-  test("an owner chooses the offers a solution comes with from those its organization gives", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "owner", baseURL!);
-    await answerOfferList(page);
-    const writes = await answerEditor(page, fraudLens, "draft");
-    await openEditor(page, fraudLens);
-
-    await choose(page, "Offers", "cloud", "$1,000 in cloud credits");
-    await expect(
-      page.getByRole("button", { name: "Remove $1,000 in cloud credits" }),
-    ).toBeVisible();
-    await expect.poll(() => writes.at(-1)?.body?.offerIds).toEqual([cloudCredits.id]);
-
-    // An owner writes an offer of the organization's own from here, and it is chosen at once.
-    const written = await answerDecisions(page, "**/api/solution/offers", 201, {
-      id: "0ffe7a11-0000-4000-8000-000000000009",
-      title: "A six-week pilot",
-      url: "https://fraudlens.example/pilot",
-      fromGenAiFund: false,
-    });
-    await page.getByRole("button", { name: "New offer…" }).click();
-    const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Offer").fill("A six-week pilot");
-    await dialog.getByLabel("Link").fill("https://fraudlens.example/pilot");
-    await dialog.getByRole("button", { name: "Add offer" }).click();
-    await expect(page.getByRole("button", { name: "Remove A six-week pilot" })).toBeVisible();
-    expect(written).toEqual([
-      {
-        call: "POST /api/solution/offers",
-        body: { title: "A six-week pilot", url: "https://fraudlens.example/pilot", version: null },
-      },
-    ]);
-  });
-
-  test("an owner keeps the organization's offers beside its solutions", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "owner", baseURL!);
-    await page.goto(list);
-
-    const offers = page.getByRole("region", { name: "Offers" });
-    await expect(
-      offers.getByText("Ten hours of onboarding support").filter({ visible: true }),
-    ).toHaveCount(1);
-    // An offer a solution comes with is changed, not deleted.
-    await offers
-      .getByRole("button", { name: "Actions for Ten hours of onboarding support" })
-      .filter({ visible: true })
-      .click();
-    await expect(page.getByRole("menuitem", { name: "Edit…" })).toBeEnabled();
-    await expect(page.getByRole("menuitem", { name: "Delete…" })).toBeDisabled();
-    await page.keyboard.press("Escape");
-    // The one GenAI Fund arranged carries its mark, and only GenAI Fund changes it.
-    await expect(offers.getByText("$1,000 in cloud credits").filter({ visible: true })).toHaveCount(
-      1,
-    );
-    await expect(
-      offers.getByRole("button", { name: "Actions for $1,000 in cloud credits" }),
-    ).toHaveCount(0);
-
-    // A new one is written here too, as the organization's own.
-    const written = await answerDecisions(page, "**/api/solution/offers", 201, {
-      id: "0ffe7a11-0000-4000-8000-000000000009",
-      title: "A six-week pilot",
-      url: "https://fraudlens.example/pilot",
-      fromGenAiFund: false,
-    });
-    await offers.getByRole("button", { name: "New offer" }).click();
-    const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Offer").fill("A six-week pilot");
-    await dialog.getByLabel("Link").fill("https://fraudlens.example/pilot");
-    await dialog.getByRole("button", { name: "Add offer" }).click();
-    await expect(page.getByText("A six-week pilot added.")).toBeVisible();
-    expect(written).toEqual([
-      {
-        call: "POST /api/solution/offers",
-        body: { title: "A six-week pilot", url: "https://fraudlens.example/pilot", version: null },
-      },
-    ]);
-    await expectNoSeriousA11yViolations(page);
-  });
-
-  test("an owner closes an offer of the organization to new solutions, and opens it again", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "owner", baseURL!);
-    const writes = await answerDecisions(
-      page,
-      "**/api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
-      200,
-      {
-        id: "0ffe7a11-0000-4000-8000-000000000002",
-        title: "Ten hours of onboarding support",
-        url: "https://offers.example/onboarding",
-        solutions: 1,
-        version: 1,
-        closed: true,
-      },
-    );
-    await page.goto(list);
-
-    const offers = page.getByRole("region", { name: "Offers" });
-    await expect(offers.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(
-      2,
-    );
-    await offers
-      .getByRole("button", { name: "Actions for Ten hours of onboarding support" })
-      .filter({ visible: true })
-      .click();
-    await page.getByRole("menuitem", { name: "Close to new solutions" }).click();
-
-    await expect(
-      page.getByText("Ten hours of onboarding support is closed to new solutions."),
-    ).toBeVisible();
-    expect(writes).toEqual([
-      {
-        call: "PUT /api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
-        body: { closed: true, version: 0 },
-      },
-    ]);
   });
 
   test("the review names what a draft lacks and leads to each field", async ({

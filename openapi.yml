@@ -62,6 +62,9 @@ tags:
   name: Messaging
 - description: The organization the caller belongs to.
   name: My organization
+- description: "What organizations give to members of BeyondPilot, and what teams\
+    \ got."
+  name: Perks
 - description: "Every submission to a program grouped as candidates, with the shortlist\
     \ tier the AI suggests and the evidence behind it. Decisions stay on the applications\
     \ and the proposals."
@@ -84,6 +87,8 @@ tags:
   name: AI and search administration
 - description: The MCP servers AI apps reach BeyondPilot through.
   name: MCP
+- description: The perks operators keep.
+  name: Perk administration
 - description: "Finding, joining and creating an organization."
   name: Organizations
 paths:
@@ -1045,6 +1050,15 @@ paths:
           - solution.offer_close
           - solution.offer_reopen
           - solution.offer_delete
+          - perk.create
+          - perk.update
+          - perk.publish
+          - perk.archive
+          - perk.delete
+          - perk.codes_load
+          - perk.request_grant
+          - perk.request_decline
+          - perk.claims_export
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.deployment_withdraw
@@ -1207,6 +1221,15 @@ paths:
             - solution.offer_close
             - solution.offer_reopen
             - solution.offer_delete
+            - perk.create
+            - perk.update
+            - perk.publish
+            - perk.archive
+            - perk.delete
+            - perk.codes_load
+            - perk.request_grant
+            - perk.request_decline
+            - perk.claims_export
             - solution.deployment_approve
             - solution.deployment_reject
             - solution.deployment_withdraw
@@ -1938,6 +1961,15 @@ paths:
           - solution.offer_close
           - solution.offer_reopen
           - solution.offer_delete
+          - perk.create
+          - perk.update
+          - perk.publish
+          - perk.archive
+          - perk.delete
+          - perk.codes_load
+          - perk.request_grant
+          - perk.request_decline
+          - perk.claims_export
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.deployment_withdraw
@@ -2100,6 +2132,15 @@ paths:
             - solution.offer_close
             - solution.offer_reopen
             - solution.offer_delete
+            - perk.create
+            - perk.update
+            - perk.publish
+            - perk.archive
+            - perk.delete
+            - perk.codes_load
+            - perk.request_grant
+            - perk.request_decline
+            - perk.claims_export
             - solution.deployment_approve
             - solution.deployment_reject
             - solution.deployment_withdraw
@@ -7113,6 +7154,1217 @@ paths:
       summary: "The public page of an organization, read without a session"
       tags:
       - Organizations
+  /api/perk/admin/perks:
+    get:
+      operationId: listAdminPerks
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnPerk"
+          description: The perks.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Every perk, the most recently changed first"
+      tags:
+      - Perk administration
+    post:
+      operationId: createAdminPerk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSavePerk"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A field is blank, too long or not an https address, or the\
+            \ program, the dates, the solutions, the questions, or the link or code\
+            \ the perk needs do not hold."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another perk of the organization reads the same.
+      security:
+      - session: []
+      summary: Write a draft perk for the organization that gives it
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/options:
+    get:
+      operationId: getAdminPerkOptions
+      parameters:
+      - description: The organization that gives the perk.
+        in: query
+        name: organizationId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkOptions"
+          description: The choices.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: The solutions of an organization and the programs a perk's form chooses
+        from
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}:
+    delete:
+      operationId: deleteAdminPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The perk is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Teams got the perk; archive it instead.
+      security:
+      - session: []
+      summary: Delete a perk nobody got
+      tags:
+      - Perk administration
+    get:
+      operationId: getAdminPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: The perk.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+      security:
+      - session: []
+      summary: A perk as its form reads it
+      tags:
+      - Perk administration
+    put:
+      operationId: saveAdminPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminSavePerk"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A field is blank, too long or not an https address, or the\
+            \ program, the dates, the solutions, the questions, or the link or code\
+            \ the perk needs do not hold."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The perk changed since it was read, or another reads the same."
+      security:
+      - session: []
+      summary: "Save a perk, with the mark and the programs whose page shows it"
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/archive:
+    post:
+      operationId: archiveAdminPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk, archived."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+      security:
+      - session: []
+      summary: "Take a perk off the site, keeping what teams got"
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/claims:
+    get:
+      operationId: listAdminPerkClaims
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerkClaimRow"
+          description: "The claims, the latest first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+      security:
+      - session: []
+      summary: "Who got a perk, and its requests"
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/claims/export:
+    get:
+      operationId: exportAdminPerkClaims
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The claims, the latest first, with a column for each question.\
+            \ The download is recorded."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+      security:
+      - session: []
+      summary: Download the claims of a perk as a spreadsheet
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/claims/{claimId}:
+    put:
+      description: The person who sent it is emailed.
+      operationId: decideAdminPerkRequest
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: claimId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecideClaim"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkClaimRow"
+          description: The request as decided.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk or request.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request was decided or changed since it was read.
+      security:
+      - session: []
+      summary: "Grant or decline a waiting request, for a partner nobody answers for"
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/codes:
+    post:
+      description: A code the perk already holds is skipped. The load is recorded
+        with how many were new.
+      operationId: loadPerkCodes
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoadCodes"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoadedCodes"
+          description: "What the load did, and what the list holds."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No code is given, too many are, or one is blank or too long."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The perk is not given as a list of codes.
+      security:
+      - session: []
+      summary: Add single-use codes to a perk given as a list
+      tags:
+      - Perk administration
+  /api/perk/admin/perks/{id}/publish:
+    post:
+      operationId: publishAdminPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk, published."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The perk lacks what its way of getting it needs.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk.
+      security:
+      - session: []
+      summary: "Publish a perk, or publish it again from the archive"
+      tags:
+      - Perk administration
+  /api/perk/claims:
+    get:
+      operationId: listTeamClaims
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamClaim"
+          description: The perks and what the team holds of each.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "The perks anyone in the caller's organization got, the latest first"
+      tags:
+      - Perks
+  /api/perk/mine:
+    get:
+      operationId: listMyPerks
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnPerk"
+          description: "The perks, the most recently changed first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: The perks the caller's organization gives
+      tags:
+      - Perks
+    post:
+      operationId: createMyPerk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavePerk"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A field is blank, too long or not an https address, or the\
+            \ program, the dates, the solutions, the questions, or the link or code\
+            \ the perk needs do not hold."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another perk of the organization reads the same.
+      security:
+      - session: []
+      summary: Write a draft perk of the caller's organization
+      tags:
+      - Perks
+  /api/perk/mine/options:
+    get:
+      operationId: getMyPerkOptions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkOptions"
+          description: The choices.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+      security:
+      - session: []
+      summary: The solutions of the caller's organization and the programs a perk's
+        form chooses from
+      tags:
+      - Perks
+  /api/perk/mine/{id}:
+    delete:
+      operationId: deleteMyPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The perk is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "GenAI Fund arranged the perk, so only an operator changes\
+            \ it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Teams got the perk; archive it instead.
+      security:
+      - session: []
+      summary: Delete a perk nobody got
+      tags:
+      - Perks
+    get:
+      operationId: getMyPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: The perk.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+      security:
+      - session: []
+      summary: A perk of the caller's organization as its form reads it
+      tags:
+      - Perks
+    put:
+      description: A published perk shows the change at once.
+      operationId: saveMyPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavePerk"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A field is blank, too long or not an https address, or the\
+            \ program, the dates, the solutions, the questions, or the link or code\
+            \ the perk needs do not hold."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "GenAI Fund arranged the perk, so only an operator changes\
+            \ it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The perk changed since it was read, or another reads the same."
+      security:
+      - session: []
+      summary: Save a perk of the caller's organization
+      tags:
+      - Perks
+  /api/perk/mine/{id}/archive:
+    post:
+      operationId: archiveMyPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk, archived."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "GenAI Fund arranged the perk, so only an operator changes\
+            \ it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+      security:
+      - session: []
+      summary: "Take a perk off the site, keeping what teams got"
+      tags:
+      - Perks
+  /api/perk/mine/{id}/claims:
+    get:
+      operationId: listMyPerkClaims
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerkClaimRow"
+          description: "The claims, the latest first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+      security:
+      - session: []
+      summary: "Who got a perk of the caller's organization, and its requests"
+      tags:
+      - Perks
+  /api/perk/mine/{id}/claims/export:
+    get:
+      operationId: exportMyPerkClaims
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The claims, the latest first, with a column for each question.\
+            \ The download is recorded."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+      security:
+      - session: []
+      summary: Download the claims of a perk as a spreadsheet
+      tags:
+      - Perks
+  /api/perk/mine/{id}/claims/{claimId}:
+    put:
+      description: The person who sent it is emailed.
+      operationId: decideMyPerkRequest
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: claimId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecideClaim"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkClaimRow"
+          description: The request as decided.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such perk or request.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request was decided or changed since it was read.
+      security:
+      - session: []
+      summary: Grant or decline a waiting request
+      tags:
+      - Perks
+  /api/perk/mine/{id}/publish:
+    post:
+      operationId: publishMyPerk
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perk"
+          description: "The perk, published."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The perk lacks what its way of getting it needs.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "GenAI Fund arranged the perk, so only an operator changes\
+            \ it."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization gives no such perk.
+      security:
+      - session: []
+      summary: "Publish a perk, or publish it again from the archive"
+      tags:
+      - Perks
+  /api/perk/perks:
+    get:
+      operationId: listPerks
+      parameters:
+      - description: Whether the perks that ended are listed too.
+        in: query
+        name: ended
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerkCard"
+          description: The perks.
+      summary: "The published perks that have started, the latest published first,\
+        \ each with whether the caller may get it"
+      tags:
+      - Perks
+  /api/perk/perks/{slug}:
+    get:
+      operationId: getPerk
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkPage"
+          description: The perk.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No perk is published at this address.
+      summary: "A perk's page, and what the caller's team holds of it"
+      tags:
+      - Perks
+  /api/perk/perks/{slug}/claims:
+    post:
+      description: A team that already holds it gets what it holds again.
+      operationId: claimPerk
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimPerk"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerkClaim"
+          description: What the team holds of the perk.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The answers do not hold.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller acts for no organization, or the perk is for other\
+            \ teams."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No perk is published at this address.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The perk is not open now, or every place is taken."
+      security:
+      - session: []
+      summary: "Get a perk for the caller's team: open its link, take a code, or send\
+        \ a request"
+      tags:
+      - Perks
+  /api/perk/programs/{slug}:
+    get:
+      operationId: listProgramPerks
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerkCard"
+          description: The perks; none for a program that is not published.
+      summary: "The perks a program's page shows: for its teams, and those an operator\
+        \ added there"
+      tags:
+      - Perks
+  /api/perk/solutions:
+    get:
+      operationId: listSolutionPerks
+      parameters:
+      - description: "The solutions' addresses, up to 100."
+        in: query
+        name: slugs
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+          maxItems: 100
+          minItems: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SolutionPerks"
+          description: The perks of each solution that has any.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Too many solutions are named.
+      summary: "The open perks of these solutions, for their cards"
+      tags:
+      - Perks
   /api/program/admin/luma:
     delete:
       description: Removes the key and the webhook made with it. The programs the
@@ -10492,339 +11744,6 @@ paths:
         \ one off its solution"
       tags:
       - Customer deployments
-  /api/solution/admin/offers:
-    get:
-      operationId: listAdminOffers
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AdminOffer"
-          description: "The offers, by title."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-      security:
-      - session: []
-      summary: "Every offer, by title, with how many solutions come with it"
-      tags:
-      - Solution administration
-    post:
-      operationId: createOffer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdminCreateOffer"
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AdminOffer"
-          description: The offer.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The title is blank or too long, or the address is not an https\
-            \ one."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such organization.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Another offer of the organization reads the same.
-      security:
-      - session: []
-      summary: "Add an offer for the organization that gives it, which only its solutions\
-        \ come with"
-      tags:
-      - Solution administration
-  /api/solution/admin/offers/export:
-    post:
-      operationId: exportAdminOffers
-      parameters:
-      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
-          \ tool."
-        in: query
-        name: format
-        required: false
-        schema:
-          type: string
-          default: xlsx
-          enum:
-          - xlsx
-          - csv
-          pattern: xlsx|csv
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ExportOffers"
-        required: true
-      responses:
-        "200":
-          content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
-              schema:
-                type: string
-                format: binary
-            text/csv:
-              schema:
-                type: string
-                format: binary
-          description: "The offers the body names, in its order, one row each. The\
-            \ download is recorded."
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A member or the format is not valid.
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-      security:
-      - session: []
-      summary: Download the offers as a spreadsheet
-      tags:
-      - Solution administration
-  /api/solution/admin/offers/{id}:
-    delete:
-      operationId: deleteOffer
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "204":
-          description: The offer is gone.
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A solution still comes with the offer.
-      security:
-      - session: []
-      summary: Delete an offer no solution comes with
-      tags:
-      - Solution administration
-    get:
-      operationId: getAdminOffer
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AdminOfferDetail"
-          description: "The offer and its solutions, by name."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such offer.
-      security:
-      - session: []
-      summary: One offer with the solutions that come with it
-      tags:
-      - Solution administration
-    put:
-      operationId: saveOffer
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AdminSaveOffer"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AdminOffer"
-          description: "The offer as saved, with its new version."
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The title is blank or too long, or the address is not an https\
-            \ one."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The offer changed since it was read, or another reads the\
-            \ same."
-      security:
-      - session: []
-      summary: Save an offer; every solution that comes with it shows the change at
-        once
-      tags:
-      - Solution administration
-  /api/solution/admin/offers/{id}/closed:
-    put:
-      operationId: setOfferClosed
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetOfferClosedRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AdminOffer"
-          description: "The offer as saved, with its new version."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The offer changed since it was read.
-      security:
-      - session: []
-      summary: "Close an offer to new solutions, or open it again; the solutions that\
-        \ come with it keep it"
-      tags:
-      - Solution administration
   /api/solution/admin/solutions:
     get:
       operationId: listAdminSolutions
@@ -11516,55 +12435,6 @@ paths:
       - session: []
       summary: "Feature a solution: it comes first in the opening view of the public\
         \ directory"
-      tags:
-      - Solution administration
-  /api/solution/admin/solutions/{id}/offers:
-    put:
-      operationId: chooseSolutionOffers
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetSolutionOffers"
-        required: true
-      responses:
-        "204":
-          description: The solution comes with the offers named.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "More than five offers, or one that is not in the list."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such submitted solution.
-      security:
-      - session: []
-      summary: "Choose the offers a submitted solution comes with, of those its organization\
-        \ gives"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/publish:
@@ -12435,270 +13305,6 @@ paths:
       summary: "Take a customer deployment off its solution, keeping it and its review"
       tags:
       - Customer deployments
-  /api/solution/offers:
-    get:
-      operationId: listSolutionOffers
-      parameters:
-      - in: query
-        name: solutionId
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Offer"
-          description: "The offers, by title."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller writes no such solution.
-      security:
-      - session: []
-      summary: "The offers a solution may come with, by title: those its organization\
-        \ gives"
-      tags:
-      - My solutions
-    post:
-      operationId: createOwnOffer
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SaveOffer"
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Offer"
-          description: The offer.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The title is blank or too long, or the address is not an https\
-            \ one."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller belongs to no organization.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Another offer of the organization reads the same.
-      security:
-      - session: []
-      summary: "Add an offer of the caller's organization, which only its solutions\
-        \ may come with"
-      tags:
-      - My solutions
-  /api/solution/offers/mine:
-    get:
-      operationId: listOwnOffers
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/OwnOffer"
-          description: The offers; none for a caller who belongs to no organization.
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-      security:
-      - session: []
-      summary: "The offers the caller's organization gives, by title"
-      tags:
-      - My solutions
-  /api/solution/offers/{id}:
-    delete:
-      operationId: deleteOwnOffer
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "204":
-          description: The offer is gone.
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The caller belongs to no organization, or GenAI Fund arranged\
-            \ the offer, which only it changes."
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller's organization wrote no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A solution still comes with the offer.
-      security:
-      - session: []
-      summary: Delete an offer of the caller's organization no solution comes with
-      tags:
-      - My solutions
-    put:
-      operationId: saveOwnOffer
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SaveOffer"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OwnOffer"
-          description: "The offer as saved, with its new version."
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The title is blank or too long, or the address is not an https\
-            \ one."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The caller belongs to no organization, or GenAI Fund arranged\
-            \ the offer, which only it changes."
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller's organization wrote no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The offer changed since it was read, or another reads the\
-            \ same."
-      security:
-      - session: []
-      summary: Save an offer of the caller's organization; its solutions show the
-        change at once
-      tags:
-      - My solutions
-  /api/solution/offers/{id}/closed:
-    put:
-      operationId: setOwnOfferClosed
-      parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SetOfferClosedRequest"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OwnOffer"
-          description: "The offer as saved, with its new version."
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The caller belongs to no organization, or GenAI Fund arranged\
-            \ the offer, which only it changes."
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller's organization wrote no such offer.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The offer changed since it was read.
-      security:
-      - session: []
-      summary: "Close an offer of the caller's organization to new solutions, or open\
-        \ it again"
-      tags:
-      - My solutions
   /api/solution/solutions:
     get:
       operationId: listSolutions
@@ -15051,36 +15657,6 @@ components:
           description: An approved solution that is not a candidate yet.
       required:
       - solutionId
-    AdminCreateOffer:
-      type: object
-      description: A new offer an operator writes for the organization that gives
-        it.
-      properties:
-        fromGenAiFund:
-          type: boolean
-          description: "Whether GenAI Fund arranged it with the organization, which\
-            \ its card marks."
-        organizationId:
-          type: string
-          format: uuid
-          description: The organization that gives it; only its solutions come with
-            it.
-        title:
-          type: string
-          description: The line that names it on a card.
-          maxLength: 80
-          minLength: 0
-        url:
-          type: string
-          description: The https address where it is claimed.
-          maxLength: 2048
-          minLength: 0
-          pattern: "https://[^\\s]+"
-      required:
-      - fromGenAiFund
-      - organizationId
-      - title
-      - url
     AdminCreateOrganization:
       type: object
       description: "An organization an operator creates for a company that is not\
@@ -15193,110 +15769,6 @@ components:
       required:
       - name
       - organizationId
-    AdminOffer:
-      type: object
-      description: "An offer as an operator reads it, with the organization that gives\
-        \ it."
-      properties:
-        closed:
-          type: boolean
-          description: True once it is closed to new solutions; the solutions that
-            come with it keep it.
-        fromGenAiFund:
-          type: boolean
-          description: "True when GenAI Fund arranged it with the organization, which\
-            \ its card marks."
-        id:
-          type: string
-          format: uuid
-        organizationId:
-          type: string
-          format: uuid
-          description: The organization that gives it.
-        organizationName:
-          type: string
-          description: The name of that organization.
-        solutions:
-          type: integer
-          format: int32
-          description: How many solutions come with it; it is deleted only when none
-            does.
-        title:
-          type: string
-        updatedAt:
-          type: string
-          format: date-time
-        url:
-          type: string
-        version:
-          type: integer
-          format: int64
-          description: "Sent back with a save, which is refused when the offer changed\
-            \ since."
-      required:
-      - closed
-      - fromGenAiFund
-      - id
-      - organizationId
-      - organizationName
-      - solutions
-      - title
-      - updatedAt
-      - url
-      - version
-    AdminOfferDetail:
-      type: object
-      description: "An offer with the solutions that come with it, as an operator\
-        \ reads its record."
-      properties:
-        createdAt:
-          type: string
-          format: date-time
-        offer:
-          $ref: "#/components/schemas/AdminOffer"
-        solutionList:
-          type: array
-          description: "The solutions that come with it, by name."
-          items:
-            $ref: "#/components/schemas/AdminOfferSolution"
-      required:
-      - createdAt
-      - offer
-      - solutionList
-    AdminOfferSolution:
-      type: object
-      description: "A solution that comes with an offer, as the operators' record\
-        \ of it lists it."
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        organizationId:
-          type: string
-          format: uuid
-        organizationName:
-          type: string
-        slug:
-          type: string
-        status:
-          type: string
-          description: "Where it stands in review, as the solution records it."
-        suspendedAt:
-          type:
-          - string
-          - "null"
-          format: date-time
-          description: "When GenAI Fund took it down, while it is down; its status\
-            \ stays approved."
-      required:
-      - id
-      - name
-      - organizationId
-      - organizationName
-      - slug
-      - status
     AdminOrganization:
       type: object
       description: One organization as an operator reads it.
@@ -15709,36 +16181,6 @@ components:
       - status
       - type
       - updatedAt
-    AdminSaveOffer:
-      type: object
-      description: An offer as an operator's form holds it.
-      properties:
-        fromGenAiFund:
-          type: boolean
-          description: "Whether GenAI Fund arranged it with the organization, which\
-            \ its card marks."
-        title:
-          type: string
-          description: The line that names it on a card.
-          maxLength: 80
-          minLength: 0
-        url:
-          type: string
-          description: The https address where it is claimed.
-          maxLength: 2048
-          minLength: 0
-          pattern: "https://[^\\s]+"
-        version:
-          type:
-          - integer
-          - "null"
-          format: int64
-          description: The version the form read; a save is refused when the offer
-            changed since.
-      required:
-      - fromGenAiFund
-      - title
-      - url
     AdminSaveOrganization:
       type: object
       description: "The profile of an organization and its verified domain, as an\
@@ -15757,6 +16199,34 @@ components:
           $ref: "#/components/schemas/SaveOrganization"
       required:
       - profile
+    AdminSavePerk:
+      type: object
+      description: A perk as an operator's form holds it.
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: "True when GenAI Fund arranged it, which its card marks."
+        organizationId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The organization that gives it; read when it is created only.
+        perk:
+          $ref: "#/components/schemas/SavePerk"
+        shownOnProgramIds:
+          type: array
+          description: The programs whose page shows it beside the perks for their
+            teams.
+          items:
+            type: string
+            format: uuid
+          maxItems: 20
+          minItems: 0
+      required:
+      - fromGenAiFund
+      - perk
+      - shownOnProgramIds
     AdminSolutionList:
       type: object
       description: "One page of submitted solutions: those waiting for review first,\
@@ -17088,6 +17558,15 @@ components:
           - solution.offer_close
           - solution.offer_reopen
           - solution.offer_delete
+          - perk.create
+          - perk.update
+          - perk.publish
+          - perk.archive
+          - perk.delete
+          - perk.codes_load
+          - perk.request_grant
+          - perk.request_decline
+          - perk.claims_export
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.deployment_withdraw
@@ -17534,6 +18013,18 @@ components:
       - model
       - providerId
       - version
+    ClaimPerk:
+      type: object
+      description: "What a person sends to get a perk: for a request, the answers\
+        \ to its questions."
+      properties:
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+          description: The answers by question identifier; empty for any other perk.
+      required:
+      - answers
     ConnectLuma:
       type: object
       description: "The API key of a Luma calendar, made in its Settings › Developer."
@@ -18501,6 +18992,20 @@ components:
       required:
       - applicationIds
       - decision
+    DecideClaim:
+      type: object
+      description: A partner's answer to a waiting request.
+      properties:
+        granted:
+          type: boolean
+        version:
+          type: integer
+          format: int64
+          description: The version the list read; an answer is refused when the request
+            changed since.
+      required:
+      - granted
+      - version
     DecideUseCaseProposal:
       type: object
       description: What the organization that posted a use case decides on a proposal
@@ -19875,35 +20380,6 @@ components:
             format: uuid
           maxItems: 5000
           minItems: 0
-    ExportOffers:
-      type: object
-      description: "The offers a download holds, in the order the list shows them."
-      properties:
-        ids:
-          type: array
-          description: "The offers, in the list's order; one that does not exist is\
-            \ left out."
-          items:
-            type: string
-            format: uuid
-          maxItems: 10000
-          minItems: 0
-        q:
-          type:
-          - string
-          - "null"
-          description: "The search the list was narrowed by, said in the file."
-          maxLength: 200
-          minLength: 0
-        state:
-          type:
-          - string
-          - "null"
-          description: "The state the list was narrowed to, said in the file."
-          maxLength: 40
-          minLength: 0
-      required:
-      - ids
     ExportPrograms:
       type: object
       description: "The programs a download holds, in the order the list shows them."
@@ -20119,6 +20595,41 @@ components:
       required:
       - mine
       - preview
+    LoadCodes:
+      type: object
+      description: "Single-use codes for a perk given as a list, one to each claim."
+      properties:
+        codes:
+          type: array
+          description: The codes; one the perk already holds is skipped.
+          items:
+            type: string
+            maxLength: 200
+            minLength: 0
+          maxItems: 5000
+          minItems: 0
+      required:
+      - codes
+    LoadedCodes:
+      type: object
+      description: What a load of codes did.
+      properties:
+        added:
+          type: integer
+          format: int32
+          description: How many were new.
+        free:
+          type: integer
+          format: int32
+          description: How many are not given yet.
+        loaded:
+          type: integer
+          format: int32
+          description: How many the perk holds.
+      required:
+      - added
+      - free
+      - loaded
     LumaCalendar:
       type: object
       properties:
@@ -21988,34 +22499,6 @@ components:
       - keysCanBeStored
       - providers
       - reader
-    Offer:
-      type: object
-      description: "An offer a solution comes with, such as cloud credits."
-      properties:
-        closed:
-          type: boolean
-          description: True once it is closed to new solutions; the solutions that
-            come with it keep it.
-        fromGenAiFund:
-          type: boolean
-          description: True when GenAI Fund arranged it with the organization; false
-            for one the organization wrote alone.
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-          description: "The line that names it, such as \"$1,000 in cloud credits\"\
-            ."
-        url:
-          type: string
-          description: The https address where it is claimed.
-      required:
-      - closed
-      - fromGenAiFund
-      - id
-      - title
-      - url
     Organization:
       type: object
       description: "An organization as the people who belong to it, and operators,\
@@ -22408,44 +22891,585 @@ components:
             $ref: "#/components/schemas/OrganizationMatch"
       required:
       - items
-    OwnOffer:
+    OwnPerk:
       type: object
-      description: "An offer an organization gives with its solutions, as its members\
-        \ read it."
+      description: A perk as a list of the perks given shows it.
       properties:
-        closed:
-          type: boolean
-          description: True once it is closed to new solutions; the solutions that
-            come with it keep it.
+        audience:
+          type: string
+          enum:
+          - everyone
+          - members
+          - applicants
+          - shortlisted
+        codesLeft:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: "How many codes are not given yet, for a perk given as a list."
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
         fromGenAiFund:
           type: boolean
-          description: "True when GenAI Fund arranged it, which only GenAI Fund then\
-            \ changes."
         id:
           type: string
           format: uuid
-        solutions:
-          type: integer
+        organizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        places:
+          type:
+          - integer
+          - "null"
           format: int32
-          description: How many of the organization's solutions come with it; it is
-            deleted only when none does.
+        slug:
+          type: string
+        state:
+          type: string
+          enum:
+          - draft
+          - published
+          - archived
+        taken:
+          type: integer
+          format: int64
+          description: How many claims hold a place.
         title:
           type: string
-        url:
+        updatedAt:
           type: string
+          format: date-time
+        value:
+          type:
+          - string
+          - "null"
+        waiting:
+          type: integer
+          format: int64
+          description: How many requests wait for an answer.
+        way:
+          type: string
+          enum:
+          - link
+          - code
+          - codes
+          - request
+      required:
+      - audience
+      - fromGenAiFund
+      - id
+      - organizationId
+      - organizationName
+      - slug
+      - state
+      - taken
+      - title
+      - updatedAt
+      - waiting
+      - way
+    Perk:
+      type: object
+      description: "A perk as its form reads it, with what it holds."
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+        audience:
+          type: string
+          enum:
+          - everyone
+          - members
+          - applicants
+          - shortlisted
+        code:
+          type:
+          - string
+          - "null"
+        codesLeft:
+          type: integer
+          format: int32
+          description: How many of them are not given yet.
+        codesLoaded:
+          type: integer
+          format: int32
+          description: "How many codes it holds, for a perk given as a list."
+        editable:
+          type: boolean
+          description: False for a member when GenAI Fund arranged it.
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        fromGenAiFund:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        perPerson:
+          type: boolean
+        places:
+          type:
+          - integer
+          - "null"
+          format: int32
+        programId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerkQuestion"
+        redeemUrl:
+          type:
+          - string
+          - "null"
+        requireApproval:
+          type: boolean
+        shownOnProgramIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        slug:
+          type: string
+        solutionIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        state:
+          type: string
+          enum:
+          - draft
+          - published
+          - archived
+        steps:
+          type: array
+          items:
+            type: string
+        summary:
+          type:
+          - string
+          - "null"
+        taken:
+          type: integer
+          format: int64
+          description: How many claims hold a place.
+        terms:
+          type:
+          - string
+          - "null"
+        termsUrl:
+          type:
+          - string
+          - "null"
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        url:
+          type:
+          - string
+          - "null"
+        value:
+          type:
+          - string
+          - "null"
         version:
           type: integer
           format: int64
-          description: "Sent back with a save, which is refused when the offer changed\
-            \ since."
+        waiting:
+          type: integer
+          format: int64
+          description: How many requests wait for an answer.
+        way:
+          type: string
+          enum:
+          - link
+          - code
+          - codes
+          - request
       required:
-      - closed
+      - audience
+      - codesLeft
+      - codesLoaded
+      - editable
       - fromGenAiFund
       - id
-      - solutions
+      - organizationId
+      - organizationName
+      - perPerson
+      - questions
+      - requireApproval
+      - shownOnProgramIds
+      - slug
+      - solutionIds
+      - state
+      - steps
+      - taken
       - title
-      - url
+      - updatedAt
       - version
+      - waiting
+      - way
+    PerkCard:
+      type: object
+      description: A published perk as the catalogue and a program's page show it.
+      properties:
+        audience:
+          type: string
+          enum:
+          - everyone
+          - members
+          - applicants
+          - shortlisted
+        claimState:
+          type:
+          - string
+          - "null"
+          description: "What the caller holds of it; null for nothing, and for someone\
+            \ signed out."
+          enum:
+          - taken
+          - waiting
+          - granted
+          - declined
+        ended:
+          type: boolean
+          description: True once its end has passed; it can no longer be got.
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        fromGenAiFund:
+          type: boolean
+          description: True when GenAI Fund arranged it.
+        full:
+          type: boolean
+          description: True when every place is taken.
+        id:
+          type: string
+          format: uuid
+        organizationLogoFileId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The partner's logo.
+        organizationName:
+          type: string
+        organizationSlug:
+          type: string
+        programName:
+          type:
+          - string
+          - "null"
+        programSlug:
+          type:
+          - string
+          - "null"
+        slug:
+          type: string
+        standing:
+          type: string
+          description: "Whether the caller may get it now, or why not."
+          enum:
+          - eligible
+          - sign_in
+          - organization
+          - not_applied
+          - not_shortlisted
+          - not_started
+          - ended
+          - full
+          - claimed
+          - archived
+        summary:
+          type:
+          - string
+          - "null"
+        title:
+          type: string
+        value:
+          type:
+          - string
+          - "null"
+        way:
+          type: string
+          enum:
+          - link
+          - code
+          - codes
+          - request
+      required:
+      - audience
+      - ended
+      - fromGenAiFund
+      - full
+      - id
+      - organizationName
+      - organizationSlug
+      - slug
+      - standing
+      - title
+      - way
+    PerkClaim:
+      type: object
+      description: What the caller holds of a perk.
+      properties:
+        code:
+          type:
+          - string
+          - "null"
+          description: "The code it got, for a code perk."
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        redeemUrl:
+          type:
+          - string
+          - "null"
+          description: Where the code is redeemed.
+        state:
+          type: string
+          enum:
+          - taken
+          - waiting
+          - granted
+          - declined
+        takenAt:
+          type: string
+          format: date-time
+        takenBy:
+          type: string
+          description: Who got it.
+        url:
+          type:
+          - string
+          - "null"
+          description: "The partner's page, for a link perk."
+      required:
+      - id
+      - state
+      - takenAt
+      - takenBy
+    PerkClaimRow:
+      type: object
+      description: One claim of a perk as its partner reads it.
+      properties:
+        answers:
+          type: object
+          additionalProperties:
+            type: string
+          description: The answers by question identifier.
+        code:
+          type:
+          - string
+          - "null"
+        createdAt:
+          type: string
+          format: date-time
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        decidedBy:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        personEmail:
+          type: string
+        personName:
+          type: string
+        state:
+          type: string
+          enum:
+          - taken
+          - waiting
+          - granted
+          - declined
+        version:
+          type: integer
+          format: int64
+      required:
+      - answers
+      - createdAt
+      - id
+      - organizationName
+      - personEmail
+      - personName
+      - state
+      - version
+    PerkOption:
+      type: object
+      description: One choice of a perk's form.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
+    PerkOptions:
+      type: object
+      description: "What a perk's form chooses from: the giving organization's solutions\
+        \ and the programs."
+      properties:
+        programs:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerkOption"
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PerkOption"
+      required:
+      - programs
+      - solutions
+    PerkPage:
+      type: object
+      description: "A published perk's page, and what the caller may do with it."
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+        card:
+          $ref: "#/components/schemas/PerkCard"
+        claim:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/PerkClaim"
+          description: What the caller holds of it.
+        perPerson:
+          type: boolean
+        placesLeft:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many places are left; null when it has no limit.
+        questions:
+          type: array
+          description: What a request asks.
+          items:
+            $ref: "#/components/schemas/PerkQuestion"
+        requireApproval:
+          type: boolean
+        solutions:
+          type: array
+          description: The listed solutions it goes with.
+          items:
+            $ref: "#/components/schemas/PerkSolution"
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        steps:
+          type: array
+          items:
+            type: string
+        terms:
+          type:
+          - string
+          - "null"
+        termsUrl:
+          type:
+          - string
+          - "null"
+        url:
+          type:
+          - string
+          - "null"
+          description: "The partner's page, for a link perk for everyone; for any\
+            \ other perk it comes with a claim."
+      required:
+      - card
+      - perPerson
+      - questions
+      - requireApproval
+      - solutions
+      - steps
+    PerkQuestion:
+      type: object
+      description: A question a request perk asks.
+      properties:
+        id:
+          type:
+          - string
+          - "null"
+          description: "Its identifier, kept across saves so the answers already sent\
+            \ stay with it; left out for a new question."
+          maxLength: 40
+          minLength: 0
+          pattern: "[a-z0-9-]+"
+        label:
+          type: string
+          description: What it asks.
+          maxLength: 120
+          minLength: 0
+        multiline:
+          type: boolean
+          description: "True for an answer of several lines, up to 2,000 characters;\
+            \ otherwise one line of up to 200."
+        required:
+          type: boolean
+      required:
+      - label
+      - multiline
+      - required
+    PerkSolution:
+      type: object
+      description: A solution a perk goes with.
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+      required:
+      - id
+      - name
+      - slug
     PersonConnectedApp:
       type: object
       description: "An AI app someone connected to BeyondPilot, as operators see it."
@@ -23573,25 +24597,6 @@ components:
       - page
       - pageSize
       - total
-    PublicOffer:
-      type: object
-      description: "An offer a solution comes with, as anyone reads it."
-      properties:
-        fromGenAiFund:
-          type: boolean
-          description: "True when GenAI Fund arranged it with the solution's organization,\
-            \ which its card marks; false for one the organization wrote alone."
-        title:
-          type: string
-          description: "The line that names it, such as \"$1,000 in cloud credits\"\
-            ."
-        url:
-          type: string
-          description: The https address where it is claimed.
-      required:
-      - fromGenAiFund
-      - title
-      - url
     PublicOrganization:
       type: object
       description: An organization as anyone reads it.
@@ -23769,11 +24774,6 @@ components:
           - "null"
           description: Customers named by the company; these are not reviewed customer
             deployments.
-        offers:
-          type: array
-          description: "The offers it comes with, by title."
-          items:
-            $ref: "#/components/schemas/PublicOffer"
         organizationCompanySizeLabel:
           type:
           - string
@@ -23849,7 +24849,6 @@ components:
       - languages
       - listed
       - name
-      - offers
       - organizationName
       - organizationSlug
       - productNames
@@ -23948,11 +24947,6 @@ components:
           - scaled
         name:
           type: string
-        offers:
-          type: array
-          description: "The offers it comes with, by title; its card links to each."
-          items:
-            $ref: "#/components/schemas/PublicOffer"
         organizationName:
           type: string
         organizationSlug:
@@ -23970,7 +24964,6 @@ components:
       - focusAreas
       - industries
       - name
-      - offers
       - organizationName
       - organizationSlug
       - slug
@@ -26117,30 +27110,6 @@ components:
       - key
       - name
       - version
-    SaveOffer:
-      type: object
-      description: An offer as its form holds it.
-      properties:
-        title:
-          type: string
-          description: The line that names it on a card.
-          maxLength: 80
-          minLength: 0
-        url:
-          type: string
-          description: The https address where it is claimed.
-          maxLength: 2048
-          minLength: 0
-          pattern: "https://[^\\s]+"
-        version:
-          type:
-          - integer
-          - "null"
-          format: int64
-          description: The version the form read; left out for a new offer.
-      required:
-      - title
-      - url
     SaveOrganization:
       type: object
       description: The profile of an organization as its Profile screen holds it.
@@ -26291,6 +27260,162 @@ components:
       - name
       - teamSize
       - type
+    SavePerk:
+      type: object
+      description: A perk as its form holds it. What its way of getting it does not
+        use is ignored.
+      properties:
+        about:
+          type:
+          - string
+          - "null"
+          description: "What it is, in full."
+          maxLength: 4000
+          minLength: 0
+        audience:
+          type: string
+          enum:
+          - everyone
+          - members
+          - applicants
+          - shortlisted
+          pattern: everyone|members|applicants|shortlisted
+        code:
+          type:
+          - string
+          - "null"
+          description: "The code its audience gets, for a code perk."
+          maxLength: 200
+          minLength: 0
+        endsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        perPerson:
+          type: boolean
+          description: True when it is got once per person; otherwise once per organization.
+        places:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many may get it; null for as many as come. A link perk
+            has no places.
+          maximum: 100000
+          minimum: 1
+        programId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The program whose applicants or shortlist may get it.
+        questions:
+          type: array
+          description: "What a request asks, for a request perk."
+          items:
+            $ref: "#/components/schemas/PerkQuestion"
+          maxItems: 5
+          minItems: 0
+        redeemUrl:
+          type:
+          - string
+          - "null"
+          description: Where a code is redeemed.
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+        requireApproval:
+          type: boolean
+          description: "For a request perk: true when its partner grants or declines\
+            \ each request; otherwise a request is granted when it is sent."
+        solutionIds:
+          type: array
+          description: The solutions of its organization it goes with.
+          items:
+            type: string
+            format: uuid
+          maxItems: 20
+          minItems: 0
+        startsAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        steps:
+          type: array
+          description: "How to get it, in order."
+          items:
+            type: string
+            maxLength: 300
+            minLength: 0
+          maxItems: 10
+          minItems: 0
+        summary:
+          type:
+          - string
+          - "null"
+          description: One or two sentences under its title.
+          maxLength: 200
+          minLength: 0
+        terms:
+          type:
+          - string
+          - "null"
+          maxLength: 4000
+          minLength: 0
+        termsUrl:
+          type:
+          - string
+          - "null"
+          description: The https address of its full terms.
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+        title:
+          type: string
+          description: What it is called.
+          maxLength: 80
+          minLength: 0
+        url:
+          type:
+          - string
+          - "null"
+          description: "The partner's https page, for a link perk."
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+        value:
+          type:
+          - string
+          - "null"
+          description: "The figure its card shows large, such as $1,000."
+          maxLength: 40
+          minLength: 0
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version the form read; left out for a new perk. A save
+            is refused when the perk changed since.
+        way:
+          type: string
+          enum:
+          - link
+          - code
+          - codes
+          - request
+          pattern: link|code|codes|request
+      required:
+      - audience
+      - perPerson
+      - questions
+      - requireApproval
+      - solutionIds
+      - steps
+      - title
+      - way
     SaveProgram:
       type: object
       description: "A program as the Settings screen holds it. Everything is saved\
@@ -26566,15 +27691,6 @@ components:
           type: string
           maxLength: 120
           minLength: 0
-        offerIds:
-          type: array
-          description: "The offers it comes with, of those its organization gives;\
-            \ empty for none."
-          items:
-            type: string
-            format: uuid
-          maxItems: 5
-          minItems: 0
         problemsSolved:
           type:
           - string
@@ -26621,7 +27737,6 @@ components:
       - languages
       - listed
       - name
-      - offerIds
       - version
     SaveTalentProfile:
       type: object
@@ -27065,11 +28180,6 @@ components:
           - pilot
           - production
           - scaled
-        offers:
-          type: array
-          description: "The offers a solution comes with, by title."
-          items:
-            $ref: "#/components/schemas/SearchOffer"
         organizationLogoFileId:
           type:
           - string
@@ -27081,6 +28191,12 @@ components:
           - string
           - "null"
           description: The address of the page of a solution's organization.
+        perks:
+          type: array
+          description: "The open perks a solution goes with, those GenAI Fund arranged\
+            \ first."
+          items:
+            $ref: "#/components/schemas/SearchPerk"
         phase:
           type:
           - string
@@ -27178,7 +28294,7 @@ components:
       - focusAreas
       - industries
       - kind
-      - offers
+      - perks
       - roles
       - skills
       - slug
@@ -27186,22 +28302,27 @@ components:
       - summary
       - technologies
       - title
-    SearchOffer:
+    SearchPerk:
       type: object
-      description: An offer a solution in the results comes with.
+      description: An open perk a solution in the results goes with.
       properties:
         fromGenAiFund:
           type: boolean
           description: True when GenAI Fund arranged it.
+        slug:
+          type: string
+          description: "Its address, /solutions/perks/{slug}."
         title:
           type: string
-        url:
-          type: string
-          description: The https address where it is claimed.
+        value:
+          type:
+          - string
+          - "null"
+          description: "The figure its card shows, such as $1,000."
       required:
       - fromGenAiFund
+      - slug
       - title
-      - url
     SearchResults:
       type: object
       description: "One page of what matches, best first, with the counts of every\
@@ -27490,22 +28611,6 @@ components:
           description: The version the reader was read at.
       required:
       - version
-    SetOfferClosedRequest:
-      type: object
-      description: "Closes an offer to new solutions, or opens it again."
-      properties:
-        closed:
-          type: boolean
-          description: "True to close it, false to open it. Asking for the state it\
-            \ has changes nothing."
-        version:
-          type: integer
-          format: int64
-          description: The version the form read; the change is refused when the offer
-            changed since.
-      required:
-      - closed
-      - version
     SetSemanticSearch:
       type: object
       description: "Turns semantic search on or off. Off, search matches keywords\
@@ -27520,20 +28625,6 @@ components:
       required:
       - enabled
       - version
-    SetSolutionOffers:
-      type: object
-      description: "The offers a solution comes with, as an operator chooses them."
-      properties:
-        offerIds:
-          type: array
-          description: Offers its organization gives; empty for none.
-          items:
-            type: string
-            format: uuid
-          maxItems: 5
-          minItems: 0
-      required:
-      - offerIds
     SetTaskModel:
       type: object
       description: The model a task uses from now on.
@@ -27691,11 +28782,6 @@ components:
           - scaled
         name:
           type: string
-        offers:
-          type: array
-          description: "The offers it comes with, by title."
-          items:
-            $ref: "#/components/schemas/Offer"
         organizationId:
           type: string
           format: uuid
@@ -27786,7 +28872,6 @@ components:
       - languages
       - listed
       - name
-      - offers
       - organizationId
       - organizationName
       - slug
@@ -27892,6 +28977,38 @@ components:
       - complete
       - id
       - name
+    SolutionPerkLine:
+      type: object
+      description: One perk on a solution's card.
+      properties:
+        fromGenAiFund:
+          type: boolean
+        slug:
+          type: string
+        title:
+          type: string
+        value:
+          type:
+          - string
+          - "null"
+      required:
+      - fromGenAiFund
+      - slug
+      - title
+    SolutionPerks:
+      type: object
+      description: "The open perks a solution goes with, as its card shows them."
+      properties:
+        perks:
+          type: array
+          items:
+            $ref: "#/components/schemas/SolutionPerkLine"
+        slug:
+          type: string
+          description: The solution's address.
+      required:
+      - perks
+      - slug
     SolutionReviewQueue:
       type: object
       description: "How many solutions or customer deployments wait for review now,\
@@ -28562,6 +29679,27 @@ components:
       - slug
       - status
       - updatedAt
+    TeamClaim:
+      type: object
+      description: "A perk the caller's organization got, with what it holds."
+      properties:
+        claim:
+          $ref: "#/components/schemas/PerkClaim"
+        partnerName:
+          type: string
+        slug:
+          type: string
+        title:
+          type: string
+        value:
+          type:
+          - string
+          - "null"
+      required:
+      - claim
+      - partnerName
+      - slug
+      - title
     TestAiProvider:
       type: object
       description: "A connection to try, saved or not. Without an apiKey the saved\

@@ -37,6 +37,8 @@ const areaPaths = {
     "Application",
     "Home.featured",
     "Mcp",
+    // Getting a perk, on its page.
+    "Perk",
     "Program",
     "Programs",
     "Solution",
@@ -64,10 +66,13 @@ const areaPaths = {
   ],
   workspace: [
     "EntryList",
+    // The Export menu of who got a perk the organization gives.
+    "ExportMenu",
     "Matching",
     "Messaging",
     "Organization",
     "PdfViewer",
+    "Perk",
     // What the AI found in the proposals the organization's use case received.
     "ProposalEvaluation",
     "Solution",
@@ -84,6 +89,7 @@ const areaPaths = {
     "Messaging.assignments",
     "Mcp",
     "Organization",
+    "Perk",
     // The full-screen reader of an application's files.
     "PdfViewer",
     "Program",
