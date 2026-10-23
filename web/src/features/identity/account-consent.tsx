@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
-import { useFormatter } from "@/i18n/format";
 import { recordMyConsent, type Consent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -20,27 +20,29 @@ import {
   type Purpose,
 } from "./consent-choices";
 import { ConsentDialog } from "./consent-dialog";
-import { PurposeBadge, purposeIcons } from "./consent-purpose";
 
 /** Where requests about personal data go, as the privacy policy names it. */
 const PRIVACY_ADDRESS = "team@beyondpilot.ai";
 
+/** The purposes a person turns on or off here; using the platform is withdrawn on its own row. */
+const choosable = purposes.filter((purpose) => purpose !== "platform");
+
 /**
- * Privacy and consent in Settings (BEY-240): a switch for each purpose. Turning an optional one off
- * or on takes effect at once and offers Undo; withdrawing the consent to use the platform stops the
- * person using BeyondPilot until they agree again, so it is asked once and then leads to the consent step. The full text can be read again
- * and answered there.
+ * Privacy and data in Settings (BEY-240), as products lay out their data controls: a switch for
+ * each optional purpose, then where to ask about one's data, then withdrawing the consent to use
+ * the platform. A switch takes effect at once and offers Undo. The consent to use the platform is
+ * no switch beside them: withdrawing it stops the person using BeyondPilot until they agree again,
+ * so it is asked once and then leads to the consent step. The full text can be read again and
+ * answered there.
  */
 function AccountConsent({ consent }: { consent: Consent }) {
   const t = useTranslations("Consent");
-  const format = useFormatter();
   const notify = useNotify();
   const router = useRouter();
   const [choices, setChoices] = useState(() => choicesOf(consent));
   const [reading, setReading] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
   const [pending, setPending] = useState(false);
-  const agreedAt = consent.purposes.find((purpose) => purpose.key === "platform")?.answeredAt;
 
   async function save(next: Choices, source: ChoiceSource): Promise<boolean> {
     setPending(true);
@@ -68,36 +70,31 @@ function AccountConsent({ consent }: { consent: Consent }) {
   }
 
   return (
-    <section className="flex flex-col gap-1 rounded-2xl border bg-card p-5 md:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 pb-3">
-        <h2 className="text-base font-medium">{t("settings.title")}</h2>
-        <p className="text-sm text-muted-foreground">
-          {agreedAt &&
-            t("settings.agreed", {
-              version: consent.version,
-              date: format.dateTime(new Date(agreedAt), "date"),
-            })}{" "}
-          <TextButton onClick={() => setReading(true)}>{t("settings.read")}</TextButton>
+    <section
+      aria-labelledby="privacy-and-data"
+      className="flex flex-col gap-1 rounded-2xl border bg-card p-5 md:p-6"
+    >
+      <div className="flex flex-col gap-1 pb-2">
+        <h2 id="privacy-and-data" className="text-base font-medium">
+          {t("settings.title")}
+        </h2>
+        <p className="text-sm text-pretty text-muted-foreground">
+          {t.rich("settings.lead", {
+            read: (chunks) => <TextButton onClick={() => setReading(true)}>{chunks}</TextButton>,
+          })}
         </p>
       </div>
       <ul className="flex flex-col divide-y">
-        {purposes.map((purpose) => {
-          const Icon = purposeIcons[purpose];
+        {choosable.map((purpose) => {
           const id = `consent-switch-${purpose}`;
           return (
-            <li key={purpose} className="flex items-start gap-3 py-4">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
-              </span>
-              <div className="flex flex-1 flex-col gap-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <label htmlFor={id} className="text-sm font-medium">
-                    {t(`purposes.${purpose}.short`)}
-                  </label>
-                  <PurposeBadge purpose={purpose} />
-                </div>
+            <li key={purpose} className="flex items-start justify-between gap-6 py-4">
+              <div className="flex flex-col gap-1">
+                <label htmlFor={id} className="text-sm font-medium">
+                  {t(`purposes.${purpose}.short`)}
+                </label>
                 <p id={`${id}-hint`} className="text-sm text-pretty text-muted-foreground">
-                  {t(`purposes.${purpose}.without`)}
+                  {t(`purposes.${purpose}.setting`)}
                 </p>
               </div>
               <Switch
@@ -106,30 +103,36 @@ function AccountConsent({ consent }: { consent: Consent }) {
                 checked={choices[purpose]}
                 disabled={pending}
                 aria-describedby={`${id}-hint`}
-                onCheckedChange={(on) => {
-                  if (purpose === "platform" && !on) {
-                    setWithdrawing(true);
-                    return;
-                  }
-                  void turn(purpose, on);
-                }}
+                onCheckedChange={(on) => void turn(purpose, on)}
               />
             </li>
           );
         })}
       </ul>
-      <p className="mt-1 border-t pt-4 text-sm text-muted-foreground">
-        {t.rich("settings.requests", {
-          mail: (chunks) => (
-            <a
-              href={`mailto:${PRIVACY_ADDRESS}`}
-              className="underline underline-offset-3 hover:text-foreground"
-            >
-              {chunks}
-            </a>
-          ),
-        })}
-      </p>
+      <div className="flex flex-col divide-y border-t">
+        <SettingRow title={t("settings.data.title")} description={t("settings.data.description")}>
+          <Button
+            prominence="secondary"
+            className="max-sm:w-full"
+            href={`mailto:${PRIVACY_ADDRESS}`}
+          >
+            {t("settings.data.action")}
+          </Button>
+        </SettingRow>
+        <SettingRow
+          title={t("settings.withdrawRow.title")}
+          description={t("settings.withdrawRow.description")}
+        >
+          <Button
+            tone="danger"
+            prominence="secondary"
+            className="max-sm:w-full"
+            onClick={() => setWithdrawing(true)}
+          >
+            {t("settings.withdrawRow.action")}
+          </Button>
+        </SettingRow>
+      </div>
       <ConsentDialog
         open={reading}
         onOpenChange={setReading}
@@ -160,6 +163,27 @@ function AccountConsent({ consent }: { consent: Consent }) {
         }}
       />
     </section>
+  );
+}
+
+/** A row that leads to an action: what it is and what follows, with its button beside it, or below on a phone. */
+function SettingRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 pt-4 not-last:pb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="flex flex-col gap-1">
+        <p className="text-sm font-medium">{title}</p>
+        <p className="text-sm text-pretty text-muted-foreground">{description}</p>
+      </div>
+      {children}
+    </div>
   );
 }
 
