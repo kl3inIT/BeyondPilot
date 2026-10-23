@@ -34,9 +34,8 @@ beyondpilot:
     site-url: ${BEYONDPILOT_SITE_URL}
   program:
     luma:
-      # The public iCal feed of the Luma calendar "GenAI Fund - Official" (luma.com/gaf): its events still to come are
-      # brought onto the site every hour (BEY-190). Without it, as in tests and local runs, Luma is never called.
-      feed: https://api2.luma.com/ics/get?entity=calendar&id=cal-KxQE75V2Ywj0ZDI
+      # No default: Luma's webhook must reach this site.
+      site-url: ${BEYONDPILOT_SITE_URL}
 
 logging:
   structured:

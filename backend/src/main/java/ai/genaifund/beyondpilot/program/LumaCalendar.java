@@ -2,10 +2,8 @@ package ai.genaifund.beyondpilot.program;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -13,15 +11,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import jakarta.annotation.PreDestroy;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
-import ai.genaifund.beyondpilot.program.luma.LumaEventPage;
-import ai.genaifund.beyondpilot.program.luma.LumaFeed;
+import ai.genaifund.beyondpilot.program.luma.LumaApi;
+import ai.genaifund.beyondpilot.program.luma.LumaEvent;
 import ai.genaifund.beyondpilot.program.luma.LumaHttp;
 import ai.genaifund.beyondpilot.program.luma.LumaProperties;
+import ai.genaifund.beyondpilot.program.persistence.LumaConnection;
+import ai.genaifund.beyondpilot.program.persistence.LumaConnectionRepository;
 import ai.genaifund.beyondpilot.program.persistence.PageKind;
 import ai.genaifund.beyondpilot.program.persistence.Program;
 import ai.genaifund.beyondpilot.program.persistence.ProgramEvent;
@@ -33,7 +38,6 @@ import ai.genaifund.beyondpilot.storage.StoredFile;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -42,24 +46,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Brings the events of the GenAI Fund calendar on Luma onto the site (BEY-190). Each event still to come is a published
- * program of type event whose page is its Luma page. Luma owns what it supplies, so a change there overwrites an
- * operator's edit at the next read, and a read that changes nothing writes nothing. The job never changes the status of
- * a program it already holds, except to unpublish one whose future event left the calendar. It runs only where the
- * feed is configured.
+ * Brings the events of the connected Luma calendar onto the site through Luma's API (BEY-190, BEY-245). Each event
+ * still to come is a program of type event whose page is its Luma page. Luma owns what it supplies, so a change there
+ * overwrites an operator's edit at the next read, and a read that changes nothing writes nothing. A public event is
+ * published; a private or members-only one waits as a draft for an operator. The job never changes the status of a
+ * program it already holds, except to unpublish one whose future event left the calendar. It reads every hour, and
+ * soon after Luma's webhook says an event changed; with no calendar connected it does nothing.
  */
 @Component
 @EnableScheduling
 @EnableConfigurationProperties(LumaProperties.class)
-@ConditionalOnProperty("beyondpilot.program.luma.feed")
 class LumaCalendar {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LumaCalendar.class);
 
 	private static final String PROGRAM = "program";
-
-	/** The most of a feed or an event page read. */
-	private static final int MAX_TEXT_BYTES = 2 * 1024 * 1024;
 
 	/** As many as storage keeps of a program's image by default; storage checks its own setting again. */
 	private static final int MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -74,9 +75,13 @@ class LumaCalendar {
 
 	private static final int MAX_SLUG = 60;
 
-	private final LumaProperties properties;
+	private final LumaApi api;
 
 	private final LumaHttp http;
+
+	private final LumaKeys keys;
+
+	private final LumaConnectionRepository connections;
 
 	private final ProgramRepository programs;
 
@@ -88,10 +93,18 @@ class LumaCalendar {
 
 	private final TransactionTemplate transactions;
 
-	LumaCalendar(LumaProperties properties, ProgramRepository programs, StorageService storage, AuditTrail audit,
-			ApplicationEventPublisher events, TransactionTemplate transactions) {
-		this.properties = properties;
+	/** Runs the reads a webhook asks for, one at a time and away from the request. */
+	private final ExecutorService soon = Executors.newSingleThreadExecutor(Thread.ofVirtual().name("luma-read").factory());
+
+	private final AtomicBoolean queued = new AtomicBoolean();
+
+	LumaCalendar(LumaProperties properties, LumaKeys keys, LumaConnectionRepository connections,
+			ProgramRepository programs, StorageService storage, AuditTrail audit, ApplicationEventPublisher events,
+			TransactionTemplate transactions) {
+		this.api = new LumaApi(properties.api(), properties.timeout());
 		this.http = new LumaHttp(properties.hosts(), properties.timeout());
+		this.keys = keys;
+		this.connections = connections;
 		this.programs = programs;
 		this.storage = storage;
 		this.audit = audit;
@@ -104,11 +117,33 @@ class LumaCalendar {
 		read(Instant.now());
 	}
 
-	/**
-	 * What one read changed.
-	 * @param calendarRead false when the feed could not be read, so nothing was changed
-	 */
-	record Read(int created, int updated, int unpublished, int failed, boolean calendarRead) {
+	/** Reads the calendar soon, once however many deliveries ask while a read waits. */
+	void readSoon() {
+		if (queued.compareAndSet(false, true)) {
+			soon.execute(() -> {
+				queued.set(false);
+				read(Instant.now());
+			});
+		}
+	}
+
+	@PreDestroy
+	void stop() {
+		soon.shutdownNow();
+	}
+
+	/** Why a read changed nothing, when it could not read the calendar. */
+	enum Outcome {
+		READ, NOT_CONNECTED, KEY_REFUSED, UNREACHABLE
+	}
+
+	/** What one read changed. */
+	record Read(int created, int updated, int unpublished, int failed, Outcome outcome) {
+
+		static Read not(Outcome outcome) {
+			return new Read(0, 0, 0, 0, outcome);
+		}
+
 	}
 
 	private enum Change {
@@ -117,30 +152,42 @@ class LumaCalendar {
 
 	/**
 	 * Reads the calendar and brings each event still to come onto the site, each in a transaction of its own, so one
-	 * that fails leaves the others done and is tried again at the next read. A feed that cannot be read changes
+	 * that fails leaves the others done and is tried again at the next read. A calendar that cannot be read changes
 	 * nothing. One read runs at a time: an operator's read waits for the hourly one, so the two never write the same
 	 * event together.
 	 */
 	synchronized Read read(Instant now) {
-		List<LumaFeed.Event> feed;
+		Optional<LumaConnection> connection = connections.current();
+		if (connection.isEmpty()) {
+			return Read.not(Outcome.NOT_CONNECTED);
+		}
+		String key = keys.open(connection.get().getApiKey());
+		if (key == null) {
+			return finished(Read.not(Outcome.NOT_CONNECTED), now, "This environment cannot open the key");
+		}
+		List<LumaEvent> calendar;
 		try {
-			feed = LumaFeed.read(text(properties.feed(), "text/calendar"));
+			calendar = api.events(key);
+		}
+		catch (LumaApi.KeyRefused refused) {
+			return finished(Read.not(Outcome.KEY_REFUSED), now, "Luma refused the key");
 		}
 		catch (IOException failed) {
 			LOG.atWarn()
-				.addKeyValue("event", "program.luma.feed_failed")
+				.addKeyValue("event", "program.luma.read_failed")
 				.addKeyValue("error_type", failed.getClass().getName())
 				.log("The Luma calendar could not be read");
-			return new Read(0, 0, 0, 0, false);
+			return finished(Read.not(Outcome.UNREACHABLE), now, "Luma could not be read");
 		}
 		int created = 0;
 		int updated = 0;
 		int failed = 0;
-		for (LumaFeed.Event event : feed) {
-			if (event.over(now)) {
+		for (LumaEvent listed : calendar) {
+			if (listed.over(now)) {
 				continue;
 			}
 			try {
+				LumaEvent event = api.event(key, listed.id()).orElse(listed);
 				switch (take(event)) {
 					case CREATED -> created++;
 					case UPDATED -> updated++;
@@ -152,13 +199,13 @@ class LumaCalendar {
 				failed++;
 				LOG.atWarn()
 					.addKeyValue("event", "program.luma.event_failed")
-					.addKeyValue("luma_event_id", event.id())
+					.addKeyValue("luma_event_id", listed.id())
 					.addKeyValue("error_type", failure.getClass().getName())
 					.log("A Luma event could not be brought onto the site");
 			}
 		}
-		int unpublished = unpublishRemoved(feed.stream().map(LumaFeed.Event::id).collect(Collectors.toSet()), now);
-		Read read = new Read(created, updated, unpublished, failed, true);
+		int unpublished = unpublishRemoved(calendar.stream().map(LumaEvent::id).collect(Collectors.toSet()), now);
+		Read read = new Read(created, updated, unpublished, failed, Outcome.READ);
 		if (created + updated + unpublished + failed > 0) {
 			LOG.atInfo()
 				.addKeyValue("event", "program.luma.read")
@@ -168,18 +215,22 @@ class LumaCalendar {
 				.addKeyValue("failed", failed)
 				.log("The Luma calendar was read");
 		}
+		return finished(read, now, null);
+	}
+
+	/** Records on the connection when the calendar was last read, or why it could not be. */
+	private Read finished(Read read, Instant now, @Nullable String error) {
+		transactions.executeWithoutResult(status -> connections.current().ifPresent(held -> held.read(now, error)));
 		return read;
 	}
 
-	private Change take(LumaFeed.Event event) throws IOException {
-		LumaEventPage.Event page = LumaEventPage.read(text(event.page(), "text/html"))
-			.orElseThrow(() -> new IOException("The page describes no event"));
+	private Change take(LumaEvent event) throws IOException {
 		Optional<Program> held = programs.findByLumaEventId(event.id());
-		URI image = page.image();
+		URI image = event.cover();
 		boolean newImage = image != null
 				&& !image.toString().equals(held.map(Program::getLumaCoverUrl).orElse(null));
 		LumaHttp.Answer cover = newImage ? image(image) : null;
-		Change change = transactions.execute(status -> write(event, page, held.map(Program::getId).orElse(null),
+		Change change = transactions.execute(status -> write(event, held.map(Program::getId).orElse(null),
 				cover == null || image == null ? null : new Cover(image, cover)));
 		return Objects.requireNonNull(change);
 	}
@@ -188,27 +239,24 @@ class LumaCalendar {
 	private record Cover(URI image, LumaHttp.Answer answer) {
 	}
 
-	private Change write(LumaFeed.Event event, LumaEventPage.Event page, @Nullable UUID heldId, @Nullable Cover cover) {
+	private Change write(LumaEvent event, @Nullable UUID heldId, @Nullable Cover cover) {
 		Program program = heldId == null ? null : programs.findForUpdate(heldId).orElse(null);
 		boolean created = program == null;
 		if (program == null) {
-			program = new Program(slug(event), cut(page.name(), MAX_NAME), ProgramType.EVENT);
+			program = new Program(slug(event), cut(event.name(), MAX_NAME), ProgramType.EVENT);
 			program.readFromLuma(event.id());
 		}
 		Fields before = Fields.of(program);
-		String description = page.description();
-		OffsetDateTime startsAt = page.startsAt();
-		OffsetDateTime said = page.endsAt();
-		OffsetDateTime endsAt = said == null || said.isBefore(startsAt) ? null : said;
-		String name = cut(page.name(), MAX_NAME);
+		String description = event.description();
+		String name = cut(event.name(), MAX_NAME);
 		program.describe(name, program.getType(), program.getPartnerName(), summary(description),
 				description == null ? null : cut(description, MAX_ABOUT));
-		program.runBetween(startsAt.toLocalDate(), (endsAt == null ? startsAt : endsAt).toLocalDate());
+		Instant ends = event.endsAt() == null ? event.startsAt() : event.endsAt();
+		program.runBetween(LocalDate.ofInstant(event.startsAt(), event.zone()), LocalDate.ofInstant(ends, event.zone()));
 		program.showAs(PageKind.EXTERNAL, event.page().toString());
 		program.schedule(program.getMilestones(),
-				List.of(new ProgramEvent(cut(page.name(), MAX_EVENT_TITLE), startsAt.toInstant(),
-						endsAt == null ? null : endsAt.toInstant(), page.online(), page.city(), page.country(),
-						event.page().toString())));
+				List.of(new ProgramEvent(cut(event.name(), MAX_EVENT_TITLE), event.startsAt(), event.endsAt(),
+						event.online(), event.city(), event.country(), event.page().toString())));
 		UUID replacedCover = null;
 		if (cover != null) {
 			StoredFile kept = storage.keep(FilePurpose.PROGRAM_IMAGE, event.id() + extension(cover.answer().mediaType()),
@@ -219,8 +267,9 @@ class LumaCalendar {
 		if (created) {
 			programs.saveAndFlush(program);
 			record(AuditAction.PROGRAM_CREATE, program);
-			// One that lacks what publishing asks for, a cover or a summary, waits as a draft for an operator.
-			if (PublishIssue.of(program).isEmpty() && program.publish(Instant.now())) {
+			// One kept from the public on Luma, or that lacks what publishing asks for, waits for an operator.
+			if (event.visibility() == LumaEvent.Visibility.PUBLIC && PublishIssue.of(program).isEmpty()
+					&& program.publish(Instant.now())) {
 				record(AuditAction.PROGRAM_PUBLISH, program);
 			}
 			events.publishEvent(new ProgramChanged(program.getId()));
@@ -281,14 +330,6 @@ class LumaCalendar {
 			.anyMatch(event -> (event.endsAt() == null ? event.startsAt() : event.endsAt()).isAfter(now));
 	}
 
-	private String text(URI address, String accept) throws IOException {
-		LumaHttp.Answer answer = http.get(address, accept, MAX_TEXT_BYTES);
-		if (!answer.ok() || answer.body().length > MAX_TEXT_BYTES) {
-			throw new IOException("Luma answered " + answer.status());
-		}
-		return new String(answer.body(), StandardCharsets.UTF_8);
-	}
-
 	/** The image as WebP, PNG or JPEG, which Luma's CDN answers as asked and storage keeps. */
 	private LumaHttp.Answer image(URI address) throws IOException {
 		LumaHttp.Answer answer = http.get(address, "image/webp,image/png,image/jpeg", MAX_IMAGE_BYTES);
@@ -311,7 +352,7 @@ class LumaCalendar {
 	 * The address of the event's Luma page ({@code luma.com/gaf-tinyfish-vn} gives {@code gaf-tinyfish-vn}), with
 	 * {@code -2}, {@code -3}… when another program has it.
 	 */
-	private String slug(LumaFeed.Event event) {
+	private String slug(LumaEvent event) {
 		String path = Objects.requireNonNullElse(event.page().getPath(), "");
 		String base = path.substring(path.lastIndexOf('/') + 1)
 			.toLowerCase(Locale.ROOT)
@@ -354,7 +395,7 @@ class LumaCalendar {
 	}
 
 	private void record(AuditAction action, Program program) {
-		// No person acted: the server read the calendar it is configured with.
+		// No person acted: the server read the calendar an operator connected.
 		audit.record(new AuditRecord(action, null,
 				new AuditRecord.Resource(PROGRAM, program.getId().toString(), program.getName()), Map.of()));
 	}

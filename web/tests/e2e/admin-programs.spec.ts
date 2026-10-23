@@ -162,7 +162,7 @@ test.describe("admin programs", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/programs");
 
-    const read = await answer(page, "/api/program/admin/programs/luma/read", 200, {
+    const read = await answer(page, "/api/program/admin/luma/read", 200, {
       created: 1,
       updated: 0,
       unpublished: 0,
@@ -172,6 +172,33 @@ test.describe("admin programs", () => {
     await page.getByRole("button", { name: "Pull from Luma" }).click();
     await expect(page.getByText("Luma read: 1 new event, 0 updated, 0 unpublished.")).toBeVisible();
     expect(read).toHaveLength(1);
+  });
+
+  test("the Luma tab shows the connected calendar and replaces its key", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+    await page.getByRole("link", { name: "Luma" }).click();
+    await expect(page).toHaveURL("/admin/programs/luma");
+
+    await expect(page.getByText("GenAI Fund - Official")).toBeVisible();
+    await expect(page.getByText("•••• 6wZL")).toBeVisible();
+    await expect(page.getByText("Told at once")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    const refused = await answer(page, "/api/program/admin/luma", 400, {
+      status: 400,
+      code: "PROGRAM_LUMA_KEY_REFUSED",
+    });
+    await page.getByRole("button", { name: "Replace key" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("API key").fill("luma_sk_wrong");
+    await dialog.getByRole("button", { name: "Connect" }).click();
+    await expect(dialog.getByText("Luma refused this key.", { exact: false })).toBeVisible();
+    expect(refused).toHaveLength(1);
   });
 
   test("New program suggests the address from the name and opens the draft", async ({

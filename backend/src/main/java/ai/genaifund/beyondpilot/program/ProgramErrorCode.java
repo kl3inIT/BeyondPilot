@@ -54,10 +54,16 @@ public enum ProgramErrorCode implements ErrorCode {
 			"This file cannot be the cover. Upload the image again."),
 
 	LUMA_NOT_CONFIGURED("PROGRAM_LUMA_NOT_CONFIGURED", ErrorCategory.SERVICE_UNAVAILABLE,
-			"This environment reads no Luma calendar."),
+			"No Luma calendar is connected. Paste the calendar's API key on the Luma tab of Programs."),
 
 	LUMA_UNREACHABLE("PROGRAM_LUMA_UNREACHABLE", ErrorCategory.SERVICE_UNAVAILABLE,
-			"Luma could not be read just now. Nothing changed; try again in a few minutes.");
+			"Luma could not be read just now. Nothing changed; try again in a few minutes."),
+
+	LUMA_KEY_REFUSED("PROGRAM_LUMA_KEY_REFUSED", ErrorCategory.VALIDATION,
+			"Luma refused this key. Copy it again from Settings › Developer of the calendar on Luma."),
+
+	LUMA_ENCRYPTION_KEY_MISSING("PROGRAM_LUMA_ENCRYPTION_KEY_MISSING", ErrorCategory.SERVICE_UNAVAILABLE,
+			"This environment cannot keep a Luma key yet. Ask the team to set its encryption key.");
 
 	private final String code;
 	private final ErrorCategory category;

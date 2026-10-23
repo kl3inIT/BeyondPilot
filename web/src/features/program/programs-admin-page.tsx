@@ -19,6 +19,7 @@ import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
 import type { narrowPrograms, ProgramsSearch } from "./programs-search";
 import { ExportPrograms } from "./export-programs";
+import { ProgramsAdminTabs } from "./programs-admin-tabs";
 import { ProgramsToolbar } from "./programs-toolbar";
 
 /** A program's cover, small, beside its name; an empty frame until it has one. */
@@ -136,7 +137,9 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
             <NewProgramDialog locale={locale} />
           </>
         }
-      />
+      >
+        <ProgramsAdminTabs current="programs" />
+      </AdminPageHeader>
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
       {/* The window gives way to the days on narrower desktops, where the table is made to fit. */}

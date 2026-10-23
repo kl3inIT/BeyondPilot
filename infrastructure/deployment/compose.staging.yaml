@@ -32,6 +32,8 @@ services:
         target: BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY
       - source: ai_encryption_key
         target: BEYONDPILOT_AI_ENCRYPTION_KEY
+      - source: program_encryption_key
+        target: BEYONDPILOT_PROGRAM_ENCRYPTION_KEY
       - source: mcp_signing_key
         target: BEYONDPILOT_IDENTITY_OAUTH_SIGNING_KEY
     networks:
@@ -62,6 +64,9 @@ secrets:
   # 32 random bytes in Base64 that encrypt the AI providers' keys operators enter in Admin › AI › Providers.
   ai_encryption_key:
     file: /apps/beyondpilot-staging/secrets/ai-encryption-key
+  # 32 random bytes in Base64 that encrypt the Luma calendar's key operators enter in Admin › Programs › Luma.
+  program_encryption_key:
+    file: /apps/beyondpilot-staging/secrets/program-encryption-key
   # The RSA private key, PKCS#8 PEM, that signs the access tokens of AI apps connected to the MCP servers.
   mcp_signing_key:
     file: /apps/beyondpilot-staging/secrets/mcp-signing-key

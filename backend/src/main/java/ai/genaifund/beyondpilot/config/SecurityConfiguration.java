@@ -81,6 +81,9 @@ class SecurityConfiguration {
 				// An email provider reports what became of sent email; each report is accepted only by its signature.
 				.requestMatchers(HttpMethod.POST, CsrfHeaderFilter.PROVIDER_REPORTS + "*")
 				.permitAll()
+				// Luma tells of a change on the connected calendar; each delivery is accepted only by its signature.
+				.requestMatchers(HttpMethod.POST, CsrfHeaderFilter.LUMA_WEBHOOK)
+				.permitAll()
 				// Search returns only what the public site shows.
 				.requestMatchers(HttpMethod.GET, "/api/search")
 				.permitAll()

@@ -3,10 +3,12 @@ import { notFound } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminProgram,
+  getLumaConnection,
   getProgramQuestions,
   listAdminPrograms,
   type AdminProgram,
   type AdminProgramList,
+  type LumaConnection,
   type ProgramQuestions,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
@@ -25,6 +27,12 @@ function notFoundWhenRefused(error: unknown): never {
 /** Every program for the operator behind this request. Server only. */
 export async function readAdminPrograms(): Promise<AdminProgramList> {
   const { data } = await listAdminPrograms(await sessionRequest()).catch(notFoundWhenRefused);
+  return data;
+}
+
+/** The Luma calendar BeyondPilot reads, without its key. Server only. */
+export async function readLumaConnection(): Promise<LumaConnection> {
+  const { data } = await getLumaConnection(await sessionRequest()).catch(notFoundWhenRefused);
   return data;
 }
 
