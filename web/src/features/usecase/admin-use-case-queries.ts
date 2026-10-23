@@ -3,10 +3,8 @@ import { ApiError } from "@/lib/api/client";
 import {
   getAdminUseCase,
   listAdminUseCases,
-  listUseCaseOrganizations,
   type AdminUseCase,
   type AdminUseCaseList,
-  type UseCaseOrganization,
   getUseCaseReviewQueue,
   type UseCaseReviewQueue,
 } from "@/lib/api/generated";
@@ -40,12 +38,6 @@ export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<Ad
     },
   });
   return data;
-}
-
-/** The organizations a use case can be written for, by name. Server only. */
-export async function readUseCaseOrganizations(): Promise<UseCaseOrganization[]> {
-  const { data } = await listUseCaseOrganizations({ ...(await sessionRequest()), query: {} });
-  return data.items;
 }
 
 /** One use case as an operator reads it, or `null` when there is none. Server only. */

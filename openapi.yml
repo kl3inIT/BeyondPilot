@@ -12101,6 +12101,42 @@ paths:
         \ by name; at most 50"
       tags:
       - Solution administration
+  /api/solution/admin/solutions/organizations/with-solutions:
+    get:
+      operationId: listAdminSolutionOrganizationsWithSolutions
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSolutionOrganizationOption"
+          description: "The organizations, by name."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The organizations that hold a submitted solution, by name, for the\
+        \ list's filter; at most 50"
+      tags:
+      - Solution administration
   /api/solution/admin/solutions/queue:
     get:
       operationId: getSolutionReviewQueue
@@ -16210,12 +16246,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminSolutionSummary"
-        organizations:
-          type: array
-          description: "Organizations with at least one submitted solution, for the\
-            \ organization filter."
-          items:
-            $ref: "#/components/schemas/AdminSolutionOrganizationOption"
+        organization:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/AdminSolutionOrganizationOption"
+          description: "The organization the list is narrowed to, for the filter to\
+            \ name; null when it is not."
         page:
           type: integer
           format: int32
@@ -16231,7 +16268,6 @@ components:
       - awaitingReview
       - deploymentsAwaitingReview
       - items
-      - organizations
       - page
       - pageSize
       - total
@@ -16572,6 +16608,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminUseCaseSummary"
+        organizations:
+          type: array
+          description: "Every organization that holds a use case, by name, whatever\
+            \ the filter."
+          items:
+            $ref: "#/components/schemas/UseCaseOrganization"
         page:
           type: integer
           format: int32
@@ -16586,6 +16628,7 @@ components:
       required:
       - inReview
       - items
+      - organizations
       - page
       - pageSize
       - total

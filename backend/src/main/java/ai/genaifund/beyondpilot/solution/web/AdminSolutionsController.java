@@ -113,6 +113,16 @@ class AdminSolutionsController {
 		return solutions.get(actor, id);
 	}
 
+	@GetMapping(path = "/organizations/with-solutions", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listAdminSolutionOrganizationsWithSolutions",
+			summary = "The organizations that hold a submitted solution, by name, for the list's filter; at most 50",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The organizations, by name.")
+	List<AdminSolutionOrganizationOptionResponse> organizationsWithSolutions(@CurrentActor Actor actor,
+			@RequestParam(required = false) @Nullable String q) {
+		return solutions.organizationsWithSolutions(actor, q);
+	}
+
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listAdminSolutionOrganizations",
 			summary = "The organizations, not taken down, a solution can be started for, by name; at most 50",

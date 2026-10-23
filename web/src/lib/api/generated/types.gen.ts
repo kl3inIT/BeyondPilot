@@ -382,9 +382,9 @@ export type AdminSolutionList = {
     deploymentsAwaitingReview: number;
     items: Array<AdminSolutionSummary>;
     /**
-     * Organizations with at least one submitted solution, for the organization filter.
+     * The organization the list is narrowed to, for the filter to name; null when it is not.
      */
-    organizations: Array<AdminSolutionOrganizationOption>;
+    organization?: AdminSolutionOrganizationOption | null;
     /**
      * The page returned, counted from 1.
      */
@@ -552,6 +552,10 @@ export type AdminUseCaseList = {
      */
     inReview: number;
     items: Array<AdminUseCaseSummary>;
+    /**
+     * Every organization that holds a use case, by name, whatever the filter.
+     */
+    organizations: Array<UseCaseOrganization>;
     /**
      * The page returned, counted from 1.
      */
@@ -16750,6 +16754,37 @@ export type ListAdminSolutionOrganizationsResponses = {
 };
 
 export type ListAdminSolutionOrganizationsResponse = ListAdminSolutionOrganizationsResponses[keyof ListAdminSolutionOrganizationsResponses];
+
+export type ListAdminSolutionOrganizationsWithSolutionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        q?: string;
+    };
+    url: '/api/solution/admin/solutions/organizations/with-solutions';
+};
+
+export type ListAdminSolutionOrganizationsWithSolutionsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminSolutionOrganizationsWithSolutionsError = ListAdminSolutionOrganizationsWithSolutionsErrors[keyof ListAdminSolutionOrganizationsWithSolutionsErrors];
+
+export type ListAdminSolutionOrganizationsWithSolutionsResponses = {
+    /**
+     * The organizations, by name.
+     */
+    200: Array<AdminSolutionOrganizationOption>;
+};
+
+export type ListAdminSolutionOrganizationsWithSolutionsResponse = ListAdminSolutionOrganizationsWithSolutionsResponses[keyof ListAdminSolutionOrganizationsWithSolutionsResponses];
 
 export type GetSolutionReviewQueueData = {
     body?: never;

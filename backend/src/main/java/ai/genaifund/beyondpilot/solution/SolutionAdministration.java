@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
@@ -130,13 +131,13 @@ public class SolutionAdministration {
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
-		Map<UUID, OrganizationName> optionNames = organizations.names(solutionList.adminOrganizationIds());
-		List<AdminSolutionOrganizationOptionResponse> organizationOptions = optionNames.values()
-			.stream()
-			.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
-			.sorted(Comparator.comparing(AdminSolutionOrganizationOptionResponse::name, String.CASE_INSENSITIVE_ORDER)
-				.thenComparing(AdminSolutionOrganizationOptionResponse::id))
-			.toList();
+		AdminSolutionOrganizationOptionResponse narrowedTo = request.organizationId() == null ? null
+				: organizations.names(List.of(request.organizationId()))
+					.values()
+					.stream()
+					.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
+					.findFirst()
+					.orElse(null);
 		Map<UUID, Person> senders = identity.people(rows.stream()
 			.map(SolutionQueryRepository.Row::submittedByAccountId)
 			.filter(Objects::nonNull)
@@ -145,7 +146,7 @@ public class SolutionAdministration {
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), organizationOptions, page, size,
+			.toList(), narrowedTo, page, size,
 			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
 					request.featured(), toReview(request)),
 			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
@@ -244,6 +245,31 @@ public class SolutionAdministration {
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
 		events.publishEvent(new SolutionChanged(id));
 		tell(solution, EmailService.SolutionDecision.APPROVED, null);
+	}
+
+	/**
+	 * The organizations that hold a submitted solution, for the operators' list to be narrowed to one, by name; at most
+	 * {@value #ORGANIZATION_LIMIT}. Those taken down are among them, as their solutions are in the list.
+	 * @param text only those whose name contains it, ignoring case and accents; every one when blank or null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public List<AdminSolutionOrganizationOptionResponse> organizationsWithSolutions(Actor actor, @Nullable String text) {
+		identity.requireOperator(actor);
+		String named = SolutionViews.text(text);
+		List<UUID> holding = solutionList.adminOrganizationIds();
+		if (named != null) {
+			Set<UUID> matching = Set.copyOf(organizations.named(named));
+			holding = holding.stream().filter(matching::contains).toList();
+		}
+		return organizations.names(holding)
+			.values()
+			.stream()
+			.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
+			.sorted(Comparator.comparing(AdminSolutionOrganizationOptionResponse::name, String.CASE_INSENSITIVE_ORDER)
+				.thenComparing(AdminSolutionOrganizationOptionResponse::id))
+			.limit(ORGANIZATION_LIMIT)
+			.toList();
 	}
 
 	/**

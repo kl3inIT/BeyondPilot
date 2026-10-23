@@ -29,6 +29,10 @@ function AdminUseCasesToolbar({ organizations }: { organizations: UseCaseOrganiz
           label: t("filters.organization.label"),
           all: t("filters.organization.all"),
           options: organizations.map(({ id, name }) => ({ value: id, label: name })),
+          searchable: {
+            placeholder: t("filters.organization.search"),
+            empty: t("filters.organization.empty"),
+          },
         },
         {
           key: "featured",

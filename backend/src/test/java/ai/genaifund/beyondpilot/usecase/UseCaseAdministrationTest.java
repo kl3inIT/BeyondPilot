@@ -520,6 +520,10 @@ class UseCaseAdministrationTest {
 			.isEqualTo(logo.toString()));
 		assertThat(JsonPath.<List<String>>read(page, "$.items[*].organization.name")).allSatisfy(
 				name -> assertThat(name).startsWith("Listed "));
+		// The filter offers every organization that holds a use case, whatever narrows the page.
+		String elsewhere = body(get(operator, USE_CASES + "?q=nothing" + tag).expectStatus().isOk().expectBody());
+		assertThat(JsonPath.<List<String>>read(elsewhere, "$.organizations[?(@.id == '" + organization + "')].name"))
+			.containsExactly("Listed " + bank);
 		get(operator, USE_CASES + "?status=sleeping").expectStatus().isBadRequest();
 		get(operator, USE_CASES + "?page=0").expectStatus().isBadRequest();
 	}
@@ -682,6 +686,18 @@ class UseCaseAdministrationTest {
 
 		assertThat(JsonPath.<List<String>>read(offered, "$.items[*].name"))
 			.containsExactly("Offered First " + tag, "Offered Second " + tag);
+	}
+
+	@Test
+	void anOrganizationIsFoundByItsNameTypedWithoutAccents() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID nestle = organization("Nestlé Đà Nẵng" + tag);
+		post(operator, USE_CASES, useCase(nestle, "Accented " + tag, true)).expectStatus().isCreated();
+
+		String offered = body(get(operator, ORGANIZATIONS + "?q=nestle+da+nang" + tag).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(offered, "$.items[*].name")).containsExactly("Nestlé Đà Nẵng" + tag);
+		assertThat(titles("?q=nang" + tag)).containsExactly("Accented " + tag);
+		assertThat(publicTitles("?q=nang" + tag)).containsExactly("Accented " + tag);
 	}
 
 	@Test

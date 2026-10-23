@@ -2194,7 +2194,9 @@
         },
         "organization": {
           "label": "Tổ chức",
-          "all": "Tổ chức"
+          "all": "Tổ chức",
+          "search": "Tìm tổ chức",
+          "empty": "Không có tổ chức phù hợp."
         }
       },
       "status": {
@@ -4839,7 +4841,9 @@
       "adminSearch": "Tìm theo giải pháp hoặc tổ chức",
       "organization": {
         "label": "Tổ chức",
-        "all": "Mọi tổ chức"
+        "all": "Mọi tổ chức",
+        "search": "Tìm tổ chức",
+        "empty": "Không có tổ chức phù hợp."
       },
       "industry": {
         "label": "Ngành",
@@ -5933,6 +5937,8 @@
     "optional": "Không bắt buộc",
     "required": "bắt buộc",
     "noMatch": "Không có kết quả phù hợp.",
+    "searching": "Đang tìm…",
+    "searchFailed": "Không tải được danh sách. Gõ lại để thử lại.",
     "steps": {
       "progress": "Bước {step}/{count} · {name}",
       "all": "Tất cả bước"

@@ -550,14 +550,9 @@ export function answerReview(url, account) {
       path === "/api/solution/admin/solutions"
         ? {
             ...found,
-            organizations: [
-              ...new Map(
-                records.map((record) => [
-                  record.organizationId,
-                  { id: record.organizationId, name: record.organizationName },
-                ]),
-              ).values(),
-            ].sort((left, right) => left.name.localeCompare(right.name)),
+            organization:
+              holding(records).find(({ id }) => id === url.searchParams.get("organizationId")) ??
+              null,
             awaitingReview: records.filter((record) => record.status === "in_review").length,
             deploymentsAwaitingReview: records
               .flatMap((record) => record.customerDeployments)
@@ -570,4 +565,16 @@ export function answerReview(url, account) {
     (candidate) => idOf(candidate) === url.pathname.slice(path.length + 1),
   );
   return record ? [200, record] : [404, { status: 404, code: "NOT_FOUND" }];
+}
+
+/** The organizations that hold one of these solutions, by name. */
+function holding(records) {
+  return [
+    ...new Map(
+      records.map((record) => [
+        record.organizationId,
+        { id: record.organizationId, name: record.organizationName },
+      ]),
+    ).values(),
+  ].sort((left, right) => left.name.localeCompare(right.name));
 }

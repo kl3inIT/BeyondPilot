@@ -194,6 +194,19 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
   );
 }
 
+function ComboboxStatus({ className, ...props }: ComboboxPrimitive.Status.Props) {
+  return (
+    <ComboboxPrimitive.Status
+      data-slot="combobox-status"
+      className={cn(
+        "flex w-full items-center justify-center gap-2 py-2 text-sm text-muted-foreground empty:hidden",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 function ComboboxSeparator({ className, ...props }: ComboboxPrimitive.Separator.Props) {
   return (
     <ComboboxPrimitive.Separator
@@ -279,6 +292,7 @@ export {
   ComboboxLabel,
   ComboboxCollection,
   ComboboxEmpty,
+  ComboboxStatus,
   ComboboxSeparator,
   ComboboxChips,
   ComboboxChip,

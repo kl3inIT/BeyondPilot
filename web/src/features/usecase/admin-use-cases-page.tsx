@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
-import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
+import type { AdminUseCaseList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
@@ -38,7 +38,6 @@ const address = createSerializer(adminUseCasesSearch);
 
 type AdminUseCasesPageProps = {
   useCases: AdminUseCaseList;
-  organizations: UseCaseOrganization[];
   search: AdminUseCasesSearch;
 };
 
@@ -46,7 +45,7 @@ type AdminUseCasesPageProps = {
  * Admin › Use cases: every use case in any status, the newest first. The list arrives already
  * read; search, the filters and paging are the URL.
  */
-function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPageProps) {
+function AdminUseCasesPage({ useCases, search }: AdminUseCasesPageProps) {
   const t = useTranslations("Admin.useCases");
   const format = useFormatter();
   const locale = useLocale();
@@ -145,7 +144,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
           </>
         }
       />
-      <AdminUseCasesToolbar organizations={organizations} />
+      <AdminUseCasesToolbar organizations={useCases.organizations} />
 
       {/* The Updated column gives way first where the table is made to fit. */}
       <DataTableRows

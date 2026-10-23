@@ -179,7 +179,7 @@ function CreateAdminPerk() {
               requiredMark
               placeholder={t("organizationPlaceholder")}
               options={organizations.options}
-              onSearch={organizations.search}
+              search={organizations.search}
             />
           )}
         </form.AppField>

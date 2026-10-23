@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import {
-  readAdminUseCases,
-  readUseCaseOrganizations,
-} from "@/features/usecase/admin-use-case-queries";
+import { readAdminUseCases } from "@/features/usecase/admin-use-case-queries";
 import { AdminUseCasesPage } from "@/features/usecase/admin-use-cases-page";
 import { loadAdminUseCasesSearch } from "@/features/usecase/admin-use-cases-search";
 import { ApiError } from "@/lib/api/client";
@@ -29,10 +26,7 @@ export default async function AdminUseCasesRoute({
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminUseCases);
   const search = await loadAdminUseCasesSearch(searchParams);
-  const [useCases, organizations] = await Promise.all([
-    readAdminUseCases(search),
-    readUseCaseOrganizations(),
-  ]).catch((error: unknown) => {
+  const useCases = await readAdminUseCases(search).catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
       notFound();
@@ -40,5 +34,5 @@ export default async function AdminUseCasesRoute({
     throw error;
   });
 
-  return <AdminUseCasesPage useCases={useCases} organizations={organizations} search={search} />;
+  return <AdminUseCasesPage useCases={useCases} search={search} />;
 }
