@@ -23,7 +23,6 @@ import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramSummaryResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
 import ai.genaifund.beyondpilot.program.dto.ExportProgramsRequest;
-import ai.genaifund.beyondpilot.program.dto.LumaReadResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramApplications;
 import ai.genaifund.beyondpilot.program.dto.ProgramEventEntry;
 import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
@@ -49,7 +48,6 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -83,47 +81,17 @@ public class ProgramAdministration {
 
 	private final ApplicationEventPublisher events;
 
-	/** Present only where a Luma calendar is configured. */
-	private final ObjectProvider<LumaCalendar> luma;
-
 	private final TransactionTemplate transactions;
 
 	ProgramAdministration(ProgramRepository programs, ProgramQueryRepository programList, IdentityService identity,
-			StorageService storage, AuditTrail audit, ApplicationEventPublisher events, ObjectProvider<LumaCalendar> luma,
-			TransactionTemplate transactions) {
+			StorageService storage, AuditTrail audit, ApplicationEventPublisher events, TransactionTemplate transactions) {
 		this.programs = programs;
 		this.programList = programList;
 		this.identity = identity;
 		this.storage = storage;
 		this.audit = audit;
 		this.events = events;
-		this.luma = luma;
 		this.transactions = transactions;
-	}
-
-	/**
-	 * Reads the GenAI Fund calendar on Luma now, as the hourly read does, for an operator who just published an event
-	 * there. It runs without a transaction of its own: each event is written in its own, so one that fails leaves the
-	 * others done. A read already running finishes first.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws ProgramException when this environment reads no calendar, or Luma could not be read
-	 */
-	public LumaReadResponse readLuma(Actor actor) {
-		Operator operator = identity.requireOperator(actor);
-		LumaCalendar calendar = luma.getIfAvailable();
-		if (calendar == null) {
-			throw new ProgramException(ProgramErrorCode.LUMA_NOT_CONFIGURED, "No Luma calendar is configured");
-		}
-		LumaCalendar.Read read = calendar.read(Instant.now());
-		if (!read.calendarRead()) {
-			throw new ProgramException(ProgramErrorCode.LUMA_UNREACHABLE, "The Luma calendar could not be read");
-		}
-		transactions.executeWithoutResult(status -> audit.record(new AuditRecord(AuditAction.PROGRAM_LUMA_READ,
-				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
-				new AuditRecord.Resource("luma_calendar", "gaf", "GenAI Fund on Luma"),
-				Map.of("created", String.valueOf(read.created()), "updated", String.valueOf(read.updated()),
-						"unpublished", String.valueOf(read.unpublished())))));
-		return new LumaReadResponse(read.created(), read.updated(), read.unpublished(), read.failed());
 	}
 
 	/**

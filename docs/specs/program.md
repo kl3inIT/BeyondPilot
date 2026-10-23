@@ -10,8 +10,9 @@ it asks applicants, and whether the public site shows it. It was delivered by
 
 - **Published API.** The package root: `ProgramService` (what visitors and other modules read), `ProgramAdministration`
   (what operators do), `ProgramPhase`, `ProgramChanged`, `ApplicationForm`, `ProgramName`, `IndexedProgram`,
-  `ProgramErrorCode` and `ProgramException`. `PublishIssue`, `ReplacedCovers` and `LumaCalendar` are package-private;
-  `program.luma` holds the Luma reads.
+  `ProgramErrorCode` and `ProgramException`, and `LumaAdministration` (the Luma calendar operators connect).
+  `PublishIssue`, `ReplacedCovers`, `LumaCalendar` and `LumaKeys` are package-private; `program.luma` holds the calls
+  to Luma's API, the event as Luma gives it and the webhook's signature.
 - **Persistence.** `program.persistence` holds the JPA aggregate `Program` with its value lists `ProgramMilestone`,
   `ProgramEvent` and `ProgramQuestion`, the Spring Data `ProgramRepository`, and `ProgramQueryRepository`, the
   `JdbcClient` reads behind the public list and the operators' list. Enum values are stored as lowercase codes.
@@ -28,7 +29,7 @@ it asks applicants, and whether the public site shows it. It was delivered by
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
 `V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
 when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from.
-The module owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
+`V114__program_create_luma_connection.sql` creates `program_luma_connection`. The module owns all five ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
   `ends_on`, `status`, `published_at`, `page_kind`, `external_url`, `cover_file_id`, the application window
@@ -39,6 +40,10 @@ The module owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-
   created) and `luma_cover_url` (the image on Luma the cover was copied from), `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
+- **`program_luma_connection`.** At most one row (`id = 1`): the Luma key sealed with AES-256-GCM (`api_key`) and its last
+  four characters, the calendar's `calendar_id` and `calendar_name`, the webhook BeyondPilot made (`webhook_id`, its
+  secret sealed in `webhook_secret`, or why none was in `webhook_error`), `last_read_at`, `last_read_error`,
+  `connected_by_account_id`, `created_at`, `updated_at`, `version`.
 - **`program_question`.** Also keyed by `(program_id, position)`, but each question has an `id`, unique across all
   programs, because an application's answers name their question by it.
 
@@ -208,6 +213,8 @@ Each change is recorded through `AuditTrail` in the transaction of the change, w
 | Feature                         | `program.feature`                                                                          |
 | Stop featuring                  | `program.unfeature`                                                                        |
 | Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
+| Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                          |
+| Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                       |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
 unpublish with the same actions and no actor.
@@ -224,33 +231,51 @@ closed, with its next key date. Featuring publishes no `ProgramChanged`: the ind
 
 ## Events from Luma
 
-`LumaCalendar` brings the events of the GenAI Fund calendar on Luma onto the site (BEY-190). It runs every hour
-(`beyondpilot.program.luma.interval`) where `beyondpilot.program.luma.feed` is set, which only
-`application-production.yaml` does, with the calendar's public iCal feed; tests and local runs never call Luma.
+`LumaCalendar` brings the events of the connected Luma calendar onto the site through Luma's API (BEY-190, BEY-245;
+[ADR 0011](../decisions/0011-program-reads-luma-through-its-api.md)). It reads every hour
+(`beyondpilot.program.luma.interval`) and soon after a delivery of the calendar's webhook; with no calendar connected
+it does nothing, so tests and local runs never call Luma unless a test connects one.
 
-- **Read.** `program.luma.LumaFeed` reads the feed: each event's `evt-…` identifier, its times in UTC and its page's
-  address. For each event not over, `LumaEventPage` reads the schema.org `Event` JSON-LD of its page: name,
-  description, start and end with their offset, attendance mode, city, country (an ISO code written in English words)
-  and first image. Calls go through `LumaHttp` to the configured hosts only (`beyondpilot.program.luma.hosts`), follow
-  no redirect, end after `beyondpilot.program.luma.timeout` and read at most 2 MB of text or 5 MB of an image.
+- **Connecting.** On Admin › Programs › **Luma** an operator pastes the calendar's API key (`LumaAdministration.connect`).
+  BeyondPilot asks Luma for the key's calendar (`GET /v1/calendars/get`), seals the key with AES-256-GCM under
+  `beyondpilot.program.luma.encryption-key` (`BEYONDPILOT_PROGRAM_ENCRYPTION_KEY`, `LumaKeys`), removes a webhook a
+  connection before left at its own address, makes one for `calendar.event.added`, `event.created`, `event.updated` and
+  `event.canceled` at `<beyondpilot.program.luma.site-url>/api/program/luma/webhook` (`POST /v2/webhooks/create`) and
+  seals its secret, then reads the calendar soon after. A webhook that cannot be made is said in `webhook_error`; the
+  hourly read goes on. A new key replaces the connection before. Disconnecting removes the webhook on Luma and the row;
+  the programs stay. The key and the secret are never returned. Without the encryption key nothing can be connected
+  (`PROGRAM_LUMA_ENCRYPTION_KEY_MISSING`), and a key Luma refuses is not kept (`PROGRAM_LUMA_KEY_REFUSED`).
+- **Read.** `program.luma.LumaApi` lists the calendar's events, those it manages and those other hosts list on it
+  (`GET /v1/calendars/events/list` with `access` `manage` then `view`, page by page). For each event not over it reads
+  the event in full (`GET /v1/events/get`): name, plain description, start and end, time zone, kind of place, city and
+  country (an ISO code written in English words), cover, page and visibility. Calls carry the key, follow no redirect,
+  end after `beyondpilot.program.luma.timeout` and read at most 4 MB; covers are downloaded through `LumaHttp` from the
+  configured hosts only (`beyondpilot.program.luma.hosts`, `images.lumacdn.com`), at most 5 MB.
 - **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is the page's
   path (`gaf-tinyfish-vn`), with `-2`, `-3`… when taken; its summary the description's first line cut at a word to 300
-  characters, its about the description, its days the event's local days, its page `external` at the Luma address,
-  one program event registering there, and its cover the image copied into storage (`StorageService.keep`). It is
-  published when it has what publishing asks for, and waits as a draft otherwise. A held one is found by
-  `luma_event_id` and given what Luma says now, overwriting an operator's edit; a read that changes nothing writes
-  nothing, and the image is copied again only when its address changes, the replaced cover going after the commit.
-  The job never changes a held program's status, except to unpublish a published one whose event is still to come
-  and is no longer in the feed.
+  characters, its about the description, its days the event's local days in its time zone, its page `external` at the
+  Luma address, one program event registering there (online, with no city, unless Luma calls the place `offline`), and
+  its cover the image copied into storage (`StorageService.keep`). A `public` event is published when it has what
+  publishing asks for; a `private` or `members-only` one, or one lacking a cover or a summary, waits as a draft. A held
+  one is found by `luma_event_id` and given what Luma says now, overwriting an operator's edit; a read that changes
+  nothing writes nothing, and the image is copied again only when its address changes, the replaced cover going after
+  the commit. The job never changes a held program's status, except to unpublish a published one whose event is still
+  to come and is no longer on the calendar.
+- **Webhook.** `POST /api/program/luma/webhook` takes no session and no CSRF header. A delivery counts only when
+  `Webhook-Signature` (`t=<unix seconds>,v1=<hex>`) is the HMAC-SHA256 of `"<t>." + body` with the webhook's secret and
+  `t` is within 15 minutes of now (`LumaSignature`), since Luma's retries keep their first `t`; it is then answered
+  `204` and the calendar is read soon, once however many deliveries come. Anything else is answered `403`
+  (`program.luma.webhook_refused`), never `410`, which would pause the webhook.
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
   such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
-  its Luma page.
-- **Now.** Admin › Programs › **Pull from Luma** runs the same read at once (`ProgramAdministration.readLuma`), for an
-  operator who just published an event; a read already running finishes first, since `read` is synchronized. The
-  toast says what changed.
-- **Failures.** A feed that cannot be read, or is not a calendar, changes nothing (`program.luma.feed_failed`). An
-  event whose page, image or write fails is skipped and tried at the next read (`program.luma.event_failed`); the
-  others go on. A read that changed something logs `program.luma.read` with its counts.
+  its Luma page. The **Luma** tab shows the calendar, the key's last four characters, whether the webhook exists, the
+  last read or why it failed, and when it was connected.
+- **Now.** **Pull from Luma** runs the same read at once (`LumaAdministration.read`), for an operator who just published
+  an event; a read already running finishes first, since `read` is synchronized. The toast says what changed.
+- **Failures.** A calendar that cannot be read changes nothing and is said on the connection: "Luma could not be read"
+  (`program.luma.read_failed`) or "Luma refused the key". An event whose read, image or write fails is skipped and tried
+  at the next read (`program.luma.event_failed`); the others go on. A read that changed something logs
+  `program.luma.read` with its counts.
 
 ## Events
 
@@ -263,22 +288,26 @@ closed, with its next key date. Featuring publishes no `ProgramChanged`: the ind
 
 Admin paths need a session, an operator and, for a change, the CSRF header.
 
-| Method and path                                   | Contract                                                                                                                                                       |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured`                                                                                   |
-| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                                                                                                       |
-| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window                                                                                                |
-| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`                                                                                             |
-| `POST /api/program/admin/programs/export`         | `200` with the programs the body names, in its order, as XLSX or CSV (`?format=`); a program that does not exist is left out; recorded as `program.export`     |
-| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`                                                                                                |
-| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                                                                                                  |
-| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`                                                                                               |
-| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                                                                                                    |
-| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                                                                                                    |
-| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                                                                                                          |
-| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                                                                                                          |
-| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                                                                                                          |
-| `POST /api/program/admin/programs/luma/read`      | `LumaRead`: what the read changed; `503` `PROGRAM_LUMA_NOT_CONFIGURED` where no calendar is configured, `PROGRAM_LUMA_UNREACHABLE` when Luma could not be read |
+| Method and path                                   | Contract                                                                                                                                                                                        |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured`                                                                                                                    |
+| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                                                                                                                                        |
+| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window                                                                                                                                 |
+| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`                                                                                                                              |
+| `POST /api/program/admin/programs/export`         | `200` with the programs the body names, in its order, as XLSX or CSV (`?format=`); a program that does not exist is left out; recorded as `program.export`                                      |
+| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`                                                                                                                                 |
+| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                                                                                                                                   |
+| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`                                                                                                                                |
+| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                                                                                                                                     |
+| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                                                                                                                                     |
+| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                                                                                                                                           |
+| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                                                                                                                                           |
+| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                                                                                                                                           |
+| `GET /api/program/admin/luma`                     | `LumaConnection`: whether a key can be kept, and the connected calendar without its key                                                                                                         |
+| `PUT /api/program/admin/luma`                     | `LumaConnection` after connecting; `400` `PROGRAM_LUMA_KEY_REFUSED`; `503` `PROGRAM_LUMA_UNREACHABLE`, `PROGRAM_LUMA_ENCRYPTION_KEY_MISSING`                                                    |
+| `DELETE /api/program/admin/luma`                  | `204`                                                                                                                                                                                           |
+| `POST /api/program/admin/luma/read`               | `LumaRead`: what the read changed; `400` `PROGRAM_LUMA_KEY_REFUSED`; `503` `PROGRAM_LUMA_NOT_CONFIGURED` where no calendar is connected, `PROGRAM_LUMA_UNREACHABLE` when Luma could not be read |
+| `POST /api/program/luma/webhook`                  | `204` a delivery signed by the connected calendar; `403` otherwise                                                                                                                              |
 
 The contract is `openapi.yml`.
 
@@ -286,24 +315,26 @@ The contract is `openapi.yml`.
 
 `ProgramErrorCode`, turned into RFC 9457 problems by `config.ApiExceptionHandler`:
 
-| Code                            | Status | When                                                                             |
-| ------------------------------- | ------ | -------------------------------------------------------------------------------- |
-| `PROGRAM_NOT_FOUND`             | 404    | No program has this id, or no public program this address                        |
-| `PROGRAM_SLUG_TAKEN`            | 409    | Another program has the address                                                  |
-| `PROGRAM_SLUG_FIXED`            | 409    | A new address for a program that has been published                              |
-| `PROGRAM_CHANGED_MEANWHILE`     | 409    | The `version` sent is not the program's                                          |
-| `PROGRAM_QUESTIONS_FIXED`       | 409    | The questions are saved after the applications opened                            |
-| `PROGRAM_OPENING_FIXED`         | 409    | A save moves a passed opening or takes the window away                           |
-| `PROGRAM_PUBLISHED_INCOMPLETE`  | 400    | A save leaves a published program without what publishing asks for               |
-| `PROGRAM_DAYS_OUT_OF_ORDER`     | 400    | `endsOn` before `startsOn`                                                       |
-| `PROGRAM_WINDOW_OUT_OF_ORDER`   | 400    | `closesAt` not after `opensAt`                                                   |
-| `PROGRAM_OUTCOMES_BEFORE_CLOSE` | 400    | `outcomesDueOn` before the closing day in Vietnam                                |
-| `PROGRAM_KEY_DATE_OUT_OF_ORDER` | 400    | A key date ends before it starts                                                 |
-| `PROGRAM_EVENT_OUT_OF_ORDER`    | 400    | An event ends before it starts                                                   |
-| `PROGRAM_EVENT_CITY_REQUIRED`   | 400    | An event added or changed is held in person and names no city                    |
-| `PROGRAM_EXTERNAL_URL_REQUIRED` | 400    | `external` page kind without `externalUrl`                                       |
-| `PROGRAM_CHOICES_REQUIRED`      | 400    | A `single_choice` or `multi_choice` question with fewer than two options         |
-| `PROGRAM_NOT_READY_TO_PUBLISH`  | 400    | Publishing while `publishIssues` is not empty                                    |
-| `PROGRAM_COVER_NOT_USABLE`      | 400    | The cover is not a stored `program_image` of the caller, or is another program's |
-| `PROGRAM_LUMA_NOT_CONFIGURED`   | 503    | Pull from Luma where no calendar is configured                                   |
-| `PROGRAM_LUMA_UNREACHABLE`      | 503    | Pull from Luma when Luma could not be read                                       |
+| Code                                  | Status | When                                                                                  |
+| ------------------------------------- | ------ | ------------------------------------------------------------------------------------- |
+| `PROGRAM_NOT_FOUND`                   | 404    | No program has this id, or no public program this address                             |
+| `PROGRAM_SLUG_TAKEN`                  | 409    | Another program has the address                                                       |
+| `PROGRAM_SLUG_FIXED`                  | 409    | A new address for a program that has been published                                   |
+| `PROGRAM_CHANGED_MEANWHILE`           | 409    | The `version` sent is not the program's                                               |
+| `PROGRAM_QUESTIONS_FIXED`             | 409    | The questions are saved after the applications opened                                 |
+| `PROGRAM_OPENING_FIXED`               | 409    | A save moves a passed opening or takes the window away                                |
+| `PROGRAM_PUBLISHED_INCOMPLETE`        | 400    | A save leaves a published program without what publishing asks for                    |
+| `PROGRAM_DAYS_OUT_OF_ORDER`           | 400    | `endsOn` before `startsOn`                                                            |
+| `PROGRAM_WINDOW_OUT_OF_ORDER`         | 400    | `closesAt` not after `opensAt`                                                        |
+| `PROGRAM_OUTCOMES_BEFORE_CLOSE`       | 400    | `outcomesDueOn` before the closing day in Vietnam                                     |
+| `PROGRAM_KEY_DATE_OUT_OF_ORDER`       | 400    | A key date ends before it starts                                                      |
+| `PROGRAM_EVENT_OUT_OF_ORDER`          | 400    | An event ends before it starts                                                        |
+| `PROGRAM_EVENT_CITY_REQUIRED`         | 400    | An event added or changed is held in person and names no city                         |
+| `PROGRAM_EXTERNAL_URL_REQUIRED`       | 400    | `external` page kind without `externalUrl`                                            |
+| `PROGRAM_CHOICES_REQUIRED`            | 400    | A `single_choice` or `multi_choice` question with fewer than two options              |
+| `PROGRAM_NOT_READY_TO_PUBLISH`        | 400    | Publishing while `publishIssues` is not empty                                         |
+| `PROGRAM_COVER_NOT_USABLE`            | 400    | The cover is not a stored `program_image` of the caller, or is another program's      |
+| `PROGRAM_LUMA_NOT_CONFIGURED`         | 503    | Pull from Luma where no calendar is connected                                         |
+| `PROGRAM_LUMA_UNREACHABLE`            | 503    | Pull from Luma, or connecting, when Luma could not be reached                         |
+| `PROGRAM_LUMA_KEY_REFUSED`            | 400    | Connecting with a key Luma refuses, or Pull from Luma with a key Luma no longer takes |
+| `PROGRAM_LUMA_ENCRYPTION_KEY_MISSING` | 503    | Connecting where `BEYONDPILOT_PROGRAM_ENCRYPTION_KEY` is not set                      |

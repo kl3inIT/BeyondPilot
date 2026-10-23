@@ -49,6 +49,12 @@ public enum AuditAction {
 	 */
 	PROGRAM_LUMA_READ("program.luma_read", "created", "updated", "unpublished"),
 
+	/** An operator connected the Luma calendar named in {@code calendar} with a key, replacing any key before. */
+	PROGRAM_LUMA_CONNECT("program.luma_connect", "calendar"),
+
+	/** An operator removed the Luma key; the calendar is no longer read. */
+	PROGRAM_LUMA_DISCONNECT("program.luma_disconnect", "calendar"),
+
 	/** An operator featured a program, which the home page announces while it takes applications. */
 	PROGRAM_FEATURE("program.feature"),
 

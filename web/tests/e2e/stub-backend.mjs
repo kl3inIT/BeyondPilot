@@ -686,6 +686,25 @@ createServer((request, response) => {
     }
     return json(response, 200, program);
   }
+  // The Luma calendar BeyondPilot reads (BEY-245): connected, its webhook made, read an hour ago.
+  if (url.pathname === "/api/program/admin/luma") {
+    if (account?.role !== "operator") {
+      return json(response, account ? 403 : 401, {});
+    }
+    return json(response, 200, {
+      encryptionReady: true,
+      calendar: {
+        id: "cal-KxQE75V2Ywj0ZDI",
+        name: "GenAI Fund - Official",
+        keyEnding: "6wZL",
+        webhook: true,
+        webhookError: null,
+        connectedAt: "2026-10-23T06:30:00Z",
+        lastReadAt: "2026-10-23T07:00:00Z",
+        lastReadError: null,
+      },
+    });
+  }
   if (url.pathname.startsWith("/api/program/admin/programs")) {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});

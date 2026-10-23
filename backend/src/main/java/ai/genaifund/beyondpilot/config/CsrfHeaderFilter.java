@@ -27,11 +27,18 @@ class CsrfHeaderFilter extends OncePerRequestFilter {
 	 */
 	static final String PROVIDER_REPORTS = "/api/notification/email/events/";
 
+	/**
+	 * Where Luma posts the webhook of the connected calendar (BEY-245). Luma cannot send the header, and a delivery acts
+	 * on no session: it is accepted only by its signature.
+	 */
+	static final String LUMA_WEBHOOK = "/api/program/luma/webhook";
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws ServletException, IOException {
 		if (!SAFE_METHODS.contains(request.getMethod()) && !"1".equals(request.getHeader(HEADER))
-				&& !request.getRequestURI().startsWith(PROVIDER_REPORTS)) {
+				&& !request.getRequestURI().startsWith(PROVIDER_REPORTS)
+				&& !request.getRequestURI().equals(LUMA_WEBHOOK)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}

@@ -378,8 +378,11 @@ test.describe("admin", () => {
       // On a phone the sidebar is a sheet, which may still be open from the last choice, or still
       // closing after an Escape: its account button shows until it has gone, and a menu opened
       // from it goes with it. Wait until no sheet is closing before looking.
-      // Base UI marks a closing popup with data-ending-style until its animation ends.
+      // Base UI marks a closing popup with data-ending-style until its animation ends. A menu just
+      // closed by Escape stays in the page, marked data-closed, until its own animation ends, and
+      // would be the first menu found: Enter on its items does nothing.
       await expect(page.locator('[role="dialog"][data-ending-style]')).toHaveCount(0);
+      await expect(page.locator('[role="menu"][data-closed]')).toHaveCount(0);
       if (isMobile && !(await account.isVisible())) {
         await page
           .getByRole("main")
