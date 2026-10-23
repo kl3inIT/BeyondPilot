@@ -16,6 +16,7 @@ On production on 23 October, after that applicant's records were gone, 9 teams h
   - choosing a company takes them out of the team so that the finder can join or add the company.
 
   A team that sent something, or that has someone else in it, stays as it is.
+
 - **Delete a draft application.** The applicant deletes their own application while it is a draft, from its page, after a confirmation that says it cannot be undone. This works whether or not the program still takes applications. A submitted application keeps Withdraw.
 
 ## Decisions
@@ -31,18 +32,18 @@ On production on 23 October, after that applicant's records were gone, 9 teams h
 
 ## HTTP
 
-| Path                                                   | Change                                                                                               |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `POST /api/proposal/programs/{slug}/application/organization`       | Also renames a team that may change, or turns it into the person on their own                        |
-| `POST /api/proposal/programs/{slug}/application/organization/leave` | Also takes the person out of a team that may change                                                  |
-| `DELETE /api/proposal/applications/{id}`               | New: deletes the caller's draft, `204`; `404` for one that is not theirs, `409` for one not a draft  |
-| `ApplyingOrganization.changeable`                      | Also true for a team that may change                                                                 |
+| Path                                                                | Change                                                                                              |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `POST /api/proposal/programs/{slug}/application/organization`       | Also renames a team that may change, or turns it into the person on their own                       |
+| `POST /api/proposal/programs/{slug}/application/organization/leave` | Also takes the person out of a team that may change                                                 |
+| `DELETE /api/proposal/applications/{id}`                            | New: deletes the caller's draft, `204`; `404` for one that is not theirs, `409` for one not a draft |
+| `ApplyingOrganization.changeable`                                   | Also true for a team that may change                                                                |
 
 The exact contract is `openapi.yml`.
 
 ## Web
 
-| Where                     | What                                                                                                                                |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Apply, step 1             | **Change** on a team that may change; choosing a team, oneself or a company as above                                                |
-| `/applications/{id}`      | **Delete draft** on a draft, with a confirmation; then back to the applications list with a notice                                   |
+| Where                | What                                                                                               |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Apply, step 1        | **Change** on a team that may change; choosing a team, oneself or a company as above               |
+| `/applications/{id}` | **Delete draft** on a draft, with a confirmation; then back to the applications list with a notice |
