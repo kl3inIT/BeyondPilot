@@ -333,6 +333,14 @@ function SelectField({
 
 type Option = { value: string; label: string };
 
+type ComboboxFieldProps = SelectFieldProps & {
+  /**
+   * Asks the server for the options matching what is typed, for a list it gives only the first page
+   * of; the options are then shown as given, not narrowed here. See `useSearchedOptions`.
+   */
+  onSearch?: (text: string) => void;
+};
+
 /**
  * One choice out of a list too long to read whole, such as the organizations: typing narrows it and
  * the arrow opens all of it. A short list belongs in {@link SelectField}.
@@ -345,7 +353,8 @@ function ComboboxField({
   description,
   options,
   placeholder,
-}: SelectFieldProps) {
+  onSearch,
+}: ComboboxFieldProps) {
   const t = useTranslations("Form");
   const { field, invalid, errors, hintId, errorId, describedBy, required, errorRole } =
     useDescribedField<string>(description, undefined, {
@@ -367,6 +376,7 @@ function ComboboxField({
         value={options.find((option) => option.value === field.state.value) ?? null}
         isItemEqualToValue={(item: Option, other: Option) => item.value === other.value}
         onValueChange={(next: Option | null) => field.handleChange(next?.value ?? "")}
+        {...(onSearch && { filter: null, onInputValueChange: (text: string) => onSearch(text) })}
       >
         <ComboboxInput
           id={field.name}

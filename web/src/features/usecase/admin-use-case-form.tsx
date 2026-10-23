@@ -9,13 +9,14 @@ import { StepsNav } from "@/components/composites/steps-nav";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { AllRequired } from "@/components/form/form-fields";
 import { focusFirstInvalid } from "@/components/form/focus-first-invalid";
+import { useSearchedOptions } from "@/components/form/use-searched-options";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import { failedWith, type ErrorCode } from "@/lib/api/failure";
-import { createAdminUseCase, type UseCaseOrganization } from "@/lib/api/generated";
+import { createAdminUseCase, listUseCaseOrganizations } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
@@ -67,6 +68,12 @@ const refusalFields = {
   USECASE_ATTACHMENT_NOT_USABLE: "content.attachments",
 } as const satisfies Record<RefusalCode, string>;
 
+/** The organizations a use case can be written for whose name holds the text, the first page with none. */
+async function findOrganizations(text: string | undefined) {
+  const { data } = await listUseCaseOrganizations({ query: { q: text } });
+  return data.items.map(({ id, name }) => ({ value: id, label: name }));
+}
+
 /**
  * The form's field for a field as the schema or the backend names it: the use case's own fields sit
  * under `content`, the timeline is shown on its first number of weeks, the close time on its day.
@@ -108,7 +115,7 @@ function stepOfField(field: string): Step {
  * Admin creation uses the organization's five content steps, inside the Admin shell. The operator is
  * the reviewer, so the final action publishes immediately instead of creating another review cycle.
  */
-function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganization[] }) {
+function AdminUseCaseForm() {
   const t = useTranslations("Admin.useCases.form");
   const w = useTranslations("Organization.useCases.wizard");
   const say = useTranslations("Form.errors");
@@ -194,7 +201,8 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
 
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values);
-  const organization = organizations.find(({ id }) => id === organizationId);
+  const organizations = useSearchedOptions(findOrganizations, organizationId);
+  const organization = organizations.options.find(({ value }) => value === organizationId);
 
   /**
    * Lets fields show their problem although the person has not been in them: submitting does that
@@ -316,7 +324,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             {values.hideOrganizationName
               ? t("publishNoteUnnamed")
               : t("publishNote", {
-                  organization: organization?.name ?? t("thisOrganization"),
+                  organization: organization?.label ?? t("thisOrganization"),
                 })}
           </p>
         </aside>
@@ -355,11 +363,12 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             {step === "challenge" && (
               <form.AppField name="organizationId">
                 {(field) => (
-                  <field.SelectField
+                  <field.ComboboxField
                     label={t("organization")}
                     placeholder={t("organizationPlaceholder")}
                     description={t("organizationHint")}
-                    options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
+                    options={organizations.options}
+                    onSearch={organizations.search}
                   />
                 )}
               </form.AppField>
