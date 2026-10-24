@@ -1345,6 +1345,8 @@
           "luma_connect": "Connected the calendar on Luma",
           "luma_disconnect": "Disconnected the calendar on Luma",
           "luma_event_create": "Created an event on Luma",
+          "luma_event_update": "Changed an event on Luma",
+          "luma_guest_decide": "Decided a guest on Luma",
           "export": "Downloaded the programs"
         },
         "organization": {
@@ -1528,6 +1530,8 @@
           "luma_connect": "Connected <resource></resource>",
           "luma_disconnect": "Disconnected <resource></resource>",
           "luma_event_create": "Created the event <resource></resource> on Luma",
+          "luma_event_update": "Changed the event <resource></resource> on Luma",
+          "luma_guest_decide": "Decided a guest of <resource></resource> on Luma",
           "export": "Downloaded the programs"
         },
         "organization": {

@@ -200,7 +200,7 @@ class McpServerConfiguration {
 					+ "use cases and companies. For what /admin shows in any status use the admin tools: programs "
 					+ "and their applications and drafts, the records in review with their history, what waits for "
 					+ "review, accounts, the audit log, email activity and AI matching. decide_record, "
-					+ "decide_application, decide_proposal, score_application, create_organization, create_event and the use "
+					+ "decide_application, decide_proposal, score_application, create_organization, create_event, update_event, decide_guest and the use "
 					+ "case tools change one record each: call them only for what the operator asked for in this "
 					+ "conversation, after reading the record. A use case created here is private: only operators see it "
 					+ "until publish_use_case. An event created here is a draft, and on Luma a private event, until an "
@@ -253,6 +253,10 @@ class McpServerConfiguration {
 			all.add(log.logged(name, programTools.listPrograms()));
 			all.add(log.logged(name, programTools.getProgram()));
 			all.add(log.logged(name, programTools.createEvent()));
+			all.add(log.logged(name, programTools.updateEvent()));
+			all.add(log.logged(name, programTools.searchEventCovers()));
+			all.add(log.logged(name, programTools.listEventGuests()));
+			all.add(log.logged(name, programTools.decideGuest()));
 		}
 		if (operationsTools != null) {
 			all.add(log.logged(name, operationsTools.listAccounts()));

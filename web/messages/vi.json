@@ -1345,6 +1345,8 @@
           "luma_connect": "Kết nối lịch trên Luma",
           "luma_disconnect": "Ngắt kết nối lịch trên Luma",
           "luma_event_create": "Tạo sự kiện trên Luma",
+          "luma_event_update": "Sửa sự kiện trên Luma",
+          "luma_guest_decide": "Duyệt khách trên Luma",
           "export": "Tải danh sách chương trình"
         },
         "organization": {
@@ -1528,6 +1530,8 @@
           "luma_connect": "Kết nối <resource></resource>",
           "luma_disconnect": "Ngắt kết nối <resource></resource>",
           "luma_event_create": "Đã tạo sự kiện <resource></resource> trên Luma",
+          "luma_event_update": "Đã sửa sự kiện <resource></resource> trên Luma",
+          "luma_guest_decide": "Đã quyết định một khách của <resource></resource> trên Luma",
           "export": "Tải danh sách chương trình"
         },
         "organization": {

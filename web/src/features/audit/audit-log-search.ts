@@ -23,6 +23,8 @@ export const auditActions = [
   "program.luma_connect",
   "program.luma_disconnect",
   "program.luma_event_create",
+  "program.luma_event_update",
+  "program.luma_guest_decide",
   "organization.create",
   "organization.approve",
   "organization.refuse",

@@ -68,6 +68,9 @@ public enum ProgramErrorCode implements ErrorCode {
 	LUMA_EVENT_REFUSED("PROGRAM_LUMA_EVENT_REFUSED", ErrorCategory.VALIDATION,
 			"Luma refused this event. Check its dates, place and questions, then try again."),
 
+	LUMA_EVENT_NOT_FOUND("PROGRAM_LUMA_EVENT_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"The connected Luma calendar has no such event. Add it to the GenAI Fund calendar on Luma first, or check the link."),
+
 	REGISTRATION_NOT_HERE("PROGRAM_REGISTRATION_NOT_HERE", ErrorCategory.NOT_FOUND,
 			"People register for this event on Luma, not here."),
 

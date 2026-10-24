@@ -332,11 +332,20 @@ class LumaCalendar {
 			events.publishEvent(new ProgramChanged(program.getId()));
 			return Change.CREATED;
 		}
-		if (before.equals(Fields.of(program))) {
+		// An event made public on Luma goes public here too, unless an operator has published or unpublished it before.
+		boolean publish = event.visibility() == LumaEvent.Visibility.PUBLIC && !program.hasBeenPublished()
+				&& PublishIssue.of(program).isEmpty();
+		boolean changed = !before.equals(Fields.of(program));
+		if (!changed && !publish) {
 			return Change.UNCHANGED;
 		}
 		programs.flush();
-		record(AuditAction.PROGRAM_UPDATE, program);
+		if (changed) {
+			record(AuditAction.PROGRAM_UPDATE, program);
+		}
+		if (publish && program.publish(Instant.now())) {
+			record(AuditAction.PROGRAM_PUBLISH, program);
+		}
 		events.publishEvent(new ProgramChanged(program.getId()));
 		if (replacedCover != null) {
 			events.publishEvent(new ReplacedCovers.CoverReplaced(program.getId(), replacedCover));
@@ -410,9 +419,13 @@ class LumaCalendar {
 	 * The address of the event's Luma page ({@code luma.com/gaf-tinyfish-vn} gives {@code gaf-tinyfish-vn}), with
 	 * {@code -2}, {@code -3}… when another program has it.
 	 */
+	/** The address here: the event's name, else the last part of its page on Luma, else its identifier. */
 	private String slug(LumaEvent event) {
-		String path = Objects.requireNonNullElse(event.page().getPath(), "");
-		String base = slugOf(path.substring(path.lastIndexOf('/') + 1));
+		String base = trimSlug(slugOf(event.name()), MAX_SLUG);
+		if (base.length() < 3) {
+			String path = Objects.requireNonNullElse(event.page().getPath(), "");
+			base = slugOf(path.substring(path.lastIndexOf('/') + 1));
+		}
 		if (base.length() < 3) {
 			base = slugOf(event.id());
 		}

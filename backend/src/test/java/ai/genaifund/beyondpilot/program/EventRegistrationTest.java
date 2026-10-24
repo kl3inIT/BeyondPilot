@@ -58,7 +58,7 @@ class EventRegistrationTest {
 
 	private static final String EVENT = "evt-briefing";
 
-	private static final String SLUG = "gaf-briefing";
+	private static final String SLUG = "product-briefing";
 
 	private static final HttpServer LUMA = luma();
 

@@ -224,6 +224,8 @@ Each change is recorded through `AuditTrail` in the transaction of the change, w
 | Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                             |
 | Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                          |
 | Create an event on Luma (MCP)   | `program.luma_event_create`, with `event`; resource the program, or the Luma event until read |
+| Change an event on Luma (MCP)   | `program.luma_event_update`, with `event`; resource the program                               |
+| Decide a guest on Luma (MCP)    | `program.luma_guest_decide`, with `event`, `guest` and `status`; resource the program         |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
 unpublish with the same actions and no actor.
@@ -260,16 +262,19 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   country (an ISO code written in English words), cover, page and visibility. Calls carry the key, follow no redirect,
   end after `beyondpilot.program.luma.timeout` and read at most 4 MB; covers are downloaded through `LumaHttp` from the
   configured hosts only (`beyondpilot.program.luma.hosts`, `images.lumacdn.com`), at most 5 MB.
-- **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is the page's
-  path (`gaf-tinyfish-vn`), with `-2`, `-3`… when taken; its summary the description's first line cut at a word to 300
+- **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is its name
+  as a slug (`tinyfish-big-minds`), else the path of its Luma page, else its identifier, with `-2`, `-3`… when taken; a
+  held program keeps the address it has; its summary the description's first line cut at a word to 300
   characters, its about the description, its days the event's local days in its time zone, its page `external` at the
   Luma address, one program event registering there (online, with no city, unless Luma calls the place `offline`), and
   its cover the image copied into storage (`StorageService.keep`). A `public` event is published when it has what
   publishing asks for; a `private` or `members-only` one, or one lacking a cover or a summary, waits as a draft. A held
   one is found by `luma_event_id` and given what Luma says now, overwriting an operator's edit; a read that changes
   nothing writes nothing, and the image is copied again only when its address changes, the replaced cover going after
-  the commit. The job never changes a held program's status, except to unpublish a published one whose event is still
-  to come and is no longer on the calendar.
+  the commit. The job changes a held program's status twice only: it publishes a draft never published once its event
+  is `public` on Luma and the program has what publishing asks for, so making the event public on Luma makes its page
+  public here (an operator's later unpublish stands); and it unpublishes a published one whose event is still to come
+  and is no longer on the calendar.
 - **Webhook.** `POST /api/program/luma/webhook` takes no session and no CSRF header. A delivery counts only when
   `Webhook-Signature` (`t=<unix seconds>,v1=<hex>`) is the HMAC-SHA256 of `"<t>." + body` with the webhook's secret and
   `t` is within 15 minutes of now (`LumaSignature`), since Luma's retries keep their first `t`; it is then answered
@@ -296,9 +301,21 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
 
 ## Events created from BeyondPilot
 
-An operator creates an event from the operators' MCP server with `create_event` (BEY-250;
-[design](../increments/active/bey-250-create-event-from-mcp/design.md)), through `EventCreation`, which first calls
-`IdentityService.requireOperator`. Either way the outcome is a draft nobody sees until an operator publishes it.
+An operator creates an event from the operators' MCP server with `create_event`, changes one with `update_event`
+(its cover found with `search_event_covers`), and reads and decides its guests with `list_event_guests` and
+`decide_guest` (BEY-250; [design](../increments/active/bey-250-create-event-from-mcp/design.md)), through
+`EventCreation`, `EventChanges` and `EventGuests`, which first call `IdentityService.requireOperator`. What is made is a draft nobody sees until an
+operator publishes it, or until its event is made public on Luma.
+
+- **Found, never made twice.** Every event of the calendar already has its page here. `EventCreation.fromLuma` takes a
+  Luma link (`luma.com/event/manage/evt-…`, `luma.com/<path>`, `lu.ma/<path>`, any case, with a query or a trailing
+  slash) or an `evt-` identifier, finds the event by identifier (`GET /v1/events/get`) or by its page's path among the
+  programs held and then the calendar's events, reads it now with `LumaCalendar.bring`, and answers its program with
+  `existing` true when the page was already there; it creates nothing. A link the calendar does not hold is
+  `PROGRAM_LUMA_EVENT_NOT_FOUND`, and text that is not a Luma link or identifier is refused before Luma is called.
+  `onLuma` answers the page of an event of the same name, as asked or as prefixed, starting the same day instead of
+  creating one; `here` answers the page of the calendar's event when the registration link is one of its links, and
+  makes a page linking to any other Luma link, such as a partner's.
 
 - **On Luma** (`EventCreation.onLuma`, the default). With the connected calendar's key, `LumaApi.createEvent` sends
   `POST /v1/events/create`: the event `private`, its name, start and end in its time zone, a free-text address (kept
@@ -320,6 +337,37 @@ An operator creates an event from the operators' MCP server with `create_event` 
   time zone and one program event; its page is `external` at the registration link when one is given, else
   `standard`. Its address is the name as a slug, with `-2`, `-3`… when taken. The requests are validated as the admin
   screen's are, and audited as `program.create` and `program.update`.
+- **Changed** (`EventChanges.change`). The event is named by its page here (`https://…/programs/<slug>`,
+  `program:<slug>`, the slug or the program's identifier) or by a Luma link or identifier. With nothing to change it is
+  answered as it stands, on Luma with its questions in `create_event`'s types, so a form is read before it is replaced.
+  An event of the calendar is changed on Luma, the source of its page: `LumaApi.updateEvent` sends `POST
+  /v1/events/update` with the fields given and nothing else (`max_capacity` null for no limit, `suppress_email` true
+  only when the operator keeps the guests from Luma's email of a change of name, time or place), then `bring` reads it
+  again at once; when that read cannot run now the answer says the page follows. A new start alone keeps the event's
+  length. The questions replace the form, and a question sent with the label (any case) and the type it has keeps its
+  identifier on Luma, so its answers stay with it; a form with a question of a kind the tool cannot write, or one
+  BeyondPilot does not take, is changed on Luma. An event another host lists, a start in the past, an end before the
+  start, both a venue and a meeting link, and the fields of a page here alone (`city`, `country`, `summary`,
+  `registration_url`) are refused before Luma is called. A change is audited as `program.luma_event_update` with
+  `event`; Luma's refusals are the creation's codes. An event on BeyondPilot alone, of type `event`, is saved through
+  `ProgramAdministration.save` from what its Settings hold, with its name, its one session's times (days from the given
+  time zone, which new times need), place and registration link, its summary, and its about rewritten as at creation
+  when a description is given (a venue or a meeting link needs one); Luma's fields are refused, as is a registration
+  link of the calendar's event, which has its own page. The address never changes. On Luma a change also takes
+  `cover_url`, an image Luma serves (`https://images.lumacdn.com/…`), such as one of the eight `EventChanges.covers`
+  finds in Luma's gallery (`GET /v1/images/search`), and `require_approval`, set on every ticket type of the event
+  (`GET /v1/events/ticket-types/list`, `POST /v1/events/ticket-types/update`); approval alone does not call
+  `events/update`.
+- **Guests** (`EventGuests`). The guest list of an event of the calendar is read from Luma (`GET
+  /v1/events/guests/list`, filtered by status when asked): each guest's id, name, email, status, when they registered,
+  whether they registered here (an address of the program's registrations), and each answer written out (a choice list
+  joined, a company with the job title, a box as yes or no). A decision (`approved`, `declined`, `waitlist`,
+  `pending_approval`) finds the guest by address or `gst-` id (`GET /v1/events/guests/get`) and sends `POST
+  /v1/events/guests/update-status`, with Luma's email to the guest on unless the operator says otherwise and a note of
+  at most 200 characters; the same status again sends nothing. It is audited as `program.luma_guest_decide` with
+  Luma's ids and the status, not the guest's address, and the event's guests are read again soon
+  (`RegistrationDecisions.checkSoon`) so a registration here follows. An event on BeyondPilot alone, one another host
+  runs, a guest the event does not have, and `invited` as a decision are refused before anything is sent.
 
 ## Registrations for Luma events
 
