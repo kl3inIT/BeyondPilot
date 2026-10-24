@@ -1077,6 +1077,7 @@ paths:
           - use_case.access_set
           - use_case.access_remove
           - use_case.access_general
+          - use_case.preview
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -1256,6 +1257,7 @@ paths:
             - use_case.access_set
             - use_case.access_remove
             - use_case.access_general
+            - use_case.preview
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -2004,6 +2006,7 @@ paths:
           - use_case.access_set
           - use_case.access_remove
           - use_case.access_general
+          - use_case.preview
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -2183,6 +2186,7 @@ paths:
             - use_case.access_set
             - use_case.access_remove
             - use_case.access_general
+            - use_case.preview
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -15477,6 +15481,91 @@ paths:
       summary: Make a use case public at once
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/{id}/preview:
+    get:
+      operationId: getAdminUseCasePreview
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCasePreview"
+          description: The link; its key is null while it is off.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: The read-only link of a use case
+      tags:
+      - Use case administration
+    put:
+      operationId: setAdminUseCasePreview
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCasePreview"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCasePreview"
+          description: The link now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Turn the read-only link of a use case on or off
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/{id}/programs:
     put:
       operationId: setAdminUseCasePrograms
@@ -16178,6 +16267,93 @@ paths:
       summary: Make a private use case public again
       tags:
       - My organization's use cases
+  /api/usecase/mine/{id}/preview:
+    get:
+      operationId: getMyUseCasePreview
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCasePreview"
+          description: The link; its key is null while it is off.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+      security:
+      - session: []
+      summary: The read-only link of a use case
+      tags:
+      - My organization's use cases
+    put:
+      operationId: setMyUseCasePreview
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCasePreview"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCasePreview"
+          description: The link now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+      security:
+      - session: []
+      summary: Turn the read-only link of a use case on or off
+      tags:
+      - My organization's use cases
   /api/usecase/mine/{id}/submit:
     post:
       operationId: submitMyUseCase
@@ -16324,6 +16500,32 @@ paths:
                 $ref: "#/components/schemas/Problem"
           description: A parameter is not valid.
       summary: "Published use cases, including after proposals close"
+      tags:
+      - Use cases
+  /api/usecase/use-cases/preview/{token}:
+    get:
+      operationId: getPreviewedUseCase
+      parameters:
+      - in: path
+        name: token
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicUseCase"
+          description: "The use case, as it would read once public."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No link has this key: it is off, or never existed."
+      summary: One use case read from its read-only link
       tags:
       - Use cases
   /api/usecase/use-cases/{id}:
@@ -18389,6 +18591,7 @@ components:
           - use_case.access_set
           - use_case.access_remove
           - use_case.access_general
+          - use_case.preview
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -29744,6 +29947,14 @@ components:
           pattern: none|viewer|editor|full_access
       required:
       - role
+    SetUseCasePreview:
+      type: object
+      description: Turns the read-only link to a use case on or off.
+      properties:
+        enabled:
+          type: boolean
+      required:
+      - enabled
     SetUseCasePrograms:
       type: object
       description: "The programs a use case belongs to, replacing those it had."
@@ -31057,6 +31268,17 @@ components:
       - genaiFund
       - name
       - you
+    UseCasePreview:
+      type: object
+      description: The read-only link to a use case that is not public.
+      properties:
+        token:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: "The key the link ends with, at /use-cases/preview/{token};\
+            \ null while the link is off."
     UseCaseProgram:
       type: object
       description: A program the use case belongs to.

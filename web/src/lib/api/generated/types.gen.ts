@@ -1023,7 +1023,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.preview' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -7105,6 +7105,13 @@ export type SetUseCaseMemberAccess = {
 };
 
 /**
+ * Turns the read-only link to a use case on or off.
+ */
+export type SetUseCasePreview = {
+    enabled: boolean;
+};
+
+/**
  * The programs a use case belongs to, replacing those it had.
  */
 export type SetUseCasePrograms = {
@@ -7818,6 +7825,16 @@ export type UseCasePerson = {
      * Whether it is the caller.
      */
     you: boolean;
+};
+
+/**
+ * The read-only link to a use case that is not public.
+ */
+export type UseCasePreview = {
+    /**
+     * The key the link ends with, at /use-cases/preview/{token}; null while the link is off.
+     */
+    token?: string | null;
 };
 
 /**
@@ -8644,7 +8661,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.preview' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case; with `actions`, the events of those actions too.
          */
@@ -8652,7 +8669,7 @@ export type ListAuditEventsData = {
         /**
          * Actions whose names the search matches, in the reader's language: an event of one of them matches the search as well as one whose people or resource match `q`.
          */
-        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
+        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.preview' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
         /**
          * The `older` cursor of a page: the events before it. Used when both cursors are given.
          */
@@ -9118,7 +9135,7 @@ export type ExportAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.preview' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case; with `actions`, the events of those actions too.
          */
@@ -9126,7 +9143,7 @@ export type ExportAuditEventsData = {
         /**
          * Actions whose names the search matches, in the reader's language: an event of one of them matches the search as well as one whose people or resource match `q`.
          */
-        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
+        actions?: Array<'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.luma_connect' | 'program.luma_disconnect' | 'program.luma_event_create' | 'program.luma_event_update' | 'program.luma_guest_decide' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'perk.create' | 'perk.update' | 'perk.publish' | 'perk.archive' | 'perk.delete' | 'perk.codes_load' | 'perk.request_grant' | 'perk.request_decline' | 'perk.claims_export' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.make_private' | 'use_case.make_public' | 'use_case.access_set' | 'use_case.access_remove' | 'use_case.access_general' | 'use_case.preview' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.scores_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change'> | null;
         /**
          * The file: xlsx, an Excel workbook to read, or csv for another tool.
          */
@@ -19627,6 +19644,76 @@ export type MakeAdminUseCasePublicResponses = {
 
 export type MakeAdminUseCasePublicResponse = MakeAdminUseCasePublicResponses[keyof MakeAdminUseCasePublicResponses];
 
+export type GetAdminUseCasePreviewData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/preview';
+};
+
+export type GetAdminUseCasePreviewErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type GetAdminUseCasePreviewError = GetAdminUseCasePreviewErrors[keyof GetAdminUseCasePreviewErrors];
+
+export type GetAdminUseCasePreviewResponses = {
+    /**
+     * The link; its key is null while it is off.
+     */
+    200: UseCasePreview;
+};
+
+export type GetAdminUseCasePreviewResponse = GetAdminUseCasePreviewResponses[keyof GetAdminUseCasePreviewResponses];
+
+export type SetAdminUseCasePreviewData = {
+    body: SetUseCasePreview;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/preview';
+};
+
+export type SetAdminUseCasePreviewErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type SetAdminUseCasePreviewError = SetAdminUseCasePreviewErrors[keyof SetAdminUseCasePreviewErrors];
+
+export type SetAdminUseCasePreviewResponses = {
+    /**
+     * The link now.
+     */
+    200: UseCasePreview;
+};
+
+export type SetAdminUseCasePreviewResponse = SetAdminUseCasePreviewResponses[keyof SetAdminUseCasePreviewResponses];
+
 export type SetAdminUseCaseProgramsData = {
     body: SetUseCasePrograms;
     path: {
@@ -20187,6 +20274,76 @@ export type MakeMyUseCasePublicResponses = {
 
 export type MakeMyUseCasePublicResponse = MakeMyUseCasePublicResponses[keyof MakeMyUseCasePublicResponses];
 
+export type GetMyUseCasePreviewData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/preview';
+};
+
+export type GetMyUseCasePreviewErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The caller cannot see such a use case.
+     */
+    404: Problem;
+};
+
+export type GetMyUseCasePreviewError = GetMyUseCasePreviewErrors[keyof GetMyUseCasePreviewErrors];
+
+export type GetMyUseCasePreviewResponses = {
+    /**
+     * The link; its key is null while it is off.
+     */
+    200: UseCasePreview;
+};
+
+export type GetMyUseCasePreviewResponse = GetMyUseCasePreviewResponses[keyof GetMyUseCasePreviewResponses];
+
+export type SetMyUseCasePreviewData = {
+    body: SetUseCasePreview;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/preview';
+};
+
+export type SetMyUseCasePreviewErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The caller cannot see such a use case.
+     */
+    404: Problem;
+};
+
+export type SetMyUseCasePreviewError = SetMyUseCasePreviewErrors[keyof SetMyUseCasePreviewErrors];
+
+export type SetMyUseCasePreviewResponses = {
+    /**
+     * The link now.
+     */
+    200: UseCasePreview;
+};
+
+export type SetMyUseCasePreviewResponse = SetMyUseCasePreviewResponses[keyof SetMyUseCasePreviewResponses];
+
 export type SubmitMyUseCaseData = {
     body?: never;
     path: {
@@ -20283,6 +20440,33 @@ export type ListUseCasesResponses = {
 };
 
 export type ListUseCasesResponse = ListUseCasesResponses[keyof ListUseCasesResponses];
+
+export type GetPreviewedUseCaseData = {
+    body?: never;
+    path: {
+        token: string;
+    };
+    query?: never;
+    url: '/api/usecase/use-cases/preview/{token}';
+};
+
+export type GetPreviewedUseCaseErrors = {
+    /**
+     * No link has this key: it is off, or never existed.
+     */
+    404: Problem;
+};
+
+export type GetPreviewedUseCaseError = GetPreviewedUseCaseErrors[keyof GetPreviewedUseCaseErrors];
+
+export type GetPreviewedUseCaseResponses = {
+    /**
+     * The use case, as it would read once public.
+     */
+    200: PublicUseCase;
+};
+
+export type GetPreviewedUseCaseResponse = GetPreviewedUseCaseResponses[keyof GetPreviewedUseCaseResponses];
 
 export type GetUseCaseData = {
     body?: never;

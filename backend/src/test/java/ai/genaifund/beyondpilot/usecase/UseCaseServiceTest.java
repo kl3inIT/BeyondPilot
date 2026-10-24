@@ -370,7 +370,7 @@ class UseCaseServiceTest {
 		Team team = team("preview-link.test");
 		UUID id = adminPublished(team.organization, "Shared before it opens");
 		post(operator, ADMIN + "/" + id + "/make-private", null).expectStatus().isOk();
-		jdbc.sql("update use_case set member_access = viewer where id = ?").param(id).update();
+		jdbc.sql("update use_case set member_access = 'viewer' where id = ?").param(id).update();
 		assertProblem(put(team.colleague, MINE + "/" + id + "/preview", Map.<String, Object>of("enabled", true)), 403,
 				"USECASE_ACCESS_REQUIRED");
 
