@@ -52,7 +52,10 @@ export async function readMyUseCasePreview(id: string): Promise<UseCasePreview |
     const { data } = await getMyUseCasePreview({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
-    if (error instanceof ApiError && [400, 403, 404].includes(error.status)) {
+    if (
+      error instanceof ApiError &&
+      (error.status === 400 || error.status === 403 || error.status === 404)
+    ) {
       return null;
     }
     throw error;
