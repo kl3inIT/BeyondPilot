@@ -15694,7 +15694,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The caller is not a member of an organization, not taken down,             that publishes use cases."
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
         "404":
           content:
             application/problem+json:
@@ -15740,7 +15741,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The caller is not a member of an organization, not taken down,             that publishes use cases."
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
         "404":
           content:
             application/problem+json:
