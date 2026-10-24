@@ -226,7 +226,7 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event",
+				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event", "update_event", "search_event_covers", "list_event_guests", "decide_guest",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
 				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
@@ -509,7 +509,7 @@ class McpServerTest {
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
 			.containsExactly("search", "fetch", "list_applications", "get_application",
-					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event", "list_accounts",
+					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "create_event", "update_event", "search_event_covers", "list_event_guests", "decide_guest", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
 					"get_matches", "decide_record", "decide_application", "decide_proposal", "score_application", "create_organization", "create_use_case",
 				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
@@ -884,6 +884,41 @@ class McpServerTest {
 						"Asia/Ho_Chi_Minh"));
 		assertThat(noCalendar.isError()).isTrue();
 		assertThat(((TextContent) noCalendar.content().getFirst()).text()).contains("PROGRAM_LUMA_NOT_CONFIGURED");
+
+		// update_event changes the page by its address, says what changed, and refuses what only Luma has.
+		McpSchema.ToolAnnotations changes = operatorTool(app, "update_event").annotations();
+		assertThat(changes.readOnlyHint()).isFalse();
+		assertThat(changes.destructiveHint()).isTrue();
+		String pageUrl = JsonPath.read(created, "$.pageUrl");
+		String updated = text(call(app, "update_event",
+				Map.of("event", pageUrl, "name", "Partner night " + word + " II", "summary", "Partners meet again.")));
+		assertThat(JsonPath.<List<String>>read(updated, "$.changed")).containsExactly("name", "summary");
+		assertThat(JsonPath.<String>read(updated, "$.on")).isEqualTo("beyondpilot");
+		assertThat(jdbc.sql("select name || ' | ' || summary from program where id = :id")
+			.param("id", id)
+			.query(String.class)
+			.single()).isEqualTo("Partner night " + word + " II | Partners meet again.");
+		CallToolResult lumaOnly = call(app, "update_event", Map.of("event", "program:partner-night-" + word,
+				"capacity", 30));
+		assertThat(lumaOnly.isError()).isTrue();
+		assertThat(((TextContent) lumaOnly.content().getFirst()).text()).contains("capacity");
+		assertThat(call(app, "update_event", Map.of("name", "No event")).isError()).isTrue();
+
+		// The guest tools read Luma and do not delete; a page on BeyondPilot alone has no guests to read or decide.
+		assertThat(operatorTool(app, "list_event_guests").annotations().readOnlyHint()).isTrue();
+		assertThat(operatorTool(app, "search_event_covers").annotations().openWorldHint()).isTrue();
+		McpSchema.ToolAnnotations decides = operatorTool(app, "decide_guest").annotations();
+		assertThat(decides.readOnlyHint()).isFalse();
+		assertThat(decides.destructiveHint()).isFalse();
+		CallToolResult noGuests = call(app, "list_event_guests", Map.of("event", pageUrl));
+		assertThat(noGuests.isError()).isTrue();
+		assertThat(((TextContent) noGuests.content().getFirst()).text()).contains("BeyondPilot alone");
+		CallToolResult undecided = call(app, "decide_guest",
+				Map.of("event", pageUrl, "guest", "someone@mcp.test", "status", "approved"));
+		assertThat(undecided.isError()).isTrue();
+		assertThat(call(app, "decide_guest", Map.of("event", pageUrl)).isError()).isTrue();
+		CallToolResult noCovers = call(app, "search_event_covers", Map.of("query", "AI agents"));
+		assertThat(((TextContent) noCovers.content().getFirst()).text()).contains("PROGRAM_LUMA_NOT_CONFIGURED");
 		app.closeGracefully();
 	}
 
@@ -919,7 +954,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(32)
+			.isEqualTo(36)
 			.jsonPath("$.tools[?(@.name == 'search')].readOnly")
 			.value(readOnly -> assertThat(readOnly).isEqualTo(List.of(true, true)))
 			.jsonPath("$.tools[?(@.name == 'decide_proposal' || @.name == 'create_use_case')].readOnly")

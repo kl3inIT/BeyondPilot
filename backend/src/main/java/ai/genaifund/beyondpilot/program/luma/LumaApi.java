@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -271,6 +272,78 @@ public final class LumaApi {
 		return id;
 	}
 
+	/**
+	 * What to change of an event of the calendar; null leaves a field as it is.
+	 * @param capacity the seats; 0 takes the limit away
+	 * @param questions the whole form, replacing it; null keeps it
+	 * @param emailGuests whether Luma emails the guests of a change of name, time or place
+	 */
+	public record EventChange(@Nullable String name, @Nullable Instant startsAt, @Nullable Instant endsAt,
+			@Nullable ZoneId zone, @Nullable String venue, @Nullable Boolean hideVenue, @Nullable String meetingUrl,
+			@Nullable String description, @Nullable Integer capacity, @Nullable Boolean waitlist,
+			@Nullable List<NewQuestion> questions, LumaEvent.@Nullable Visibility visibility, @Nullable String coverUrl,
+			boolean emailGuests) {
+	}
+
+	/**
+	 * Changes an event of the calendar.
+	 * @throws Refused when Luma refuses what was sent
+	 */
+	public void updateEvent(String key, String eventId, EventChange change) throws IOException {
+		// In a fixed order, so what is sent reads the same each time.
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("event_id", eventId);
+		if (change.name() != null) {
+			body.put("name", change.name());
+		}
+		if (change.startsAt() != null) {
+			body.put("start_at", change.startsAt().toString());
+		}
+		if (change.endsAt() != null) {
+			body.put("end_at", change.endsAt().toString());
+		}
+		if (change.zone() != null) {
+			body.put("timezone", change.zone().getId());
+		}
+		if (change.description() != null) {
+			body.put("description_md", change.description());
+		}
+		if (change.venue() != null) {
+			Map<String, Object> place = new LinkedHashMap<>();
+			place.put("type", "manual");
+			place.put("address", change.venue());
+			body.put("geo_address_json", place);
+		}
+		if (change.hideVenue() != null) {
+			body.put("location_visibility", change.hideVenue() ? "guests-only" : "public");
+		}
+		if (change.meetingUrl() != null) {
+			body.put("meeting_url", change.meetingUrl());
+		}
+		if (change.capacity() != null) {
+			// Luma takes null as no limit.
+			body.put("max_capacity", change.capacity() == 0 ? null : change.capacity());
+		}
+		if (change.waitlist() != null) {
+			body.put("waitlist_status", change.waitlist() ? "enabled" : "disabled");
+		}
+		if (change.questions() != null) {
+			body.put("registration_questions", change.questions().stream().map(LumaApi::question).toList());
+		}
+		if (change.coverUrl() != null) {
+			body.put("cover_url", change.coverUrl());
+		}
+		if (change.visibility() != null) {
+			body.put("visibility", switch (change.visibility()) {
+				case PUBLIC -> "public";
+				case MEMBERS_ONLY -> "members-only";
+				case PRIVATE -> "private";
+			});
+		}
+		body.put("suppress_email", !change.emailGuests());
+		call(HttpMethod.POST, "/v1/events/update", Map.of(), key, body);
+	}
+
 	private static Map<String, Object> question(NewQuestion question) {
 		Map<String, Object> sent = new LinkedHashMap<>();
 		sent.put("id", question.id());
@@ -317,6 +390,156 @@ public final class LumaApi {
 		}
 		while (cursor != null);
 		return guests;
+	}
+
+	/**
+	 * A guest of an event as an operator reads the guest list.
+	 * @param answers each question's label and the answer as text, in the form's order
+	 */
+	public record GuestEntry(String id, @Nullable String email, @Nullable String name, String status,
+			@Nullable Instant registeredAt, List<Answered> answers) {
+	}
+
+	/** A question and its answer, written out. */
+	public record Answered(String label, String answer) {
+	}
+
+	/** Every guest of the event with what each answered, those with the status given only when one is. */
+	public List<GuestEntry> guestEntries(String key, String eventId, LumaGuest.@Nullable Status status)
+			throws IOException {
+		List<GuestEntry> guests = new ArrayList<>();
+		String cursor = null;
+		do {
+			Map<String, String> query = new LinkedHashMap<>();
+			query.put("event_id", eventId);
+			query.put("pagination_limit", String.valueOf(PAGE));
+			if (status != null) {
+				query.put("approval_status", status.value());
+			}
+			if (cursor != null) {
+				query.put("pagination_cursor", cursor);
+			}
+			JsonNode page = call(HttpMethod.GET, "/v1/events/guests/list", query, key, null);
+			for (JsonNode entry : page.path("entries")) {
+				JsonNode guest = unwrap(entry, "guest");
+				String id = text(guest, "id");
+				String said = text(guest, "approval_status");
+				if (id == null || said == null) {
+					continue;
+				}
+				List<Answered> answers = new ArrayList<>();
+				for (JsonNode answer : guest.path("registration_answers")) {
+					String label = text(answer, "label");
+					String written = answer(answer.path("value"));
+					if (label != null && written != null) {
+						answers.add(new Answered(label, written));
+					}
+				}
+				String email = text(guest, "user_email");
+				guests.add(new GuestEntry(id, email == null ? text(guest, "email") : email, text(guest, "user_name"),
+						said, instant(text(guest, "registered_at")), answers));
+			}
+			cursor = page.path("has_more").asBoolean(false) ? text(page, "next_cursor") : null;
+		}
+		while (cursor != null);
+		return guests;
+	}
+
+	/** An answer as text: a list joined, a company with the job title, a box as yes or no; null when empty. */
+	private static @Nullable String answer(JsonNode value) {
+		if (value.isBoolean()) {
+			return value.asBoolean() ? "yes" : "no";
+		}
+		if (value.isArray()) {
+			List<String> chosen = new ArrayList<>();
+			value.forEach(item -> {
+				if (item.isString() && !item.asString().isBlank()) {
+					chosen.add(item.asString().strip());
+				}
+			});
+			return chosen.isEmpty() ? null : String.join("; ", chosen);
+		}
+		if (value.isObject()) {
+			String company = text(value, "company");
+			String title = text(value, "job_title");
+			return company == null ? title : title == null ? company : company + ", " + title;
+		}
+		if (value.isString() && !value.asString().isBlank()) {
+			return value.asString().strip();
+		}
+		if (value.isNumber()) {
+			return value.asString();
+		}
+		return null;
+	}
+
+	private static @Nullable Instant instant(@Nullable String text) {
+		if (text == null) {
+			return null;
+		}
+		try {
+			return Instant.parse(text);
+		}
+		catch (DateTimeParseException notTime) {
+			return null;
+		}
+	}
+
+	/**
+	 * Moves a guest of the event to the status, as an operator does on Luma.
+	 * @param guestId the {@code gst-} identifier
+	 * @param message a note Luma puts in its email to the guest; null for none
+	 * @param sendEmail whether Luma emails the guest of it
+	 * @throws Refused when Luma refuses the status
+	 */
+	public void updateGuestStatus(String key, String eventId, String guestId, LumaGuest.Status status,
+			@Nullable String message, boolean sendEmail) throws IOException {
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("event_id", eventId);
+		body.put("guest_id", guestId);
+		body.put("status", status.value());
+		body.put("send_email", sendEmail);
+		if (message != null) {
+			body.put("message", message);
+		}
+		call(HttpMethod.POST, "/v1/events/guests/update-status", Map.of(), key, body);
+	}
+
+	/** An image of Luma's gallery of covers, which an event takes as its {@code cover_url} as it is. */
+	public record CoverImage(String url, @Nullable String description) {
+	}
+
+	/** The first images of Luma's gallery of covers that match the words. */
+	public List<CoverImage> covers(String key, String words, int limit) throws IOException {
+		JsonNode page = call(HttpMethod.GET, "/v1/images/search",
+				Map.of("query", words, "pagination_limit", String.valueOf(limit)), key, null);
+		List<CoverImage> covers = new ArrayList<>();
+		for (JsonNode entry : page.path("entries")) {
+			String url = text(entry, "image_url");
+			if (url != null && covers.size() < limit) {
+				covers.add(new CoverImage(url, text(entry, "description")));
+			}
+		}
+		return covers;
+	}
+
+	/** Makes every ticket type of the event ask for approval, or not; returns how many it has. */
+	public int requireApproval(String key, String eventId, boolean approval) throws IOException {
+		JsonNode types = call(HttpMethod.GET, "/v1/events/ticket-types/list",
+				Map.of("event_id", eventId, "include_hidden", "true"), key, null);
+		int count = 0;
+		for (JsonNode entry : types.path("entries")) {
+			String id = text(unwrap(entry, "ticket_type"), "id");
+			if (id != null) {
+				// In a fixed order, so what is sent reads the same each time.
+				Map<String, Object> body = new LinkedHashMap<>();
+				body.put("event_ticket_type_id", id);
+				body.put("require_approval", approval);
+				call(HttpMethod.POST, "/v1/events/ticket-types/update", Map.of(), key, body);
+				count++;
+			}
+		}
+		return count;
 	}
 
 	private static Optional<Webhook> webhook(JsonNode node) {

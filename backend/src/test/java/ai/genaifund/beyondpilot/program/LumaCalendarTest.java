@@ -124,7 +124,7 @@ class LumaCalendarTest {
 		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 0, LumaCalendar.Outcome.READ));
 
 		Map<String, Object> program = program("evt-dinner");
-		assertThat(program).containsEntry("slug", "gaf-tinyfish-vn")
+		assertThat(program).containsEntry("slug", "tinyfish-big-minds")
 			.containsEntry("name", "TinyFish, Big Minds")
 			.containsEntry("type", "event")
 			.containsEntry("status", "published")
@@ -266,6 +266,33 @@ class LumaCalendarTest {
 	}
 
 	@Test
+	void anEventMadePublicOnLumaGoesPublicHereOnceAndItsAddressIsItsName() {
+		connected();
+		calendarOf(event("evt-meetup", "GenAI Builders Meetup Singapore", "2026-11-19T10:00:00Z", "f2jpv3fl",
+				"/meetup.png", "private"));
+		image("/meetup.png");
+		calendar.read(NOW);
+		assertThat(program("evt-meetup")).containsEntry("status", "draft")
+			.containsEntry("slug", "genai-builders-meetup-singapore");
+
+		// Nothing else changed on Luma: the page is published, and no update is recorded.
+		calendarOf(event("evt-meetup", "GenAI Builders Meetup Singapore", "2026-11-19T10:00:00Z", "f2jpv3fl",
+				"/meetup.png", "public"));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 1, 0, 0, LumaCalendar.Outcome.READ));
+		Map<String, Object> program = program("evt-meetup");
+		assertThat(program).containsEntry("status", "published");
+		assertThat(jdbc.sql("select action from audit_event where resource_type = 'program' and resource_id = ?")
+			.param(program.get("id").toString())
+			.query(String.class)
+			.list()).containsExactlyInAnyOrder("program.create", "program.publish");
+
+		// Kept from the public on Luma again, then public again: an operator decides from then on.
+		jdbc.sql("update program set status = 'draft' where luma_event_id = 'evt-meetup'").update();
+		assertThat(calendar.read(NOW).updated()).isZero();
+		assertThat(program("evt-meetup")).containsEntry("status", "draft");
+	}
+
+	@Test
 	void anEventToComeThatLeftTheCalendarIsUnpublished() {
 		connected();
 		calendarOf(event("evt-dinner", "TinyFish, Big Minds", "2026-10-26T11:00:00Z", "gaf-tinyfish-vn",
@@ -319,7 +346,7 @@ class LumaCalendarTest {
 		ANSWERS.put("GET /v1/calendars/events/list?access=manage", json(list(
 				eventJson("evt-elsewhere", "Elsewhere", "2026-10-26T11:00:00Z", "elsewhere",
 						"http://localhost:" + LUMA.getAddress().getPort() + "/x.png", "public"),
-				eventJson("evt-bare", "Bare", "2026-10-28T11:00:00Z", "luma-test-taken", null, "public"))));
+				eventJson("evt-bare", "Luma test taken", "2026-10-28T11:00:00Z", "bare", null, "public"))));
 
 		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 1, LumaCalendar.Outcome.READ));
 

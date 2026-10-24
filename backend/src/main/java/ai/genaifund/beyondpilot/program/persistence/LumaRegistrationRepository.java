@@ -29,6 +29,10 @@ public interface LumaRegistrationRepository extends JpaRepository<LumaRegistrati
 	List<UUID> findSentOf(UUID programId);
 
 	/** The programs with a registration Luma has. */
+	/** The addresses, lowercase, of those who registered here for the program. */
+	@Query("select lower(registration.email) from LumaRegistration registration where registration.programId = :programId")
+	List<String> findEmailsOf(UUID programId);
+
 	@Query("select distinct registration.programId from LumaRegistration registration where registration.sendState = 'sent'")
 	List<UUID> findProgramsWithSent();
 

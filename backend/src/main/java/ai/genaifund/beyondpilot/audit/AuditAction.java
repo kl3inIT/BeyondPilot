@@ -61,6 +61,18 @@ public enum AuditAction {
 	 */
 	PROGRAM_LUMA_EVENT_CREATE("program.luma_event_create", "event"),
 
+	/**
+	 * An operator changed an event of the Luma calendar from BeyondPilot (BEY-250); {@code event} is Luma's identifier.
+	 * The resource is the program that holds it.
+	 */
+	PROGRAM_LUMA_EVENT_UPDATE("program.luma_event_update", "event"),
+
+	/**
+	 * An operator moved a guest of a Luma event from BeyondPilot (BEY-250): {@code event} and {@code guest} are Luma's
+	 * identifiers, {@code status} the guest's new one. The resource is the program that holds the event.
+	 */
+	PROGRAM_LUMA_GUEST_DECIDE("program.luma_guest_decide", "event", "guest", "status"),
+
 	/** An operator featured a program, which the home page announces while it takes applications. */
 	PROGRAM_FEATURE("program.feature"),
 
