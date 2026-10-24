@@ -89,7 +89,7 @@ export function proposalViewRoute(id: string) {
 }
 
 /** A use case that is not public, read from its read-only link. */
-export function useCasePreviewRoute(token: string) {
+export function previewedUseCaseRoute(token: string) {
   return `${siteRoutes.useCases}/preview/${token}`;
 }
 

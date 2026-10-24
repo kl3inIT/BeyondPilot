@@ -12,7 +12,7 @@ import {
   setMyUseCasePreview,
   type UseCasePreview,
 } from "@/lib/api/generated";
-import { useCasePreviewRoute } from "@/lib/site";
+import { previewedUseCaseRoute } from "@/lib/site";
 
 import { useCaseWords } from "./my-use-case-errors";
 
@@ -52,7 +52,7 @@ function UseCasePreviewLink({ area, id, preview }: UseCasePreviewLinkProps) {
     }
   }
 
-  const link = token ? `${window.location.origin}${useCasePreviewRoute(token)}` : null;
+  const link = token ? `${window.location.origin}${previewedUseCaseRoute(token)}` : null;
 
   return (
     <section className="flex flex-col gap-3 rounded-lg border bg-background p-4">
