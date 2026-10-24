@@ -266,6 +266,35 @@ class LumaCalendarTest {
 	}
 
 	@Test
+	void aCoverThatCannotBeKeptLeavesThePageWithoutItAndIsTriedAgain() {
+		connected();
+		// Luma's default cover may be a GIF, which storage does not keep: the page is made all the same.
+		calendarOf(event("evt-gif", "Builders night", "2026-11-19T10:00:00Z", "builders-night", "/cover.gif",
+				"public"));
+		ANSWERS.put("GET /cover.gif", new Answer(200, "image/gif", PNG));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 0, LumaCalendar.Outcome.READ));
+		Map<String, Object> program = program("evt-gif");
+		assertThat(program).containsEntry("status", "draft")
+			.containsEntry("cover_file_id", null)
+			.containsEntry("luma_cover_url", null)
+			.containsEntry("name", "Builders night");
+
+		// One Luma cannot serve now is tried again at each read, and nothing fails.
+		ANSWERS.put("GET /cover.gif", new Answer(404, "application/json", "{}".getBytes(UTF_8)));
+		assertThat(calendar.read(NOW).failed()).isZero();
+		assertThat(program("evt-gif")).containsEntry("cover_file_id", null);
+
+		// A cover storage keeps is taken, and the public event's page, now complete, goes public.
+		calendarOf(event("evt-gif", "Builders night", "2026-11-19T10:00:00Z", "builders-night", "/cover.png",
+				"public"));
+		image("/cover.png");
+		calendar.read(NOW);
+		assertThat(program("evt-gif")).containsEntry("status", "published")
+			.containsEntry("luma_cover_url", base() + "/cover.png");
+		assertThat(program("evt-gif").get("cover_file_id")).isNotNull();
+	}
+
+	@Test
 	void anEventMadePublicOnLumaGoesPublicHereOnceAndItsAddressIsItsName() {
 		connected();
 		calendarOf(event("evt-meetup", "GenAI Builders Meetup Singapore", "2026-11-19T10:00:00Z", "f2jpv3fl",
@@ -341,22 +370,26 @@ class LumaCalendarTest {
 				insert into program (id, slug, name, type, status, page_kind, version, created_at, updated_at)
 				values (gen_random_uuid(), 'luma-test-taken', 'Taken', 'event', 'draft', 'standard', 0, now(), now())""")
 			.update();
-		// The first's cover is on a host the job may not call; the second has none.
+		// The first's cover is on a host the job may not call; the second has none; Luma fails to give the third.
 		calendarOf();
 		ANSWERS.put("GET /v1/calendars/events/list?access=manage", json(list(
 				eventJson("evt-elsewhere", "Elsewhere", "2026-10-26T11:00:00Z", "elsewhere",
 						"http://localhost:" + LUMA.getAddress().getPort() + "/x.png", "public"),
-				eventJson("evt-bare", "Luma test taken", "2026-10-28T11:00:00Z", "bare", null, "public"))));
+				eventJson("evt-bare", "Luma test taken", "2026-10-28T11:00:00Z", "bare", null, "public"),
+				eventJson("evt-broken", "Broken", "2026-10-29T11:00:00Z", "broken", null, "public"))));
+		ANSWERS.put("GET /v1/events/get?event_id=evt-broken", new Answer(500, "application/json", "{}".getBytes(UTF_8)));
 
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 1, LumaCalendar.Outcome.READ));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(2, 0, 0, 1, LumaCalendar.Outcome.READ));
 
 		assertThat(program("evt-bare")).containsEntry("slug", "luma-test-taken-2")
 			.containsEntry("status", "draft")
 			.containsEntry("cover_file_id", null);
-		assertThat(jdbc.sql("select count(*) from program where luma_event_id = 'evt-elsewhere'")
+		// A cover the job may not fetch leaves its page without one, and the host is never called.
+		assertThat(program("evt-elsewhere")).containsEntry("status", "draft").containsEntry("cover_file_id", null);
+		assertThat(ASKED).doesNotContain("GET /x.png");
+		assertThat(jdbc.sql("select count(*) from program where luma_event_id = 'evt-broken'")
 			.query(Long.class)
 			.single()).isZero();
-		assertThat(ASKED).doesNotContain("GET /x.png");
 	}
 
 	@Test
