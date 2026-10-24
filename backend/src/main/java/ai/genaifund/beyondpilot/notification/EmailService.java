@@ -45,6 +45,9 @@ public class EmailService {
 	/** The signed-in person's organization on the site; its solutions and use cases open under it. */
 	private static final String MY_ORGANIZATION = "/workspace/organization";
 
+	/** An operator answers a perk's requests on its record in Admin. */
+	private static final String ADMIN_PERKS = "/admin/solutions/perks/";
+
 	private static final String CONSENT = "/consent";
 
 	/** The signed-in person's talent profile on the site. */
@@ -237,9 +240,11 @@ public class EmailService {
 	 * @param perkId the perk, whose requests the link opens
 	 */
 	@Transactional
-	public void sendPerkRequestWaiting(String recipient, String perkTitle, String requesterOrganization, UUID perkId) {
+	public void sendPerkRequestWaiting(String recipient, String perkTitle, String requesterOrganization, UUID perkId,
+			boolean operator) {
 		queue(EmailKind.PERK_REQUEST_WAITING, recipient, values("perkTitle", perkTitle, "requesterOrganization",
-				requesterOrganization, "requestsUrl", url(MY_ORGANIZATION + "/perks/" + perkId)));
+				requesterOrganization, "requestsUrl",
+				url((operator ? ADMIN_PERKS : MY_ORGANIZATION + "/perks/") + perkId)));
 	}
 
 	/**

@@ -1,8 +1,10 @@
 package ai.genaifund.beyondpilot.perk;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -75,7 +77,8 @@ public class PerkClaims {
 	/**
 	 * Gets the perk at this address for the caller's team: a link opened, a code shown, or a request sent with the
 	 * answers to its questions. A team that already holds it gets what it holds again. A request waiting for the
-	 * partner's answer is emailed to the partner's members.
+	 * partner's answer is emailed to the partner's members, and to GenAI Fund's operators when GenAI Fund arranged the
+	 * perk or the partner has no members.
 	 * @throws PerkException when there is no such perk, the caller acts for no organization, the perk is not open or
 	 * is for other teams, its places are taken, or the answers do not hold
 	 */
@@ -183,10 +186,24 @@ public class PerkClaims {
 		return kept;
 	}
 
+	/**
+	 * Tells the partner's members of a request waiting for an answer, and GenAI Fund's operators when GenAI Fund
+	 * arranged the perk or the partner has nobody on BeyondPilot to answer it.
+	 */
 	private void tellPartner(Perk perk, String requester) {
-		identity.people(organizations.memberAccountIds(perk.getOrganizationId()))
-			.values()
-			.forEach(member -> email.sendPerkRequestWaiting(member.email(), perk.getTitle(), requester, perk.getId()));
+		Collection<Person> members = identity.people(organizations.memberAccountIds(perk.getOrganizationId())).values();
+		members.forEach(member -> email.sendPerkRequestWaiting(member.email(), perk.getTitle(), requester,
+				perk.getId(), false));
+		if (perk.isFromGenAiFund() || members.isEmpty()) {
+			Set<String> told = members.stream()
+				.map(member -> member.email().toLowerCase(Locale.ROOT))
+				.collect(Collectors.toSet());
+			identity.operators()
+				.stream()
+				.filter(operator -> !told.contains(operator.email().toLowerCase(Locale.ROOT)))
+				.forEach(operator -> email.sendPerkRequestWaiting(operator.email(), perk.getTitle(), requester,
+						perk.getId(), true));
+		}
 	}
 
 	private String takenBy(PerkClaim claim) {
