@@ -586,7 +586,10 @@
     "PERK_ANSWERS_NOT_VALID": "Answer every required question, each within its length.",
     "PERK_NOT_A_CODE_LIST": "Codes are loaded only for a perk given as a list of codes.",
     "PERK_REQUEST_NOT_FOUND": "This request no longer exists. Reload the page.",
-    "PERK_REQUEST_DECIDED": "Someone else has answered this request in the meantime. Reload the list."
+    "PERK_REQUEST_DECIDED": "Someone else has answered this request in the meantime. Reload the list.",
+    "USECASE_ACCESS_REQUIRED": "You do not have the access needed to do this with the use case.",
+    "USECASE_ACCESS_FIXED": "The creator, the owners and GenAI Fund always have full access.",
+    "USECASE_ACCESS_NOT_A_MEMBER": "Only members of the organization can be given access."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -1445,7 +1448,10 @@
           "set_programs": "Set the programs of a use case",
           "update": "Changed a private use case",
           "publish": "Published a use case",
-          "export": "Downloaded the use cases"
+          "export": "Downloaded the use cases",
+          "access_set": "Set access to a use case",
+          "access_remove": "Removed access to a use case",
+          "access_general": "Changed what members may do with a use case"
         },
         "email": {
           "settings_update": "Changed the email settings",
@@ -1632,7 +1638,10 @@
           "set_programs": "Set the programs of the use case <resource></resource>",
           "update": "Changed the private use case <resource></resource>",
           "publish": "Published the use case <resource></resource>",
-          "export": "Downloaded the use cases"
+          "export": "Downloaded the use cases",
+          "access_set": "Set who may use a use case",
+          "access_remove": "Removed a person from a use case",
+          "access_general": "Changed member access to a use case"
         },
         "email": {
           "settings_update": "Changed <resource></resource>",
@@ -2297,7 +2306,8 @@
         "open": "Actions for {name}",
         "review": "Review use case",
         "view": "Open use case",
-        "organisation": "View organization"
+        "organisation": "View organization",
+        "access": "Member access"
       },
       "feature": {
         "featured": "Featured",
@@ -4633,7 +4643,8 @@
         "view": "Open use case",
         "pullBack": "Pull back to draft",
         "makePrivate": "Make private",
-        "makePublic": "Make public"
+        "makePublic": "Make public",
+        "share": "Member access"
       },
       "makePrivate": {
         "title": "Make “{name}” private?",
@@ -4800,7 +4811,12 @@
           "lead": "The deadline passed on {date}, so it can no longer be changed.",
           "note": "A closed use case stays in the directory as a record."
         },
-        "pullBack": "Pull back to draft"
+        "pullBack": "Pull back to draft",
+        "viewer": {
+          "title": "You can read this use case",
+          "lead": "Someone with full access can give you more.",
+          "note": "You have view-only access."
+        }
       },
       "sent": {
         "metaTitle": "Sent for review · BeyondPilot",
@@ -4828,6 +4844,40 @@
           }
         },
         "viewMine": "View my use cases"
+      },
+      "access": {
+        "metaTitle": "Member access",
+        "title": "People with access",
+        "back": "Back to use cases",
+        "lead": "Choose who can open this use case and what they may do with it. The person who created it, the organization owners and GenAI Fund always have full access.",
+        "readOnly": "These people can open this use case. Only people with full access can change this list.",
+        "roles": {
+          "viewer": "Viewer",
+          "editor": "Editor",
+          "full_access": "Full access"
+        },
+        "general": {
+          "title": "Everyone else in the organization",
+          "hint": "What other members may do. A public use case can always be read.",
+          "none": "No access",
+          "viewer": "Viewer",
+          "editor": "Editor",
+          "full_access": "Full access"
+        },
+        "creator": "Created it",
+        "owner": "Owner",
+        "you": "you",
+        "addedBy": "Added by {name}",
+        "changeRole": "Change the role of {name}",
+        "remove": "Remove",
+        "add": {
+          "label": "Add a person",
+          "placeholder": "Choose a member",
+          "none": "Everyone already has access",
+          "role": "Role",
+          "submit": "Add"
+        },
+        "done": "Access saved."
       }
     }
   },
@@ -8060,7 +8110,8 @@
       "label": "Pages of this use case",
       "brief": "Brief",
       "candidates": "Matched solutions",
-      "proposals": "Proposals"
+      "proposals": "Proposals",
+      "access": "Member access"
     },
     "head": {
       "back": "{organization} · Use cases",

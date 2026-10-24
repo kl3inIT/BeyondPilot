@@ -40,6 +40,7 @@ import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCasePersonResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAttachmentResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
@@ -48,6 +49,7 @@ import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseProgramResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseRequirementEntry;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseReviewQueueResponse;
+import ai.genaifund.beyondpilot.usecase.persistence.AccessRole;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
@@ -99,10 +101,13 @@ public class UseCaseAdministration {
 
 	private final Validator validator;
 
+	private final UseCaseAccess access;
+
 	UseCaseAdministration(UseCaseRepository useCases, UseCaseQueryRepository useCaseList,
 			OrganizationDirectory organizations, IdentityService identity, AuditTrail audit, UseCaseAttachments files,
 			UseCasePeople people, EmailService email, ApplicationEventPublisher events, ProgramService programs,
-			Validator validator) {
+			Validator validator, UseCaseAccess access) {
+		this.access = access;
 		this.validator = validator;
 		this.events = events;
 		this.programs = programs;
@@ -361,6 +366,60 @@ public class UseCaseAdministration {
 		return read(actor, useCase, now);
 	}
 
+	/**
+	 * Who may do what with a use case, and which members of its organization could be given access.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseAccessResponse access(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		UseCase useCase = useCases.findById(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/**
+	 * Gives a member of the use case's organization a role in it, or changes the one they have.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist, or the person is not a member or is its creator or an
+	 * owner
+	 */
+	@Transactional
+	public UseCaseAccessResponse giveAccess(Actor actor, UUID id, UUID accountId, String role) {
+		identity.requireOperator(actor);
+		UseCase useCase = locked(id);
+		access.grant(actor, useCase, accountId, AccessRole.of(role).orElse(AccessRole.VIEWER));
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/**
+	 * Takes the role away from a member; what every member may do still applies to them.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist, or the person is its creator or an owner
+	 */
+	@Transactional
+	public UseCaseAccessResponse removeAccess(Actor actor, UUID id, UUID accountId) {
+		identity.requireOperator(actor);
+		UseCase useCase = locked(id);
+		access.revoke(actor, useCase, accountId);
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/**
+	 * Sets what every member of the use case's organization may do with it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist
+	 */
+	@Transactional
+	public UseCaseAccessResponse shareWithMembers(Actor actor, UUID id, String role) {
+		identity.requireOperator(actor);
+		UseCase useCase = locked(id);
+		access.shareWithMembers(actor, useCase, AccessRole.of(role).orElse(AccessRole.NONE));
+		useCases.saveAndFlush(useCase);
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
 	private UseCase locked(UUID id) {
 		return useCases.findForUpdate(id)
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
@@ -392,6 +451,8 @@ public class UseCaseAdministration {
 					"Organization " + request.organizationId() + " does not exist or is taken down"));
 		check(request, now);
 		UseCase useCase = new UseCase(organization.id(), operator.accountId(), request.closesAt());
+		// An operator writes it for the organization, whose members may all work on it until someone restricts it.
+		useCase.shareWithMembers(AccessRole.FULL_ACCESS);
 		write(useCase, request);
 		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
 		List<UUID> attachments = request.attachmentFileIds() == null ? List.of() : request.attachmentFileIds();

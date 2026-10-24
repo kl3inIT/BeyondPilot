@@ -20,7 +20,7 @@ import {
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { AdminUseCaseList } from "@/lib/api/generated";
-import { siteRoutes } from "@/lib/site";
+import { adminUseCaseAccessRoute, siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
@@ -97,6 +97,9 @@ function AdminUseCasesPage({ useCases, search }: AdminUseCasesPageProps) {
           <DropdownMenuGroup>
             <DropdownMenuItem render={<Link href={`${siteRoutes.adminUseCases}/${useCase.id}`} />}>
               {t(useCase.status === "in_review" ? "actions.review" : "actions.view")}
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={adminUseCaseAccessRoute(useCase.id)} />}>
+              {t("actions.access")}
             </DropdownMenuItem>
             <DropdownMenuItem
               render={<Link href={`${siteRoutes.adminOrganizations}/${useCase.organization.id}`} />}

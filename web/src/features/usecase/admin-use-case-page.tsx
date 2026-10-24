@@ -112,9 +112,13 @@ function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
         }
         lead={organization}
       >
-        {useCase.publishedAt && (
-          <UseCaseTabs area="admin" id={useCase.id} current="brief" proposals={proposals} />
-        )}
+        <UseCaseTabs
+          area="admin"
+          id={useCase.id}
+          current="brief"
+          proposals={proposals}
+          published={Boolean(useCase.publishedAt)}
+        />
       </AdminPageHeader>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">

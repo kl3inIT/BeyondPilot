@@ -244,6 +244,15 @@ public enum AuditAction {
 	/** A private use case was made public again, with no new review. */
 	USE_CASE_MAKE_PUBLIC("use_case.make_public", "organization"),
 
+	/** A member of the organization was given a role in a use case, or had it changed. */
+	USE_CASE_ACCESS_SET("use_case.access_set", "organization", "account", "role"),
+
+	/** A member of the organization lost the role they were given in a use case. */
+	USE_CASE_ACCESS_REMOVE("use_case.access_remove", "organization", "account"),
+
+	/** What every member of the organization may do with a use case was changed. */
+	USE_CASE_ACCESS_GENERAL("use_case.access_general", "organization", "role"),
+
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),

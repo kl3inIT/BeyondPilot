@@ -69,10 +69,10 @@ tags:
     \ tier the AI suggests and the evidence behind it. Decisions stay on the applications\
     \ and the proposals."
   name: Evaluation
-- description: Who is signed in.
-  name: Identity
 - description: The use cases the members of an organization write.
   name: My organization's use cases
+- description: Who is signed in.
+  name: Identity
 - description: Uploading and reading files.
   name: Storage
 - description: The public list of published use cases.
@@ -1074,6 +1074,9 @@ paths:
           - use_case.draft
           - use_case.make_private
           - use_case.make_public
+          - use_case.access_set
+          - use_case.access_remove
+          - use_case.access_general
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -1250,6 +1253,9 @@ paths:
             - use_case.draft
             - use_case.make_private
             - use_case.make_public
+            - use_case.access_set
+            - use_case.access_remove
+            - use_case.access_general
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -1995,6 +2001,9 @@ paths:
           - use_case.draft
           - use_case.make_private
           - use_case.make_public
+          - use_case.access_set
+          - use_case.access_remove
+          - use_case.access_general
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -2171,6 +2180,9 @@ paths:
             - use_case.draft
             - use_case.make_private
             - use_case.make_public
+            - use_case.access_set
+            - use_case.access_remove
+            - use_case.access_general
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -15033,6 +15045,207 @@ paths:
       summary: One use case as an operator reads it
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/{id}/access:
+    get:
+      operationId: getAdminUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: The people with access and the members who could be given it.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Who may do what with a use case
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/access/members:
+    put:
+      operationId: shareAdminUseCaseWithMembers
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCaseMemberAccess"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Set what every other member of the organization may do
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/access/people/{accountId}:
+    delete:
+      operationId: removeAdminUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person created it or owns the organization.
+      security:
+      - session: []
+      summary: Take a member's role in a use case away
+      tags:
+      - Use case administration
+    put:
+      operationId: giveAdminUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCaseAccess"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person is not a member of the organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person created it or owns the organization.
+      security:
+      - session: []
+      summary: Give a member a role in a use case
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/{id}/approve:
     post:
       operationId: approveAdminUseCase
@@ -15565,6 +15778,211 @@ paths:
       security:
       - session: []
       summary: Save what the members have written so far
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/access:
+    get:
+      operationId: getMyUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: The people with access and the members who could be given it.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+      security:
+      - session: []
+      summary: Who may do what with a use case
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/access/members:
+    put:
+      operationId: shareMyUseCaseWithMembers
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCaseMemberAccess"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+      security:
+      - session: []
+      summary: Set what every other member of the organization may do
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/access/people/{accountId}:
+    delete:
+      operationId: removeMyUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person created it or owns the organization.
+      security:
+      - session: []
+      summary: Take a member's role in a use case away
+      tags:
+      - My organization's use cases
+    put:
+      operationId: giveMyUseCaseAccess
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetUseCaseAccess"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseAccess"
+          description: Who may do what now.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person is not a member of the organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,\
+            \ that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller cannot see such a use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The person created it or owns the organization.
+      security:
+      - session: []
+      summary: Give a member a role in a use case
       tags:
       - My organization's use cases
   /api/usecase/mine/{id}/attachments/{fileId}:
@@ -17968,6 +18386,9 @@ components:
           - use_case.draft
           - use_case.make_private
           - use_case.make_public
+          - use_case.access_set
+          - use_case.access_remove
+          - use_case.access_general
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -22783,6 +23204,13 @@ components:
       type: object
       description: One use case as a member of its organization reads and edits it.
       properties:
+        access:
+          type: string
+          description: What the caller may do with this use case.
+          enum:
+          - viewer
+          - editor
+          - full_access
         attachments:
           type: array
           items:
@@ -22834,8 +23262,8 @@ components:
           - "null"
         editable:
           type: boolean
-          description: "Whether the members can edit it now: a draft, one GenAI Fund\
-            \ sent back, or one that is published."
+          description: "Whether the caller can edit it now: they may edit this use\
+            \ case, and it is not in review or closed."
         expectedOutcomes:
           type:
           - string
@@ -22924,6 +23352,7 @@ components:
           type: integer
           format: int64
       required:
+      - access
       - attachments
       - budgetMembersOnly
       - budgetToBeDetermined
@@ -22944,6 +23373,13 @@ components:
       type: object
       description: One use case of the caller's organization in the tab's list.
       properties:
+        access:
+          type: string
+          description: What the caller may do with this use case.
+          enum:
+          - viewer
+          - editor
+          - full_access
         closesAt:
           type:
           - string
@@ -22979,6 +23415,7 @@ components:
           type: string
           format: date-time
       required:
+      - access
       - id
       - lastEditedBy
       - status
@@ -29280,6 +29717,33 @@ components:
           description: The version the task was read at.
       required:
       - version
+    SetUseCaseAccess:
+      type: object
+      description: What one person may do with a use case.
+      properties:
+        role:
+          type: string
+          enum:
+          - viewer
+          - editor
+          - full_access
+          pattern: viewer|editor|full_access
+      required:
+      - role
+    SetUseCaseMemberAccess:
+      type: object
+      description: What every other member of the organization may do with a use case.
+      properties:
+        role:
+          type: string
+          enum:
+          - none
+          - viewer
+          - editor
+          - full_access
+          pattern: none|viewer|editor|full_access
+      required:
+      - role
     SetUseCasePrograms:
       type: object
       description: "The programs a use case belongs to, replacing those it had."
@@ -30409,6 +30873,105 @@ components:
       - id
       - method
       - url
+    UseCaseAccess:
+      type: object
+      description: Who may do what with one use case.
+      properties:
+        candidates:
+          type: array
+          description: The members of the organization who have no access of their
+            own yet.
+          items:
+            $ref: "#/components/schemas/UseCaseAccessCandidate"
+        memberAccess:
+          type: string
+          description: What every other member of the organization may do with it.
+          enum:
+          - none
+          - viewer
+          - editor
+          - full_access
+        people:
+          type: array
+          description: "The creator, the owners and everyone given access, the creator\
+            \ first."
+          items:
+            $ref: "#/components/schemas/UseCaseAccessPerson"
+        yourAccess:
+          type: string
+          description: What the caller may do with the use case. Only full access
+            changes who else may.
+          enum:
+          - viewer
+          - editor
+          - full_access
+      required:
+      - candidates
+      - memberAccess
+      - people
+      - yourAccess
+    UseCaseAccessCandidate:
+      type: object
+      description: A member of the organization who can be given access to a use case.
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+          description: "Their name, or their address until they have a name."
+      required:
+      - accountId
+      - email
+      - name
+    UseCaseAccessPerson:
+      type: object
+      description: "One person who may open a use case, and what they may do with\
+        \ it."
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        addedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        addedBy:
+          type:
+          - string
+          - "null"
+          description: Who gave them access; null for the creator and the owners.
+        creator:
+          type: boolean
+          description: Whether they started the use case. Their access cannot be changed.
+        email:
+          type: string
+        name:
+          type: string
+          description: "Their name, or their address until they have a name."
+        owner:
+          type: boolean
+          description: Whether they own the organization. Their access cannot be changed.
+        role:
+          type: string
+          enum:
+          - viewer
+          - editor
+          - full_access
+        you:
+          type: boolean
+          description: Whether it is the caller.
+      required:
+      - accountId
+      - creator
+      - email
+      - name
+      - owner
+      - role
+      - you
     UseCaseAttachment:
       type: object
       description: A file attached to a use case.

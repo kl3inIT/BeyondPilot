@@ -259,7 +259,12 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
           }
         }}
       >
-        {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
+        <UseCaseTabs
+          area="workspace"
+          id={useCase.id}
+          current="brief"
+          published={Boolean(useCase.publishedAt)}
+        />
         {problem === "changed" && (
           <Alert variant="destructive">
             <AlertTitle>{e("USECASE_CHANGED_MEANWHILE")}</AlertTitle>
@@ -372,7 +377,8 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
             >
               {reviewed ? t("saveChanges") : t("saveAsPrivate")}
             </Button>
-            {step === "review" && reviewed ? null : step === "review" ? (
+            {step === "review" && (reviewed || useCase.access !== "full_access") ? null : step ===
+              "review" ? (
               <form.AppForm>
                 <form.SubmitButton
                   disabled={missing.length > 0 || !confirmed || problem !== null || unchanged}
