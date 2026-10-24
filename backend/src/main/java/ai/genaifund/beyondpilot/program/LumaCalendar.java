@@ -283,10 +283,30 @@ class LumaCalendar {
 		URI image = event.cover();
 		boolean newImage = image != null
 				&& !image.toString().equals(held.map(Program::getLumaCoverUrl).orElse(null));
-		LumaHttp.Answer cover = newImage ? image(image) : null;
+		LumaHttp.Answer cover = newImage ? coverOf(event, image) : null;
 		Change change = transactions.execute(status -> write(event, held.map(Program::getId).orElse(null),
 				cover == null || image == null ? null : new Cover(image, cover)));
 		return Objects.requireNonNull(change);
+	}
+
+	/**
+	 * The event's cover as downloaded; null when it cannot be kept, which leaves the program without a new cover rather
+	 * than without its page. Luma's address is not recorded then, so the next read tries the image again; a page
+	 * without a cover waits as a draft, since publishing asks for one.
+	 */
+	private LumaHttp.@Nullable Answer coverOf(LumaEvent event, URI image) {
+		try {
+			return image(image);
+		}
+		catch (IOException failed) {
+			LOG.atWarn()
+				.addKeyValue("event", "program.luma.cover_skipped")
+				.addKeyValue("luma_event_id", event.id())
+				.addKeyValue("error_type", failed.getClass().getName())
+				.addKeyValue("reason", failed instanceof CoverRefused refused ? refused.getMessage() : "unreachable")
+				.log("A Luma event's cover could not be kept; its page goes on without it");
+			return null;
+		}
 	}
 
 	/** An image of Luma's and what was downloaded of it. */
@@ -400,11 +420,29 @@ class LumaCalendar {
 	/** The image as WebP, PNG or JPEG, which Luma's CDN answers as asked and storage keeps. */
 	private LumaHttp.Answer image(URI address) throws IOException {
 		LumaHttp.Answer answer = http.get(address, "image/webp,image/png,image/jpeg", MAX_IMAGE_BYTES);
-		if (!answer.ok() || answer.body().length > MAX_IMAGE_BYTES || answer.mediaType() == null
-				|| !FilePurpose.PROGRAM_IMAGE.mediaTypes().contains(answer.mediaType())) {
-			throw new IOException("Luma's image is not one storage keeps");
+		if (!answer.ok()) {
+			throw new CoverRefused("status " + answer.status());
+		}
+		if (answer.body().length > MAX_IMAGE_BYTES) {
+			throw new CoverRefused("larger than " + MAX_IMAGE_BYTES + " bytes");
+		}
+		if (answer.mediaType() == null || !FilePurpose.PROGRAM_IMAGE.mediaTypes().contains(answer.mediaType())) {
+			// Only the type's own token, so nothing of Luma's answer but its kind reaches the log.
+			String type = answer.mediaType() == null ? "none" : answer.mediaType().replaceAll("[^a-z0-9/+.-]", "");
+			throw new CoverRefused("media type " + type);
 		}
 		return answer;
+	}
+
+	/** Luma's image is not one storage keeps; the message says why in words of this class only. */
+	private static final class CoverRefused extends IOException {
+
+		private static final long serialVersionUID = 1L;
+
+		CoverRefused(String reason) {
+			super(reason);
+		}
+
 	}
 
 	private static String extension(@Nullable String mediaType) {

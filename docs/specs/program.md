@@ -298,8 +298,12 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
 - **Now.** **Pull from Luma** runs the same read at once (`LumaAdministration.read`), for an operator who just published
   an event; a read already running finishes first, since one read holds the calendar at a time. The toast says what changed.
 - **Failures.** A calendar that cannot be read changes nothing and is said on the connection: "Luma could not be read"
-  (`program.luma.read_failed`) or "Luma refused the key". An event whose read, image or write fails is skipped and tried
-  at the next read (`program.luma.event_failed`); the others go on. A read that changed something logs
+  (`program.luma.read_failed`) or "Luma refused the key". An event whose read or write fails is skipped and tried at
+  the next read (`program.luma.event_failed`); the others go on. A cover storage cannot keep (a host not configured, an
+  answer that is not `2xx`, more than 5 MB, or a type other than PNG, JPEG and WebP, such as a GIF Luma gives an event
+  without its own) does not stop the event: its page is made or updated without a new cover, so a page without one
+  waits as a draft, and the image is tried again at the next read (`program.luma.cover_skipped`, with the `reason` in
+  this server's own words). A read that changed something logs
   `program.luma.read` with its counts.
 
 ## Events created from BeyondPilot
