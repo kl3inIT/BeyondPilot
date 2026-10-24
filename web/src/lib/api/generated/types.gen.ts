@@ -19730,7 +19730,7 @@ export type MakeMyUseCasePrivateErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an organization, not taken down,             that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
@@ -19769,7 +19769,7 @@ export type MakeMyUseCasePublicErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an organization, not taken down,             that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
