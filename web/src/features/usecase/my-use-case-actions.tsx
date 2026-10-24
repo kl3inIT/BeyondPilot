@@ -20,12 +20,16 @@ import {
   moveMyUseCaseToDraft,
   type MyUseCaseSummary,
 } from "@/lib/api/generated";
-import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
+import {
+  siteRoutes,
+  workspaceUseCaseAccessRoute,
+  workspaceUseCaseProposalsRoute,
+} from "@/lib/site";
 
 import { useCaseWords } from "./my-use-case-errors";
 
 type MyUseCaseActionsProps = {
-  useCase: Pick<MyUseCaseSummary, "id" | "status" | "title">;
+  useCase: Pick<MyUseCaseSummary, "id" | "status" | "title" | "access">;
   /** Whether the use case was published, so that it can have received proposals. */
   viewProposals: boolean;
 };
@@ -47,11 +51,13 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
   const address = `${siteRoutes.workspaceUseCases}/${useCase.id}`;
 
   const status = useCase.status;
+  const full = useCase.access === "full_access";
   const editable =
-    status === "draft" ||
-    status === "needs_changes" ||
-    status === "approved" ||
-    status === "private";
+    useCase.access !== "viewer" &&
+    (status === "draft" ||
+      status === "needs_changes" ||
+      status === "approved" ||
+      status === "private");
   const inReview = status === "in_review";
 
   async function change(
@@ -86,19 +92,24 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
                 {t("actions.edit")}
               </DropdownMenuItem>
             )}
-            {(inReview || status === "closed") && (
+            {!editable && (
               <DropdownMenuItem render={<Link href={address} />}>
                 {t("actions.view")}
               </DropdownMenuItem>
             )}
+            <DropdownMenuItem render={<Link href={workspaceUseCaseAccessRoute(useCase.id)} />}>
+              {t("actions.share")}
+            </DropdownMenuItem>
             {viewProposals && (
               <DropdownMenuItem render={<Link href={workspaceUseCaseProposalsRoute(useCase.id)} />}>
                 {p("viewProposals")}
               </DropdownMenuItem>
             )}
           </DropdownMenuGroup>
-          {(inReview || status === "approved" || status === "private") && <DropdownMenuSeparator />}
-          {inReview && (
+          {full && (inReview || status === "approved" || status === "private") && (
+            <DropdownMenuSeparator />
+          )}
+          {full && inReview && (
             <DropdownMenuGroup>
               <DropdownMenuItem
                 onClick={() =>
@@ -112,14 +123,14 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}
-          {status === "approved" && (
+          {full && status === "approved" && (
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setConfirming("private")}>
                 {t("actions.makePrivate")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}
-          {status === "private" && (
+          {full && status === "private" && (
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setConfirming("public")}>
                 {t("actions.makePublic")}

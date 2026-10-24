@@ -2,9 +2,11 @@ import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminUseCase,
+  getAdminUseCaseAccess,
   listAdminUseCases,
   type AdminUseCase,
   type AdminUseCaseList,
+  type UseCaseAccess,
   getUseCaseReviewQueue,
   type UseCaseReviewQueue,
 } from "@/lib/api/generated";
@@ -57,4 +59,17 @@ export async function readAdminUseCase(id: string): Promise<AdminUseCase | null>
 export async function readUseCaseQueue(): Promise<UseCaseReviewQueue> {
   const { data } = await getUseCaseReviewQueue(await sessionRequest());
   return data;
+}
+
+/** Who may do what with a use case, as an operator reads it, or `null` when there is no such use case. Server only. */
+export async function readAdminUseCaseAccess(id: string): Promise<UseCaseAccess | null> {
+  try {
+    const { data } = await getAdminUseCaseAccess({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
 }

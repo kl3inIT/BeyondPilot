@@ -586,7 +586,10 @@
     "PERK_ANSWERS_NOT_VALID": "Hãy trả lời mọi câu bắt buộc, mỗi câu trong giới hạn độ dài.",
     "PERK_NOT_A_CODE_LIST": "Chỉ nạp mã cho perk được tặng bằng danh sách mã.",
     "PERK_REQUEST_NOT_FOUND": "Yêu cầu này không còn nữa. Hãy tải lại trang.",
-    "PERK_REQUEST_DECIDED": "Có người vừa trả lời yêu cầu này. Hãy tải lại danh sách."
+    "PERK_REQUEST_DECIDED": "Có người vừa trả lời yêu cầu này. Hãy tải lại danh sách.",
+    "USECASE_ACCESS_REQUIRED": "Bạn chưa có đủ quyền để làm việc này với use case.",
+    "USECASE_ACCESS_FIXED": "Người tạo, chủ sở hữu và GenAI Fund luôn có toàn quyền.",
+    "USECASE_ACCESS_NOT_A_MEMBER": "Chỉ thành viên của tổ chức mới được cấp quyền."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -1445,7 +1448,10 @@
           "set_programs": "Đặt chương trình cho một use case",
           "update": "Sửa một use case riêng tư",
           "publish": "Đăng một use case",
-          "export": "Tải danh sách use case"
+          "export": "Tải danh sách use case",
+          "access_set": "Đặt quyền truy cập use case",
+          "access_remove": "Gỡ quyền truy cập use case",
+          "access_general": "Đổi quyền của các thành viên với use case"
         },
         "email": {
           "settings_update": "Đổi cấu hình email",
@@ -1632,7 +1638,10 @@
           "set_programs": "Đã đặt chương trình cho use case <resource></resource>",
           "update": "Đã sửa use case riêng tư <resource></resource>",
           "publish": "Đã đăng use case <resource></resource>",
-          "export": "Tải danh sách use case"
+          "export": "Tải danh sách use case",
+          "access_set": "Đặt người được dùng một use case",
+          "access_remove": "Gỡ một người khỏi use case",
+          "access_general": "Đổi quyền thành viên với use case"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
@@ -2297,7 +2306,8 @@
         "open": "Hành động cho {name}",
         "review": "Duyệt use case",
         "view": "Mở use case",
-        "organisation": "Xem tổ chức"
+        "organisation": "Xem tổ chức",
+        "access": "Quyền truy cập"
       },
       "feature": {
         "featured": "Nổi bật",
@@ -4633,7 +4643,8 @@
         "view": "Mở use case",
         "pullBack": "Rút về bản nháp",
         "makePrivate": "Chuyển sang riêng tư",
-        "makePublic": "Chuyển sang công khai"
+        "makePublic": "Chuyển sang công khai",
+        "share": "Quyền truy cập"
       },
       "makePrivate": {
         "title": "Chuyển “{name}” sang riêng tư?",
@@ -4800,7 +4811,12 @@
           "lead": "Hạn chót đã qua vào {date} nên không còn thay đổi được use case này.",
           "note": "Use case đã đóng vẫn nằm trong danh mục như một bản ghi."
         },
-        "pullBack": "Rút về bản nháp"
+        "pullBack": "Rút về bản nháp",
+        "viewer": {
+          "title": "Bạn chỉ có thể xem use case này",
+          "lead": "Người có toàn quyền có thể cấp thêm quyền cho bạn.",
+          "note": "Bạn chỉ có quyền xem."
+        }
       },
       "sent": {
         "metaTitle": "Đã gửi duyệt · BeyondPilot",
@@ -4828,6 +4844,40 @@
           }
         },
         "viewMine": "Xem use case của tôi"
+      },
+      "access": {
+        "metaTitle": "Quyền truy cập",
+        "title": "Những người có quyền",
+        "back": "Quay lại danh sách use case",
+        "lead": "Chọn ai được mở use case này và được làm gì với nó. Người tạo, chủ sở hữu tổ chức và GenAI Fund luôn có toàn quyền.",
+        "readOnly": "Những người này mở được use case này. Chỉ người có toàn quyền mới đổi được danh sách.",
+        "roles": {
+          "viewer": "Người xem",
+          "editor": "Người chỉnh sửa",
+          "full_access": "Toàn quyền"
+        },
+        "general": {
+          "title": "Các thành viên còn lại trong tổ chức",
+          "hint": "Quyền của các thành viên khác. Use case đã công khai thì ai cũng xem được.",
+          "none": "Không có quyền",
+          "viewer": "Người xem",
+          "editor": "Người chỉnh sửa",
+          "full_access": "Toàn quyền"
+        },
+        "creator": "Người tạo",
+        "owner": "Chủ sở hữu",
+        "you": "bạn",
+        "addedBy": "Được thêm bởi {name}",
+        "changeRole": "Đổi quyền của {name}",
+        "remove": "Gỡ",
+        "add": {
+          "label": "Thêm một người",
+          "placeholder": "Chọn một thành viên",
+          "none": "Mọi người đều đã có quyền",
+          "role": "Quyền",
+          "submit": "Thêm"
+        },
+        "done": "Đã lưu quyền truy cập."
       }
     }
   },
@@ -8060,7 +8110,8 @@
       "label": "Các trang của use case này",
       "brief": "Đề bài",
       "candidates": "Giải pháp phù hợp",
-      "proposals": "Proposal"
+      "proposals": "Proposal",
+      "access": "Quyền truy cập"
     },
     "head": {
       "back": "{organization} · Use case",

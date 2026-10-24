@@ -2,11 +2,13 @@ import { isActive } from "@/features/organization/organization-format";
 import { ApiError } from "@/lib/api/client";
 import {
   getMyUseCase,
+  getMyUseCaseAccess,
   listMyUseCases,
   type MyOrganization,
   type MyUseCase,
   type MyUseCases,
   type Organization,
+  type UseCaseAccess,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -20,6 +22,19 @@ export async function readMyUseCases(): Promise<MyUseCases> {
 export async function readMyUseCase(id: string): Promise<MyUseCase | null> {
   try {
     const { data } = await getMyUseCase({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** Who may do what with a use case of the caller's organization, or `null` when the caller cannot see it. Server only. */
+export async function readMyUseCaseAccess(id: string): Promise<UseCaseAccess | null> {
+  try {
+    const { data } = await getMyUseCaseAccess({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {

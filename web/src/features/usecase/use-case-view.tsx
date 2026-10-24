@@ -32,6 +32,8 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
   const [pending, setPending] = useState(false);
   const values = draftValuesOf(useCase);
   const inReview = useCase.status === "in_review";
+  // A use case the caller may read but not change, whatever its status.
+  const readOnly = !inReview && useCase.status !== "closed";
 
   async function pullBack() {
     setPending(true);
@@ -57,16 +59,25 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
       exit={<TextButton href={siteRoutes.workspaceUseCases}>{w("backToList")}</TextButton>}
       current="review"
       done={(step) => step !== "review"}
-      notes={[inReview ? t("inReview.note") : t("closed.note")]}
+      notes={[inReview ? t("inReview.note") : readOnly ? t("viewer.note") : t("closed.note")]}
     >
       <LiveRefresh />
-      {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
+      <UseCaseTabs
+        area="workspace"
+        id={useCase.id}
+        current="brief"
+        published={Boolean(useCase.publishedAt)}
+      />
       <div className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">
-          {inReview ? t("inReview.title") : t("closed.title")}
+          {inReview ? t("inReview.title") : readOnly ? t("viewer.title") : t("closed.title")}
         </h1>
         <p className="text-base text-muted-foreground">
-          {inReview ? t("inReview.lead") : t("closed.lead", { date: closes })}
+          {inReview
+            ? t("inReview.lead")
+            : readOnly
+              ? t("viewer.lead")
+              : t("closed.lead", { date: closes })}
         </p>
       </div>
       <UseCaseSummary
@@ -78,7 +89,7 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
         <Button prominence="tertiary" href={siteRoutes.workspaceUseCases}>
           {w("backToList")}
         </Button>
-        {inReview && (
+        {inReview && useCase.access === "full_access" && (
           <Button prominence="secondary" pending={pending} onClick={() => void pullBack()}>
             {t("pullBack")}
           </Button>

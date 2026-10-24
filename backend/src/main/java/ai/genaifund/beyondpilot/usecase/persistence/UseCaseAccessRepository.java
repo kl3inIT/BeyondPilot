@@ -36,7 +36,8 @@ public class UseCaseAccessRepository {
 		jdbc.sql("select use_case_id, role from use_case_access where account_id = ?")
 			.param(accountId)
 			.query((row, number) -> {
-				AccessRole.of(row.getString("role")).ifPresent(role -> roles.put(row.getObject("use_case_id", UUID.class), role));
+				UUID useCaseId = row.getObject("use_case_id", UUID.class);
+				AccessRole.of(row.getString("role")).ifPresent(role -> roles.put(useCaseId, role));
 				return 0;
 			})
 			.list();

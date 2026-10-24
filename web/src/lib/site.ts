@@ -103,6 +103,16 @@ export function workspaceUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.workspaceUseCases}/${id}/candidates`;
 }
 
+/** Who may do what with a use case, as its organization reads and changes it. */
+export function workspaceUseCaseAccessRoute(id: string) {
+  return `${siteRoutes.workspaceUseCases}/${id}/access`;
+}
+
+/** Who may do what with a use case, as GenAI Fund reads and changes it. */
+export function adminUseCaseAccessRoute(id: string) {
+  return `${siteRoutes.adminUseCases}/${id}/access`;
+}
+
 /** The proposals a use case received, as GenAI Fund reads them. */
 export function adminUseCaseProposalsRoute(id: string) {
   return `${siteRoutes.adminUseCases}/${id}/proposals`;
