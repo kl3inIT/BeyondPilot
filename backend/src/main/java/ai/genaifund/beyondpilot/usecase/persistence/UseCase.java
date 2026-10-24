@@ -150,6 +150,9 @@ public class UseCase {
 	@Column(nullable = false)
 	private String memberAccess = AccessRole.NONE.code();
 
+	/** The key of the read-only link anyone holding it may open; null while the link is off. */
+	private @Nullable UUID previewToken;
+
 	@ElementCollection
 	@CollectionTable(name = "use_case_requirement", joinColumns = @JoinColumn(name = "use_case_id"))
 	@OrderColumn(name = "position")
@@ -301,6 +304,20 @@ public class UseCase {
 	/** What every member of the organization may do with it. */
 	public AccessRole getMemberAccess() {
 		return AccessRole.of(memberAccess).orElse(AccessRole.NONE);
+	}
+
+	public @Nullable UUID getPreviewToken() {
+		return previewToken;
+	}
+
+	/** Turns the read-only link on, with a new key when it was off, or off for good. */
+	public void shareByLink(boolean on) {
+		if (!on) {
+			this.previewToken = null;
+		}
+		else if (this.previewToken == null) {
+			this.previewToken = UUID.randomUUID();
+		}
 	}
 
 	/** Lets every member of the organization do this much with it; they may be given more one by one. */

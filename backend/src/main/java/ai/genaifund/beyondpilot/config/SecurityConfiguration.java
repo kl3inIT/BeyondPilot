@@ -76,7 +76,7 @@ class SecurityConfiguration {
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",
 						"/api/solution/solutions/*/deck", "/api/solution/solutions/shared/*", "/api/solution/deployments", "/api/usecase/use-cases",
-						"/api/usecase/use-cases/*", "/api/talent/profiles", "/api/talent/profiles/*",
+						"/api/usecase/use-cases/*", "/api/usecase/use-cases/preview/*", "/api/talent/profiles", "/api/talent/profiles/*",
 						"/api/organization/organizations/*")
 				.permitAll()
 				// Anyone reads the published perks and who they are for; a code or a private link comes only with a claim.

@@ -41,6 +41,7 @@ import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCasePreviewResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCasePersonResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAttachmentResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
@@ -418,6 +419,22 @@ public class UseCaseAdministration {
 		access.shareWithMembers(actor, useCase, AccessRole.of(role).orElse(AccessRole.NONE));
 		useCases.saveAndFlush(useCase);
 		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/** The read-only link of a use case. */
+	@Transactional(readOnly = true)
+	public UseCasePreviewResponse preview(UUID id) {
+		return access.preview(useCases.findById(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id)));
+	}
+
+	/** Turns the read-only link of a use case on or off. */
+	@Transactional
+	public UseCasePreviewResponse setPreview(Actor actor, UUID id, boolean enabled) {
+		UseCase useCase = locked(id);
+		UseCasePreviewResponse response = access.setPreview(actor, useCase, enabled);
+		useCases.saveAndFlush(useCase);
+		return response;
 	}
 
 	private UseCase locked(UUID id) {

@@ -366,6 +366,31 @@ class UseCaseServiceTest {
 	}
 
 	@Test
+	void aPrivateUseCaseIsReadFromItsLinkUntilTheLinkIsTurnedOff() {
+		Team team = team("preview-link.test");
+		UUID id = adminPublished(team.organization, "Shared before it opens");
+		post(operator, ADMIN + "/" + id + "/make-private", null).expectStatus().isOk();
+		jdbc.sql("update use_case set member_access = viewer where id = ?").param(id).update();
+		assertProblem(put(team.colleague, MINE + "/" + id + "/preview", Map.<String, Object>of("enabled", true)), 403,
+				"USECASE_ACCESS_REQUIRED");
+
+		String on = body(put(team.founder, MINE + "/" + id + "/preview", Map.<String, Object>of("enabled", true)).expectStatus().isOk());
+		String token = JsonPath.read(on, "$.token");
+		String link = "/api/usecase/use-cases/preview/" + token;
+		// Anyone holding the link reads it without signing in, while the public list still hides it.
+		String read = body(client.get().uri(link).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.title")).isEqualTo("Shared before it opens");
+		client.get().uri("/api/usecase/use-cases/" + id).exchange().expectStatus().isNotFound();
+
+		put(team.founder, MINE + "/" + id + "/preview", Map.<String, Object>of("enabled", false)).expectStatus().isOk();
+		client.get().uri(link).exchange().expectStatus().isNotFound();
+		// Turned on again, the link is a new one.
+		String again = body(put(operator, ADMIN + "/" + id + "/preview", Map.<String, Object>of("enabled", true)).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(again, "$.token")).isNotEqualTo(token);
+		client.get().uri(link).exchange().expectStatus().isNotFound();
+	}
+
+	@Test
 	void aClosedUseCaseIsLockedForItsMembers() {
 		Team team = team("closed.test");
 		UUID id = adminPublished(team.organization, "Closing soon");

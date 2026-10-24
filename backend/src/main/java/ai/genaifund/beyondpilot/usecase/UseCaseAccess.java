@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessCandidateResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessPersonResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCasePreviewResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.AccessRole;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseAccessRepository;
@@ -147,6 +148,21 @@ class UseCaseAccess {
 			record(AuditAction.USE_CASE_ACCESS_GENERAL, changer, useCase,
 					Map.of("organization", useCase.getOrganizationId().toString(), "role", role.code()));
 		}
+	}
+
+	/** The read-only link of a use case as it stands. */
+	UseCasePreviewResponse preview(UseCase useCase) {
+		return new UseCasePreviewResponse(useCase.getPreviewToken());
+	}
+
+	/** Turns the read-only link on or off; turning it on again after it was off makes a new link. */
+	UseCasePreviewResponse setPreview(Actor changer, UseCase useCase, boolean enabled) {
+		if ((useCase.getPreviewToken() != null) != enabled) {
+			useCase.shareByLink(enabled);
+			record(AuditAction.USE_CASE_PREVIEW, changer, useCase,
+					Map.of("organization", useCase.getOrganizationId().toString(), "enabled", Boolean.toString(enabled)));
+		}
+		return preview(useCase);
 	}
 
 	private void requireChangeable(UseCase useCase, UUID accountId) {

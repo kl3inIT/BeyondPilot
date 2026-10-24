@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCasePreviewResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCasesResponse;
 import ai.genaifund.beyondpilot.usecase.dto.SaveMyUseCaseRequest;
@@ -338,6 +339,26 @@ public class UseCaseService {
 		access.shareWithMembers(actor, useCase, AccessRole.of(role).orElse(AccessRole.NONE));
 		useCases.saveAndFlush(useCase);
 		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/** The read-only link of a use case, for those who have full access to it. */
+	@Transactional(readOnly = true)
+	public UseCasePreviewResponse preview(Actor actor, UUID id) {
+		Membership membership = writer(actor);
+		return access.preview(own(actor, membership, id, AccessRole.FULL_ACCESS));
+	}
+
+	/**
+	 * Turns the read-only link on or off.
+	 * @throws UseCaseException when the caller lacks full access
+	 */
+	@Transactional
+	public UseCasePreviewResponse setPreview(Actor actor, UUID id, boolean enabled) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
+		UseCasePreviewResponse response = access.setPreview(actor, useCase, enabled);
+		useCases.saveAndFlush(useCase);
+		return response;
 	}
 
 	/** The caller's organization, which must not be taken down. */

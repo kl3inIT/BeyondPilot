@@ -13,6 +13,8 @@ import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseAccessRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseMemberAccessRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCasePreviewRequest;
+import ai.genaifund.beyondpilot.usecase.dto.UseCasePreviewResponse;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
@@ -266,6 +268,28 @@ class AdminUseCasesController {
 	UseCaseAccessResponse shareWithMembers(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody SetUseCaseMemberAccessRequest request) {
 		return useCases.shareWithMembers(actor, id, request.role());
+	}
+
+	@GetMapping(path = "/use-cases/{id}/preview", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getAdminUseCasePreview", summary = "The read-only link of a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The link; its key is null while it is off.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCasePreviewResponse preview(@PathVariable UUID id) {
+		return useCases.preview(id);
+	}
+
+	@PutMapping(path = "/use-cases/{id}/preview", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "setAdminUseCasePreview", summary = "Turn the read-only link of a use case on or off",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The link now.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCasePreviewResponse setPreview(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetUseCasePreviewRequest request) {
+		return useCases.setPreview(actor, id, request.enabled());
 	}
 
 
