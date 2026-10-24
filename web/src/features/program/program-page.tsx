@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { RichText } from "@/components/composites/rich-text";
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -149,9 +150,7 @@ async function ProgramPage({
             {program.about && (
               <section className="flex flex-col gap-3">
                 <h2 className="text-2xl font-semibold tracking-title">{t("about")}</h2>
-                <p className="max-w-3xl whitespace-pre-line text-muted-foreground">
-                  {program.about}
-                </p>
+                <RichText text={program.about} className="max-w-3xl" />
               </section>
             )}
             {useCases.items.length > 0 && (

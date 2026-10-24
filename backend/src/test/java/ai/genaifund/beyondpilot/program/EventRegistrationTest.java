@@ -135,7 +135,9 @@ class EventRegistrationTest {
 			.jsonPath("$.state").isEqualTo("open")
 			.jsonPath("$.approval").isEqualTo(true)
 			.jsonPath("$.zone").isEqualTo("Asia/Ho_Chi_Minh")
-			.jsonPath("$.hosts[0]").isEqualTo("GenAI Fund")
+			.jsonPath("$.hosts[0].name").isEqualTo("GenAI Fund")
+			.jsonPath("$.hosts[0].avatarUrl").isEqualTo("https://images.lumacdn.com/avatars/gaf.png")
+			.jsonPath("$.hosts[1].avatarUrl").doesNotExist()
 			.jsonPath("$.questions[0].known").isEqualTo("name")
 			.jsonPath("$.questions[2].options[1]").isEqualTo("Builder")
 			.jsonPath("$.questions[4].termsUrl").isEqualTo("https://genaifund.test/terms.pdf")
@@ -416,7 +418,7 @@ class EventRegistrationTest {
 				"geo_address_json":{"city":"Thành phố Hồ Chí Minh","country":"VN","full_address":"24 Nguyễn Thị Nghĩa, Quận 1"},
 				"url":"https://luma.com/%s","visibility":"public","access":"manage","display_price":null,
 				"registration_open":%s,"require_approval":%s,"spots_remaining":%s,"waitlist_status":"%s",
-				"hosts":[{"name":"GenAI Fund"}],
+				"hosts":[{"name":"GenAI Fund","avatar_url":"https://images.lumacdn.com/avatars/gaf.png"},{"name":"Kai"}],
 				"registration_questions":[
 				{"id":"q-name","label":"Name","required":true,"question_type":"text"},
 				{"id":"q-email","label":"Email","required":true,"question_type":"text"},

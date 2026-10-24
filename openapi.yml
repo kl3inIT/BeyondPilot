@@ -20596,6 +20596,17 @@ components:
           minLength: 0
       required:
       - questionId
+    EventHost:
+      type: object
+      properties:
+        avatarUrl:
+          type: string
+          format: uri
+          description: The host's picture on Luma; absent when there is none.
+        name:
+          type: string
+      required:
+      - name
     EventQuestion:
       type: object
       description: "A question of an event's registration form, as the host wrote\
@@ -20674,8 +20685,9 @@ components:
             it back.
         hosts:
           type: array
+          description: As Luma shows them.
           items:
-            type: string
+            $ref: "#/components/schemas/EventHost"
         meetingUrl:
           type: string
           description: The address of the call; absent when there is none or it is
