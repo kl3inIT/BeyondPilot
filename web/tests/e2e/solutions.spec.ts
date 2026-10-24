@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { hydrated } from "./hydration";
 import { serveStoredImages } from "./stored-files";
 
 /** The solutions shown, by the name each card leads with. */
@@ -99,15 +100,13 @@ test.describe("solutions directory", () => {
   test("a visitor reads a perk and who may get it, and is asked to sign in to get it", async ({
     page,
   }) => {
-    await page.goto("/solutions/perks");
-    await expect(page.getByRole("link", { name: "Cloud credits" })).toHaveAttribute(
-      "href",
-      "/solutions/perks/cloud-credits",
-    );
-    await expectNoSeriousA11yViolations(page);
-
     await page.goto("/solutions/perks/cloud-credits");
     await expect(page.getByRole("heading", { level: 1, name: "Cloud credits" })).toBeVisible();
+    // Perks are read on the solutions they go with, so the way back is the directory.
+    await expect(page.getByRole("link", { name: "AI solutions" }).first()).toHaveAttribute(
+      "href",
+      "/solutions",
+    );
     await expect(page.getByText("Teams on BeyondPilot", { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Sign in to get it" })).toHaveAttribute(
       "href",
@@ -160,6 +159,36 @@ test.describe("solutions directory", () => {
 
     await page.getByRole("button", { name: "Clear filters" }).click();
     await expect(page).not.toHaveURL(/industry=/);
+    await expect(shownSolutions(page)).toHaveCount(6);
+  });
+
+  test("the perks filter keeps the solutions that go with an open perk, searched or not", async ({
+    page,
+    isMobile,
+  }) => {
+    // The former catalogue of perks opens the directory with the filter on.
+    await page.goto("/solutions/perks");
+    await expect(page).toHaveURL("/solutions?perks=active");
+    await expect(shownSolutions(page)).toHaveText(["Policy Chat", "Clinic Triage"]);
+
+    // A search keeps the filter.
+    await (
+      await hydrated(page.getByRole("searchbox", { name: "Search AI solutions" }))
+    ).fill("clinic");
+    await expect(page).toHaveURL(/[?&]q=clinic/);
+    await expect(shownSolutions(page)).toHaveText(["Clinic Triage"]);
+
+    await page.goto("/solutions");
+    if (isMobile) {
+      await (await hydrated(page.getByRole("button", { name: "Filters" }))).click();
+    }
+    await (await hydrated(page.getByRole("combobox", { name: "Perks" }))).click();
+    await page.getByRole("option", { name: "With active perks" }).click();
+    await expect(page).toHaveURL(/perks=active/);
+    await expect(shownSolutions(page)).toHaveCount(2);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.getByRole("button", { name: "Clear filters" }).click();
     await expect(shownSolutions(page)).toHaveCount(6);
   });
 

@@ -13971,6 +13971,22 @@ export type ListSolutionPerksResponses = {
 
 export type ListSolutionPerksResponse = ListSolutionPerksResponses[keyof ListSolutionPerksResponses];
 
+export type ListSolutionsWithPerksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/perk/solutions/with-perks';
+};
+
+export type ListSolutionsWithPerksResponses = {
+    /**
+     * The solutions' addresses.
+     */
+    200: Array<string>;
+};
+
+export type ListSolutionsWithPerksResponse = ListSolutionsWithPerksResponses[keyof ListSolutionsWithPerksResponses];
+
 export type DisconnectLumaData = {
     body?: never;
     path?: never;
@@ -16297,6 +16313,10 @@ export type SearchData = {
          * Only use cases with open or closed proposals; both when absent.
          */
         proposalStatus?: 'open' | 'closed';
+        /**
+         * Only solutions that go with an open perk, when true.
+         */
+        perks?: boolean | null;
     };
     url: '/api/search';
 };
@@ -18019,6 +18039,10 @@ export type ListSolutionsData = {
          * Only solutions of the organization at this address.
          */
         organization?: string | null;
+        /**
+         * Only the solutions at these addresses.
+         */
+        slug?: Array<string> | null;
         /**
          * The order: by name, or the most recently approved first.
          */

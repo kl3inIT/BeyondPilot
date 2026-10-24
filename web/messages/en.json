@@ -4838,12 +4838,7 @@
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
       "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
-      "backing": "Confirmed by GenAI Fund:",
-      "tabs": {
-        "label": "Directory",
-        "solutions": "Solutions",
-        "perks": "Perks"
-      }
+      "backing": "Confirmed by GenAI Fund:"
     },
     "perks": {
       "label": "Perk:",
@@ -4880,6 +4875,11 @@
       "maturity": {
         "label": "Stage",
         "all": "Any stage"
+      },
+      "perks": {
+        "label": "Perks",
+        "all": "Any perks",
+        "active": "With active perks"
       },
       "status": {
         "label": "Status",
@@ -5397,17 +5397,6 @@
       "members": "Teams on BeyondPilot",
       "applicants": "Applicants to {program}",
       "shortlisted": "The shortlist of {program}"
-    },
-    "catalogue": {
-      "metaTitle": "Perks · BeyondPilot",
-      "lead": "Credits, discounts and services from partners for the teams on BeyondPilot, and for the teams of GenAI Fund's programs.",
-      "count": "{count, plural, one {# perk} other {# perks}}",
-      "showEnded": "Show ended perks",
-      "hideEnded": "Hide ended perks",
-      "empty": {
-        "title": "No perks yet",
-        "description": "Partners' perks for teams appear here once they are published."
-      }
     },
     "page": {
       "by": "By {name}",

@@ -454,6 +454,9 @@ export function answerDirectory(url) {
     return found ? [200, found] : missing;
   }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
+  if (area === "perk" && list === "solutions" && slug === "with-perks") {
+    return [200, Object.keys(perksBySlug)];
+  }
   if (area === "perk" && list === "solutions") {
     const slugs = query.getAll("slugs").flatMap((value) => value.split(","));
     return [200, slugs.map((each) => ({ slug: each, perks: perksOf(each) }))];
@@ -462,20 +465,19 @@ export function answerDirectory(url) {
   if (area === "perk" && list === "programs" && slug) {
     return [200, []];
   }
-  if (area === "perk" && list === "perks") {
-    if (slug) {
-      return slug === cloudCredits.slug ? [200, cloudCreditsPage] : missing;
-    }
-    return [200, [cloudCreditsPage.card]];
+  if (area === "perk" && list === "perks" && slug) {
+    return slug === cloudCredits.slug ? [200, cloudCreditsPage] : missing;
   }
   if (area === "solution" && list === "solutions") {
     if (slug) {
       const found = [...solutions, unlisted].find((item) => item.slug === slug);
       return found ? [200, { ...found, customerDeployments: deploymentsOf(slug) }] : missing;
     }
+    const among = query.getAll("slug").flatMap((value) => value.split(","));
     const items = solutions.filter(
       (item) =>
         has(query.get("q"), item.name, item.summary) &&
+        (among.length === 0 || among.includes(item.slug)) &&
         (!query.get("organization") || item.organizationSlug === query.get("organization")) &&
         (!query.get("industry") || item.industries.includes(query.get("industry"))) &&
         (!query.get("focusArea") || item.focusAreas.includes(query.get("focusArea"))) &&
@@ -530,7 +532,12 @@ export function directorySearchItems(url) {
   directory.searchParams.delete("page");
   directory.searchParams.set("size", "100");
   const [, response] = answerDirectory(directory);
-  return response.items.map((record) => ({
+  // Search's perks filter keeps the solutions with an open perk; the directory itself has no such filter.
+  const items =
+    url.searchParams.get("perks") === "true"
+      ? response.items.filter((record) => perksOf(record.slug).length > 0)
+      : response.items;
+  return items.map((record) => ({
     kind,
     slug: record.slug ?? record.id,
     title: record.name ?? record.title,

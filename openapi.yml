@@ -8377,6 +8377,22 @@ paths:
       summary: "The open perks of these solutions, for their cards"
       tags:
       - Perks
+  /api/perk/solutions/with-perks:
+    get:
+      operationId: listSolutionsWithPerks
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+          description: The solutions' addresses.
+      summary: "The addresses of the listed solutions that go with an open perk, for\
+        \ the directory's perks filter"
+      tags:
+      - Perks
   /api/program/admin/luma:
     delete:
       description: Removes the key and the webhook made with it. The programs the
@@ -11326,6 +11342,14 @@ paths:
           - open
           - closed
           pattern: open|closed
+      - description: "Only solutions that go with an open perk, when true."
+        in: query
+        name: perks
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       responses:
         "200":
           content:
@@ -13501,6 +13525,20 @@ paths:
           - "null"
           maxLength: 120
           minLength: 0
+      - description: Only the solutions at these addresses.
+        in: query
+        name: slug
+        required: false
+        schema:
+          type:
+          - array
+          - "null"
+          items:
+            type: string
+            maxLength: 120
+            minLength: 0
+          maxItems: 100
+          minItems: 0
       - description: "The order: by name, or the most recently approved first."
         in: query
         name: sort

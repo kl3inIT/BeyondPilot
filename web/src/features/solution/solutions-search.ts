@@ -12,12 +12,19 @@ import {
   reviewedStatuses,
 } from "./solution-codes";
 
-/** What narrows the public directory, as the URL holds it: `?q=&industry=&focusArea=&maturity=&sort=&page=&size=`. */
+/** The one choice of the perks filter: only the solutions that go with an open perk. */
+export const perkChoices = ["active"] as const;
+
+/**
+ * What narrows the public directory, as the URL holds it:
+ * `?q=&industry=&focusArea=&maturity=&perks=&sort=&page=&size=`.
+ */
 export const solutionsSearch = {
   q: parseAsString.withDefault(""),
   industry: parseAsStringLiteral(industries),
   focusArea: parseAsStringLiteral(focusAreas),
   maturity: parseAsStringLiteral(maturities),
+  perks: parseAsStringLiteral(perkChoices),
   sort: parseAsStringLiteral(directorySorts),
   page: parseAsInteger.withDefault(1),
   size: gridPageSize,

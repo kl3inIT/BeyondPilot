@@ -162,6 +162,31 @@ public class PerkCatalog {
 	}
 
 	/**
+	 * The addresses of the listed solutions that go with an open perk of a partner not taken down, for the directory's
+	 * perks filter.
+	 */
+	@Transactional(readOnly = true)
+	public List<String> solutionsWithPerks() {
+		Instant now = Instant.now();
+		List<Perk> open = perks.findByStateOrderByPublishedAtDesc(Perk.PUBLISHED)
+			.stream()
+			.filter(perk -> perk.isOpen(now))
+			.toList();
+		Map<UUID, OrganizationName> partners = organizations
+			.activeNames(open.stream().map(Perk::getOrganizationId).distinct().toList());
+		return open.stream()
+			.filter(perk -> partners.containsKey(perk.getOrganizationId()))
+			.flatMap(perk -> perk.getSolutionIds().stream())
+			.distinct()
+			.map(solutions::indexed)
+			.flatMap(Optional::stream)
+			.filter(IndexedSolution::listed)
+			.map(IndexedSolution::slug)
+			.sorted()
+			.toList();
+	}
+
+	/**
 	 * The open perks each of these solutions goes with, those GenAI Fund arranged first and then by title, for search
 	 * to show on their cards; a solution with none is left out.
 	 */

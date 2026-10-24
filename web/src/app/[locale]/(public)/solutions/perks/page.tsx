@@ -1,25 +1,13 @@
-import type { Metadata } from "next";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { permanentRedirect } from "next/navigation";
 
-import { readPerks } from "@/features/perk/perk-queries";
-import { PerksPage } from "@/features/perk/perks-page";
+import { getPathname } from "@/i18n/navigation";
+import { siteRoutes } from "@/lib/site";
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/[locale]/solutions/perks">): Promise<Metadata> {
+/** Perks are read on the solutions they go with: the former catalogue opens the directory filtered by them. */
+export default async function PerksRoute({ params }: PageProps<"/[locale]/solutions/perks">) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Perk.catalogue" });
 
-  return { title: t("metaTitle"), description: t("lead") };
-}
-
-export default async function PerksRoute({
-  params,
-  searchParams,
-}: PageProps<"/[locale]/solutions/perks">) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const ended = (await searchParams).ended === "true";
-
-  return <PerksPage perks={await readPerks(ended)} ended={ended} />;
+  permanentRedirect(
+    getPathname({ href: { pathname: siteRoutes.solutions, query: { perks: "active" } }, locale }),
+  );
 }

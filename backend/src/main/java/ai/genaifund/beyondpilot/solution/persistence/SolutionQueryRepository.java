@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -28,6 +29,7 @@ public class SolutionQueryRepository {
 			  and (cast(:focusArea as text) is null or focus_areas @> array[cast(:focusArea as text)])
 			  and (cast(:maturity as text) is null or maturity = :maturity)
 			  and (cast(:organizationId as uuid) is null or organization_id = :organizationId)
+			  and (cast(:among as uuid[]) is null or id = any(cast(:among as uuid[])))
 			""";
 
 	private static final String ADMIN_FILTER = """
@@ -87,13 +89,14 @@ public class SolutionQueryRepository {
 
 	/**
 	 * One page of the public directory, by name or with the most recently approved first. With {@code featuredFirst}
-	 * the featured solutions come before the others, the earliest featured on top.
+	 * the featured solutions come before the others, the earliest featured on top. Given {@code among}, only those
+	 * solutions are read.
 	 */
 	public List<Row> publicPage(@Nullable String text, @Nullable String industry, @Nullable String focusArea,
-			@Nullable String maturity, @Nullable UUID organizationId, @Nullable String sort, boolean featuredFirst,
-			int limit, long offset) {
+			@Nullable String maturity, @Nullable UUID organizationId, @Nullable Collection<UUID> among,
+			@Nullable String sort, boolean featuredFirst, int limit, long offset) {
 		return publicFiltered(ROW + PUBLIC_FILTER + publicOrder(sort, featuredFirst) + " limit :limit offset :offset",
-				text, industry, focusArea, maturity, organizationId)
+				text, industry, focusArea, maturity, organizationId, among)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
@@ -101,9 +104,9 @@ public class SolutionQueryRepository {
 	}
 
 	public long publicCount(@Nullable String text, @Nullable String industry, @Nullable String focusArea,
-			@Nullable String maturity, @Nullable UUID organizationId) {
+			@Nullable String maturity, @Nullable UUID organizationId, @Nullable Collection<UUID> among) {
 		return publicFiltered("select count(*) from solution\n" + PUBLIC_FILTER, text, industry, focusArea, maturity,
-				organizationId)
+				organizationId, among)
 			.query(Long.class)
 			.single();
 	}
@@ -186,13 +189,15 @@ public class SolutionQueryRepository {
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, @Nullable String text, @Nullable String industry,
-			@Nullable String focusArea, @Nullable String maturity, @Nullable UUID organizationId) {
+			@Nullable String focusArea, @Nullable String maturity, @Nullable UUID organizationId,
+			@Nullable Collection<UUID> among) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("industry", industry, Types.VARCHAR)
 			.param("focusArea", focusArea, Types.VARCHAR)
 			.param("maturity", maturity, Types.VARCHAR)
-			.param("organizationId", organizationId, Types.OTHER);
+			.param("organizationId", organizationId, Types.OTHER)
+			.param("among", among == null ? null : uuidArray(among), Types.VARCHAR);
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
@@ -200,15 +205,17 @@ public class SolutionQueryRepository {
 			@Nullable Boolean featured, boolean deploymentsToReview) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
-			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
-			.param("organizationIds",
-					organizationIds.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}")),
-					Types.VARCHAR)
+			.param("organizationIds", uuidArray(organizationIds), Types.VARCHAR)
 			.param("organizationId", organizationId, Types.OTHER)
 			.param("status", status, Types.VARCHAR)
 			.param("industry", industry, Types.VARCHAR)
 			.param("featured", featured, Types.BOOLEAN)
 			.param("deployments", deploymentsToReview, Types.BOOLEAN);
+	}
+
+	/** A PostgreSQL array literal: an identifier holds no character that needs quoting. */
+	private static String uuidArray(Collection<UUID> ids) {
+		return ids.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}"));
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {

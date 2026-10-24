@@ -97,8 +97,8 @@ function PerkPage({ page, signInHref }: PerkPageProps) {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href={siteRoutes.perks} />}>
-              {directory("tabs.perks")}
+            <BreadcrumbLink render={<Link href={siteRoutes.solutions} />}>
+              {directory("title")}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

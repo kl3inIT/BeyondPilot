@@ -81,7 +81,7 @@ class SecurityConfiguration {
 				.permitAll()
 				// Anyone reads the published perks and who they are for; a code or a private link comes only with a claim.
 				.requestMatchers(HttpMethod.GET, "/api/perk/perks", "/api/perk/perks/*", "/api/perk/solutions",
-						"/api/perk/programs/*")
+						"/api/perk/solutions/with-perks", "/api/perk/programs/*")
 				.permitAll()
 				// How many proposals a use case received is for anyone who reads the use case.
 				.requestMatchers(HttpMethod.GET, "/api/proposal/use-case-proposal-counts")

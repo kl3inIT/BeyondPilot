@@ -19,7 +19,7 @@ import {
 import { useVocabulary } from "@/i18n/vocabulary";
 
 import { focusAreas, industries, maturities } from "./solution-codes";
-import { solutionsSearch } from "./solutions-search";
+import { perkChoices, solutionsSearch } from "./solutions-search";
 
 /** How long the search waits after the last keystroke before it asks the server. */
 const SEARCH_DELAY_MS = 300;
@@ -81,7 +81,10 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
     startTransition,
   });
   const narrowed =
-    search.industry !== null || search.focusArea !== null || search.maturity !== null;
+    search.industry !== null ||
+    search.focusArea !== null ||
+    search.maturity !== null ||
+    search.perks !== null;
   const [open, setOpen] = useState(narrowed);
   const facets = useId();
 
@@ -103,7 +106,13 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
           ? {
               label: t("clear"),
               onClick: () =>
-                setSearch({ industry: null, focusArea: null, maturity: null, page: null }),
+                setSearch({
+                  industry: null,
+                  focusArea: null,
+                  maturity: null,
+                  perks: null,
+                  page: null,
+                }),
             }
           : undefined
       }
@@ -145,6 +154,13 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
           options={maturities.map((value) => ({ value, label: maturity(value) }))}
           value={search.maturity}
           onChange={(value) => setSearch({ maturity: pick(maturities, value), page: null })}
+        />
+        <FacetSelect
+          label={t("perks.label")}
+          all={t("perks.all")}
+          options={[{ value: "active", label: t("perks.active") }]}
+          value={search.perks}
+          onChange={(value) => setSearch({ perks: pick(perkChoices, value), page: null })}
         />
       </div>
       <DirectorySortSelect

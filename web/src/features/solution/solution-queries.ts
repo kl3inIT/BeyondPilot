@@ -25,7 +25,7 @@ import {
   type SolutionReviewQueue,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
-import { maxSearchPage } from "@/lib/page-size";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 import type { AdminSolutionsSearch, SolutionsSearch } from "./solutions-search";
 import { adminSolutionSortKeys } from "./solutions-search";
@@ -45,10 +45,14 @@ function absent(error: unknown): null {
 
 /**
  * One page of the public directory, and the perks of its cards when the search answered them; the
- * list without a search leaves them to whoever reads the perks. Read without a session and never kept:
- * approval shows at once.
+ * list without a search leaves them to whoever reads the perks. With the perks filter on, the list
+ * without a search keeps the solutions at `withPerks`, the addresses the perks name. Read without a
+ * session and never kept: approval shows at once.
  */
-export async function readSolutions(search: SolutionsSearch): Promise<{
+export async function readSolutions(
+  search: SolutionsSearch,
+  withPerks: string[] | null = null,
+): Promise<{
   solutions: PublicSolutionList;
   perks: Record<string, SolutionPerkLine[]> | null;
 }> {
@@ -62,6 +66,7 @@ export async function readSolutions(search: SolutionsSearch): Promise<{
         industry: search.industry ? [search.industry] : undefined,
         focusArea: search.focusArea ?? undefined,
         maturity: search.maturity ?? undefined,
+        perks: search.perks === null ? undefined : true,
         sort: search.sort ?? undefined,
         page: Math.min(maxSearchPage, Math.max(1, search.page)),
         size: search.size ?? undefined,
@@ -91,6 +96,13 @@ export async function readSolutions(search: SolutionsSearch): Promise<{
       perks: Object.fromEntries(data.items.map((item) => [item.slug, item.perks])),
     };
   }
+  const page = Math.max(1, search.page);
+  if (search.perks !== null && withPerks !== null && withPerks.length === 0) {
+    return {
+      solutions: { items: [], page, pageSize: search.size ?? gridPageSizes[0], total: 0 },
+      perks: null,
+    };
+  }
   const { data } = await listSolutions({
     cache: "no-store",
     query: {
@@ -98,8 +110,9 @@ export async function readSolutions(search: SolutionsSearch): Promise<{
       industry: search.industry ?? undefined,
       focusArea: search.focusArea ?? undefined,
       maturity: search.maturity ?? undefined,
+      slug: search.perks === null ? undefined : (withPerks ?? undefined),
       sort: search.sort ?? "newest",
-      page: Math.max(1, search.page),
+      page,
       size: search.size ?? undefined,
     },
   });

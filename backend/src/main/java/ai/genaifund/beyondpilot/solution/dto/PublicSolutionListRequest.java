@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.solution.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
@@ -20,6 +22,8 @@ public record PublicSolutionListRequest(
 				regexp = SolutionCodes.MATURITY) @Nullable String maturity,
 		@Parameter(description = "Only solutions of the organization at this address.") @Size(
 				max = 120) @Nullable String organization,
+		@Parameter(description = "Only the solutions at these addresses.") @Size(
+				max = 100) @Nullable List<@Size(max = 120) String> slug,
 		@Parameter(description = "The order: by name, or the most recently approved first.",
 				schema = @Schema(type = "string", allowableValues = { "name", "newest" },
 						defaultValue = "name")) @Pattern(regexp = SolutionCodes.SORT) @Nullable String sort,

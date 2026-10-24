@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, FileTextIcon, ImageIcon, LayersIcon } from "lucide-react";
+import { BadgeCheckIcon, FileTextIcon, LayersIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 
@@ -17,7 +17,8 @@ import { PerkCorner, PerkLine } from "./solution-perks";
 const CAPABILITY_LIMIT = 3;
 
 /**
- * One solution in the directory: its cover with its logo over the corner, what it is called, who
+ * One solution in the directory: its cover with its logo over the corner, or its logo alone when it
+ * has no cover, what it is called, who
  * offers it, what it does and its capabilities. A solution that goes with perks says the first in
  * a line and carries a gift in the corner of its cover, which leads to their pages. The
  * last line is the proof a card can state: how many customer deployments GenAI Fund approved, or
@@ -39,32 +40,36 @@ function SolutionCard({
 
   return (
     <article className="relative flex min-w-0 flex-1 flex-col gap-3 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50">
-      {/* The logo hangs over the foot of the cover, so the pair takes its height and half the logo's. */}
-      <div className="relative mb-5">
-        <div className="relative flex h-35 items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground">
-          {solution.coverFileId ? (
-            // Whole, whatever its frame: cropped to the box, a wide or tall cover is a blurred slice.
+      {solution.coverFileId ? (
+        // The logo hangs over the foot of the cover, so the pair takes its height and half the logo's.
+        <div className="relative mb-5">
+          <div className="relative h-35 overflow-hidden rounded-xl border bg-muted">
+            {/* Filling its frame, as Dub's marketplace does: a whole cover in a wider frame leaves bands of the frame beside it. */}
             <Image
               src={publicFileUrl(solution.coverFileId)}
               alt=""
               fill
               sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
               preload={preload}
-              className="object-contain"
+              className="object-cover"
             />
-          ) : (
-            <ImageIcon className="size-6" aria-hidden="true" />
-          )}
+          </div>
+          <SolutionLogo
+            name={solution.name}
+            fileId={solution.logoFileId}
+            size="card"
+            className="absolute -bottom-5 left-4 shadow-sm"
+          />
+          {/* Above the link that covers the card, so a press on the gift opens the perk. */}
+          <PerkCorner perks={perks} className="absolute top-2 right-2 z-10" />
         </div>
-        <SolutionLogo
-          name={solution.name}
-          fileId={solution.logoFileId}
-          size="card"
-          className="absolute -bottom-5 left-4 shadow-sm"
-        />
-        {/* Above the link that covers the card, so a press on the gift opens the perk. */}
-        <PerkCorner perks={perks} className="absolute top-2 right-2 z-10" />
-      </div>
+      ) : (
+        // No empty frame stands in for a missing cover: the logo leads the card.
+        <div className="flex items-start justify-between gap-3">
+          <SolutionLogo name={solution.name} fileId={solution.logoFileId} size="card" />
+          <PerkCorner perks={perks} className="relative z-10" />
+        </div>
+      )}
       <div className="flex min-w-0 flex-col items-start gap-1">
         <h2 className="max-w-full truncate text-base font-medium">
           <Link
