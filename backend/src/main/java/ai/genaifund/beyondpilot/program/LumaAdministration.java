@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * The Luma calendar BeyondPilot reads (BEY-245): an operator gives its key on the Luma tab of Programs, BeyondPilot
@@ -40,6 +43,8 @@ public class LumaAdministration {
 
 	private static final Logger LOG = LoggerFactory.getLogger(LumaAdministration.class);
 
+	private static final JsonMapper JSON = JsonMapper.builder().build();
+
 	private static final String CALENDAR = "luma_calendar";
 
 	private final IdentityService identity;
@@ -50,6 +55,8 @@ public class LumaAdministration {
 
 	private final LumaCalendar calendar;
 
+	private final RegistrationDecisions decisions;
+
 	private final LumaApi api;
 
 	private final URI webhookUrl;
@@ -59,11 +66,13 @@ public class LumaAdministration {
 	private final TransactionTemplate transactions;
 
 	LumaAdministration(IdentityService identity, LumaConnectionRepository connections, LumaKeys keys,
-			LumaCalendar calendar, LumaProperties properties, AuditTrail audit, TransactionTemplate transactions) {
+			LumaCalendar calendar, RegistrationDecisions decisions, LumaProperties properties, AuditTrail audit,
+			TransactionTemplate transactions) {
 		this.identity = identity;
 		this.connections = connections;
 		this.keys = keys;
 		this.calendar = calendar;
+		this.decisions = decisions;
 		this.api = new LumaApi(properties.api(), properties.timeout());
 		this.webhookUrl = UriComponentsBuilder.fromUri(properties.siteUrl()).path(WEBHOOK_PATH).build().toUri();
 		this.audit = audit;
@@ -169,7 +178,8 @@ public class LumaAdministration {
 
 	/**
 	 * Takes a delivery of Luma's webhook: one signed with the connection's secret makes the calendar be read soon, which
-	 * is what any change of an event asks for, however many deliveries come and in whatever order.
+	 * is what any change of an event asks for, however many deliveries come and in whatever order. A change of a guest
+	 * makes that event's guests be read instead; of the payload only the event's identifier is used.
 	 * @return false when nothing is connected or the delivery is not signed by Luma
 	 */
 	public boolean receive(@Nullable String signature, byte[] body) {
@@ -181,8 +191,31 @@ public class LumaAdministration {
 				.log("A delivery to the Luma webhook was not signed by the connected calendar");
 			return false;
 		}
-		calendar.readSoon();
+		String guestsOf = guestEvent(body);
+		if (guestsOf != null) {
+			decisions.checkSoon(guestsOf);
+		}
+		else {
+			calendar.readSoon();
+		}
 		return true;
+	}
+
+	/** The Luma event whose guest a delivery is about; null for any other delivery. */
+	private static @Nullable String guestEvent(byte[] body) {
+		try {
+			JsonNode delivery = JSON.readTree(body);
+			JsonNode type = delivery.path("type");
+			if (!type.isString() || !type.asString().startsWith("guest.")) {
+				return null;
+			}
+			JsonNode event = delivery.path("data").path("event");
+			JsonNode id = event.path("id").isString() ? event.path("id") : event.path("api_id");
+			return id.isString() && id.asString().startsWith("evt-") ? id.asString() : null;
+		}
+		catch (JacksonException notJson) {
+			return null;
+		}
 	}
 
 	/** A webhook made on the calendar, or why none was. */

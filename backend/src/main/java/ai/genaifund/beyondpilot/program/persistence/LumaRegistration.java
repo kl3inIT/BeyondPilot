@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program.persistence;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -121,6 +122,21 @@ public class LumaRegistration {
 		this.lumaGuestId = guestId;
 		this.status = status;
 		this.checkInUrl = checkInUrl;
+	}
+
+	/**
+	 * Luma holds the guest as read now, after a decision of GenAI Fund's on Luma or a guest found there.
+	 * @return whether anything changed
+	 */
+	public boolean readOnLuma(String guestId, String status, @Nullable String checkInUrl) {
+		if (guestId.equals(lumaGuestId) && status.equals(this.status)
+				&& Objects.equals(checkInUrl, this.checkInUrl)) {
+			return false;
+		}
+		this.lumaGuestId = guestId;
+		this.status = status;
+		this.checkInUrl = checkInUrl;
+		return true;
 	}
 
 	/** An attempt failed; the next comes after the wait given. */

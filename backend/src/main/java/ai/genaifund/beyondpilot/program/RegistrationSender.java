@@ -209,8 +209,8 @@ class RegistrationSender {
 			.log("Sending a registration to Luma stopped");
 	}
 
-	/** Emails the person the status Luma gave, once for each status. A declined one is told in a later change. */
-	private void tell(LumaRegistration registration) {
+	/** Emails the person the status Luma gave, once for each status; inside the transaction that holds it. */
+	void tell(LumaRegistration registration) {
 		if (registration.getStatus().equals(registration.getEmailedStatus())) {
 			return;
 		}
@@ -230,7 +230,9 @@ class RegistrationSender {
 			case APPROVED -> email.sendEventRegistrationConfirmed(registration.getEmail(), program.getName(), when,
 					EventRegistrations.location(program, event, true), program.getSlug(), registration.getTicket(),
 					registration.getCheckInUrl() != null);
-			case DECLINED, INVITED -> {
+			case DECLINED -> email.sendEventRegistrationDeclined(registration.getEmail(), program.getName(), when,
+					program.getSlug());
+			case INVITED -> {
 				return;
 			}
 		}

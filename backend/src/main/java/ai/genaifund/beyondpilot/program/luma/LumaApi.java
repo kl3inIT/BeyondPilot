@@ -30,9 +30,12 @@ import tools.jackson.databind.json.JsonMapper;
  */
 public final class LumaApi {
 
-	/** The webhook events the calendar's read listens to. */
+	/**
+	 * The webhook events BeyondPilot listens to: a change of an event makes the calendar be read, and a change of a
+	 * guest makes the guest be read.
+	 */
 	public static final List<String> EVENT_TYPES = List.of("calendar.event.added", "event.created", "event.updated",
-			"event.canceled");
+			"event.canceled", "guest.registered", "guest.updated");
 
 	private static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -154,6 +157,11 @@ public final class LumaApi {
 				Map.of("url", url.toString(), "event_types", EVENT_TYPES)), "webhook");
 		return webhook(made).filter(webhook -> webhook.secret() != null)
 			.orElseThrow(() -> new IOException("Luma answered no webhook"));
+	}
+
+	/** Sets the events the webhook is sent for to {@link #EVENT_TYPES}, for one made before they grew. */
+	public void updateWebhook(String key, String id) throws IOException {
+		call(HttpMethod.POST, "/v2/webhooks/update", Map.of(), key, Map.of("id", id, "event_types", EVENT_TYPES));
 	}
 
 	/** Removes the webhook; one Luma no longer has is already gone. */
@@ -292,6 +300,23 @@ public final class LumaApi {
 		catch (NotFound none) {
 			return Optional.empty();
 		}
+	}
+
+	/** Every guest of the event, whatever their status. */
+	public List<LumaGuest> guests(String key, String eventId) throws IOException {
+		List<LumaGuest> guests = new ArrayList<>();
+		String cursor = null;
+		do {
+			Map<String, String> query = cursor == null ? Map.of("event_id", eventId, "pagination_limit", String.valueOf(PAGE))
+					: Map.of("event_id", eventId, "pagination_limit", String.valueOf(PAGE), "pagination_cursor", cursor);
+			JsonNode page = call(HttpMethod.GET, "/v1/events/guests/list", query, key, null);
+			for (JsonNode entry : page.path("entries")) {
+				LumaGuest.of(unwrap(entry, "guest")).ifPresent(guests::add);
+			}
+			cursor = page.path("has_more").asBoolean(false) ? text(page, "next_cursor") : null;
+		}
+		while (cursor != null);
+		return guests;
 	}
 
 	private static Optional<Webhook> webhook(JsonNode node) {

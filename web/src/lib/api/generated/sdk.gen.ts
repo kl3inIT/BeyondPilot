@@ -2664,7 +2664,7 @@ export const unpublishProgram = <ThrowOnError extends boolean = true>(options: O
 /**
  * A webhook of Luma, signed with the secret Luma gave when BeyondPilot made it
  *
- * Any signed delivery makes BeyondPilot read the calendar again soon; the payload itself is not trusted.
+ * A signed delivery about an event makes BeyondPilot read the calendar again soon, and one about a guest reads that event's guests; of the payload only the event's identifier is used.
  */
 export const receiveLumaWebhook = <ThrowOnError extends boolean = true>(options: Options<ReceiveLumaWebhookData, ThrowOnError>): RequestResult<ReceiveLumaWebhookResponses, ReceiveLumaWebhookErrors, ThrowOnError> => (options.client ?? client).post<ReceiveLumaWebhookResponses, ReceiveLumaWebhookErrors, ThrowOnError>({
     url: '/api/program/luma/webhook',

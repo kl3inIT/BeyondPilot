@@ -8947,8 +8947,9 @@ paths:
       - Program administration
   /api/program/luma/webhook:
     post:
-      description: Any signed delivery makes BeyondPilot read the calendar again soon;
-        the payload itself is not trusted.
+      description: "A signed delivery about an event makes BeyondPilot read the calendar\
+        \ again soon, and one about a guest reads that event's guests; of the payload\
+        \ only the event's identifier is used."
       operationId: receiveLumaWebhook
       requestBody:
         content:

@@ -22,6 +22,16 @@ public interface LumaRegistrationRepository extends JpaRepository<LumaRegistrati
 	@Query("select registration from LumaRegistration registration where registration.id = :id")
 	Optional<LumaRegistration> findForUpdate(UUID id);
 
+	/** The registrations of the program that Luma has. */
+	@Query("""
+			select registration.id from LumaRegistration registration
+			where registration.programId = :programId and registration.sendState = 'sent'""")
+	List<UUID> findSentOf(UUID programId);
+
+	/** The programs with a registration Luma has. */
+	@Query("select distinct registration.programId from LumaRegistration registration where registration.sendState = 'sent'")
+	List<UUID> findProgramsWithSent();
+
 	/** The registrations waiting to be sent whose next attempt is due, the oldest first. */
 	@Query("""
 			select registration.id from LumaRegistration registration

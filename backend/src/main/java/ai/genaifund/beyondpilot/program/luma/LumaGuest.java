@@ -9,8 +9,9 @@ import tools.jackson.databind.JsonNode;
  * A guest of a Luma event (BEY-245).
  * @param id Luma's {@code gst-} identifier
  * @param checkIn the check-in address Luma's own email draws as a QR code; null while Luma gives none
+ * @param email the address the guest registered with, when Luma gives it
  */
-public record LumaGuest(String id, Status status, @Nullable String checkIn) {
+public record LumaGuest(String id, Status status, @Nullable String checkIn, @Nullable String email) {
 
 	/** Where the guest stands, by the value Luma's API names it with. */
 	public enum Status {
@@ -49,7 +50,9 @@ public record LumaGuest(String id, Status status, @Nullable String checkIn) {
 		if (id == null || status.isEmpty()) {
 			return Optional.empty();
 		}
-		return Optional.of(new LumaGuest(id, status.get(), LumaApi.text(node, "check_in_qr_code")));
+		String email = LumaApi.text(node, "user_email");
+		return Optional.of(new LumaGuest(id, status.get(), LumaApi.text(node, "check_in_qr_code"),
+				email == null ? LumaApi.text(node, "email") : email));
 	}
 
 }

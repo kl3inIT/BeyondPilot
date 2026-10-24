@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.program.luma.LumaSignature;
 import ai.genaifund.beyondpilot.program.persistence.LumaConnection;
 import ai.genaifund.beyondpilot.program.persistence.LumaConnectionRepository;
 import com.sun.net.httpserver.HttpExchange;
@@ -71,6 +73,9 @@ class EventRegistrationTest {
 
 	@Autowired
 	private RegistrationSender sender;
+
+	@Autowired
+	private RegistrationDecisions decisions;
 
 	@Autowired
 	private LumaKeys keys;
@@ -313,6 +318,72 @@ class EventRegistrationTest {
 			.isNotFound()
 			.expectBody()
 			.jsonPath("$.code").isEqualTo("PROGRAM_REGISTRATION_NOT_HERE");
+	}
+
+	@Test
+	void aDecisionOnLumaComesBackByItsWebhookAndThePersonIsToldOnceForEachStatus() {
+		read(event(true, null, "enabled", true));
+		connections.findAll().forEach(held -> {
+			held.hooked("wh-1", keys.seal("whsec_test"), Instant.now());
+			connections.saveAndFlush(held);
+		});
+		RestTestClient client = client();
+		String session = TestSignIn.session(client, mail, "mai@events.test");
+		guest("pending_approval", null);
+		register(client, session, answers("Builder", true)).expectStatus().isOk();
+		await().atMost(Duration.ofSeconds(10)).until(() -> "pending_approval".equals(registration("mai@events.test").get("emailed_status")));
+
+		// GenAI Fund approves her on Luma: the delivery only makes the event's guests be read again.
+		guests("approved", "https://luma.com/check-in/evt-briefing?pk=g-mai");
+		deliver(client, "{\"type\":\"guest.updated\",\"data\":{\"id\":\"gst-linh\",\"approval_status\":\"declined\","
+				+ "\"event\":{\"id\":\"" + EVENT + "\"}}}").expectStatus().isNoContent();
+		await().atMost(Duration.ofSeconds(10))
+			.until(() -> mail.subjectsTo("mai@events.test").contains("You're in: Product briefing"));
+		assertThat(registration("mai@events.test")).containsEntry("status", "approved")
+			.containsEntry("check_in_url", "https://luma.com/check-in/evt-briefing?pk=g-mai")
+			.containsEntry("emailed_status", "approved");
+		client.get()
+			.uri("/api/program/programs/" + SLUG + "/registration")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange()
+			.expectBody()
+			.jsonPath("$.mine.status").isEqualTo("approved");
+
+		// The hourly check finds nothing new and tells nobody again; a later decline is told once.
+		decisions.check(EVENT, Instant.now());
+		assertThat(mail.subjectsTo("mai@events.test")).filteredOn(subject -> subject.startsWith("You're in")).hasSize(1);
+		guests("declined", null);
+		decisions.check(EVENT, Instant.now());
+		await().atMost(Duration.ofSeconds(10))
+			.until(() -> mail.subjectsTo("mai@events.test").contains("About your registration: Product briefing"));
+		assertThat(registration("mai@events.test")).containsEntry("status", "declined");
+
+		// A delivery not signed with the webhook's secret changes nothing.
+		deliver(client, "{\"type\":\"guest.updated\",\"data\":{\"event\":{\"id\":\"" + EVENT + "\"}}}", "other")
+			.expectStatus()
+			.isForbidden();
+	}
+
+	/** The event's guest list on Luma: Mai, in the status given. */
+	private static void guests(String status, @Nullable String checkIn) {
+		ANSWERS.put("GET /v1/events/guests/list?event_id=" + EVENT, new Answer(200,
+				"{\"entries\":[{\"guest\":{\"id\":\"gst-linh\",\"user_email\":\"mai@events.test\",\"approval_status\":\"%s\"%s}}],\"has_more\":false}"
+					.formatted(status, checkIn == null ? "" : ",\"check_in_qr_code\":\"" + checkIn + "\"")));
+	}
+
+	private RestTestClient.ResponseSpec deliver(RestTestClient client, String body) {
+		return deliver(client, body, "whsec_test");
+	}
+
+	private RestTestClient.ResponseSpec deliver(RestTestClient client, String body, String secret) {
+		long now = Instant.now().getEpochSecond();
+		byte[] bytes = body.getBytes(UTF_8);
+		return client.post()
+			.uri("/api/program/luma/webhook")
+			.contentType(MediaType.APPLICATION_JSON)
+			.header("Webhook-Signature", "t=" + now + ",v1=" + HexFormat.of().formatHex(LumaSignature.sign(secret, now, bytes)))
+			.body(bytes)
+			.exchange();
 	}
 
 	/** The calendar holds the event alone, published, and is read. */

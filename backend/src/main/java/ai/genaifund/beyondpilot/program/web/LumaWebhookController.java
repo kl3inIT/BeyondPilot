@@ -32,7 +32,8 @@ class LumaWebhookController {
 	@PostMapping(path = LumaAdministration.WEBHOOK_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "receiveLumaWebhook",
 			summary = "A webhook of Luma, signed with the secret Luma gave when BeyondPilot made it",
-			description = "Any signed delivery makes BeyondPilot read the calendar again soon; the payload itself is not trusted.")
+			description = "A signed delivery about an event makes BeyondPilot read the calendar again soon, and one about a "
+					+ "guest reads that event's guests; of the payload only the event's identifier is used.")
 	@ApiResponse(responseCode = "204", description = "The delivery was taken.", content = @Content)
 	@ApiResponse(responseCode = "403",
 			description = "No calendar is connected, or the signature does not check against its webhook's secret.",

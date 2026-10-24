@@ -212,17 +212,17 @@ start day comes before those, newest created first.
 Each change is recorded through `AuditTrail` in the transaction of the change, with the operator and the program
 (`resource type program`, its id and name) and no details ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)).
 
-| Command                         | Action                                                                                     |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| Create                          | `program.create`                                                                           |
-| Save, and save of the questions | `program.update`                                                                           |
-| Publish                         | `program.publish`                                                                          |
-| Unpublish                       | `program.unpublish`                                                                        |
-| Feature                         | `program.feature`                                                                          |
-| Stop featuring                  | `program.unfeature`                                                                        |
-| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
-| Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                          |
-| Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                       |
+| Command                         | Action                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| Create                          | `program.create`                                                                              |
+| Save, and save of the questions | `program.update`                                                                              |
+| Publish                         | `program.publish`                                                                             |
+| Unpublish                       | `program.unpublish`                                                                           |
+| Feature                         | `program.feature`                                                                             |
+| Stop featuring                  | `program.unfeature`                                                                           |
+| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar`    |
+| Connect the Luma calendar       | `program.luma_connect`, with `calendar`; resource `luma_calendar`                             |
+| Disconnect it                   | `program.luma_disconnect`, with `calendar`; resource `luma_calendar`                          |
 | Create an event on Luma (MCP)   | `program.luma_event_create`, with `event`; resource the program, or the Luma event until read |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
@@ -344,9 +344,17 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
   its identifier, status and check-in address are kept. An attempt that fails waits 1, 5 and 15 minutes, then 1, 3 and 6
   hours, then stops; an address Luma skips (unsubscribed, removed or blocked) and answers Luma refuses stop at once. Each
   outcome is logged (`program.luma.registration_sent`, `registration_failed`, `registration_stopped`).
-- **Emails.** Once Luma has the guest, the person is told of its status once (`emailed_status`): received for
-  `pending_approval`, waitlisted for `waitlist`, confirmed for `approved` with the check-in code and the calendar file.
-  The kinds belong to `notification` (`EmailService.sendEventRegistration*`).
+- **Decisions on Luma.** The webhook also listens to `guest.registered` and `guest.updated` (a webhook made before is
+  given them at the first hourly check of a run, `webhooks/update`). A signed guest delivery only names the event: its
+  guests are read again (`GET /v1/events/guests/list`, `RegistrationDecisions`), and each registration here takes the
+  status and check-in address of its guest, found by identifier, or by address while it has none. Every hour
+  (`beyondpilot.program.luma.decision-interval`) the guests of each event still to come with a registration on Luma are
+  read the same way, for a delivery that was lost. A read that changed something logs `program.luma.guests_read`; one
+  that failed, `program.luma.guests_failed`.
+- **Emails.** Once Luma has the guest, and at each status it reaches later, the person is told of it once
+  (`emailed_status`): received for `pending_approval`, waitlisted for `waitlist`, confirmed for `approved` with the
+  check-in code and the calendar file, declined for `declined`. The kinds belong to `notification`
+  (`EmailService.sendEventRegistration*`).
 - **Ticket.** `GET /api/program/tickets/{ticket}/check-in.png` draws a confirmed guest's check-in address as a QR code
   (`CheckInCode`), and `GET /api/program/tickets/{ticket}/event.ics` gives the event as a calendar file with the venue
   (`EventCalendar`); both open without a session, by the unguessable ticket, and answer `404` for any other.

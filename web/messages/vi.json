@@ -3481,6 +3481,10 @@
           "name": "Đã có chỗ ở sự kiện",
           "description": "Gửi khi chỗ của ai đó ở một sự kiện Luma được xác nhận, kèm mã check-in và file lịch."
         },
+        "event_registration_declined": {
+          "name": "Đăng ký sự kiện bị từ chối",
+          "description": "Gửi khi GenAI Fund từ chối đăng ký của ai đó cho một sự kiện Luma trên Luma."
+        },
         "perk_request_waiting": {
           "name": "Yêu cầu perk đang chờ",
           "description": "Gửi cho mọi thành viên của tổ chức tặng perk khi một đội gửi yêu cầu cần duyệt hoặc từ chối."
