@@ -22,6 +22,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.program.luma.LumaForm;
+import ai.genaifund.beyondpilot.program.luma.LumaHost;
 import ai.genaifund.beyondpilot.program.luma.LumaSignature;
 import ai.genaifund.beyondpilot.program.persistence.LumaConnection;
 import ai.genaifund.beyondpilot.program.persistence.LumaConnectionRepository;
@@ -131,7 +133,9 @@ class LumaCalendarTest {
 			.containsEntry("page_kind", "external")
 			.containsEntry("external_url", "https://luma.com/gaf-tinyfish-vn")
 			.containsEntry("summary", "A private dinner with TinyFish's leadership.")
-			.containsEntry("about", "A private dinner with TinyFish's leadership.\nIn Ho Chi Minh City.")
+			// The description as the host wrote it, in Markdown; the summary its first line as plain text.
+			.containsEntry("about",
+					"**A private dinner** with TinyFish's [leadership](https://luma.com/u/x).\n\n- In _Ho Chi Minh City_.")
 			.containsEntry("luma_cover_url", base() + "/dinner.png");
 		assertThat(program.get("starts_on")).hasToString("2026-10-26");
 		assertThat(program.get("ends_on")).hasToString("2026-10-26");
@@ -565,6 +569,27 @@ class LumaCalendarTest {
 
 	}
 
+	@Test
+	void aSummaryIsTheFirstLineOfTheDescriptionAsPlainText() {
+		assertThat(LumaCalendar.summary("\n## What's *on*\nMore")).isEqualTo("What's on");
+		assertThat(LumaCalendar.summary("1. **Founders:** see [the list](https://x.test) \\#1"))
+			.isEqualTo("Founders: see the list #1");
+		assertThat(LumaCalendar.summary("> snake_case and 2*3*4 stay")).isEqualTo("snake_case and 2*3*4 stay");
+		assertThat(LumaCalendar.summary("  \n  ")).isNull();
+	}
+
+	@Test
+	void aFormKeptBeforeHostsHadPicturesIsStillRead() {
+		LumaForm form = new LumaForm(true, false, null, false, List.of(),
+				List.of(new LumaHost("GenAI Fund", "https://images.lumacdn.com/a.png"), new LumaHost("Kai", null)),
+				"Asia/Singapore", null, null, false);
+		assertThat(LumaForm.parse(form.json())).contains(form);
+		String kept = form.json().replaceFirst("\"hosts\":\\[.*?}]", "\"hosts\":[\"GenAI Fund\",\"Kai\"]");
+		assertThat(kept).contains("\"hosts\":[\"GenAI Fund\",\"Kai\"]");
+		assertThat(LumaForm.parse(kept).orElseThrow().hosts()).containsExactly(new LumaHost("GenAI Fund", null),
+				new LumaHost("Kai", null));
+	}
+
 	/** An event of the calendar: in the list without its description, and in full when read alone. */
 	private record Event(String id, String listed, String full) {
 	}
@@ -572,7 +597,9 @@ class LumaCalendarTest {
 	private static Event event(String id, String name, String startsAt, String path, String cover, String visibility) {
 		String listed = eventJson(id, name, startsAt, path, base() + cover, visibility);
 		String full = listed.substring(0, listed.length() - 1)
-				+ ",\"description\":\"A private dinner with TinyFish's leadership.\\nIn Ho Chi Minh City.\"}";
+				+ ",\"description\":\"A private dinner with TinyFish's leadership.\\nIn Ho Chi Minh City.\""
+				+ ",\"description_md\":\"**A private dinner** with TinyFish's [leadership](https://luma.com/u/x).\\n\\n"
+				+ "- In _Ho Chi Minh City_.\"}";
 		return new Event(id, listed, full);
 	}
 

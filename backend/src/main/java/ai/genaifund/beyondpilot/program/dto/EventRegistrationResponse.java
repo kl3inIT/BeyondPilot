@@ -17,7 +17,7 @@ public record EventRegistrationResponse(
 				description = "Whether GenAI Fund approves each guest.") boolean approval,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, example = "Asia/Ho_Chi_Minh",
 				description = "Where the event is held; its times read as that place's.") String zone,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> hosts,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "As Luma shows them.") List<Host> hosts,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "In Luma's order, those answered from the account included.") List<EventQuestionEntry> questions,
 		@Schema(description = "The address of the venue; absent for an event online, or kept for confirmed guests.") @Nullable String venue,
@@ -25,6 +25,11 @@ public record EventRegistrationResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether Luma keeps the venue or the call for confirmed guests, and the caller is not one yet.") boolean placeKept,
 		@Schema(description = "The caller's registration; absent when there is none or nobody is signed in.") @Nullable Mine mine) {
+
+	@Schema(name = "EventHost")
+	public record Host(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
+			@Schema(description = "The host's picture on Luma; absent when there is none.", format = "uri") @Nullable String avatarUrl) {
+	}
 
 	@Schema(name = "MyEventRegistration")
 	public record Mine(

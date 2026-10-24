@@ -6032,7 +6032,13 @@
         "hostedBy": "Hosted by",
         "about": "About the event",
         "addressForGuests": "The address is shown once your registration is confirmed.",
-        "linkForGuests": "The link to join is shown once your registration is confirmed."
+        "linkForGuests": "The link to join is shown once your registration is confirmed.",
+        "presentedBy": "Presented by",
+        "presenter": "GenAI Fund",
+        "presenterLead": "Southeast Asia's first generative AI-focused venture fund.",
+        "free": "Free",
+        "approval": "Approval required",
+        "addToCalendar": "Add to calendar"
       },
       "card": {
         "title": "Registration",
@@ -6058,7 +6064,11 @@
         "codeBack": "Change my answers",
         "codeLimited": "Too many codes were asked for. Wait a minute, then try again.",
         "codeFailed": "The code could not be sent. Try again in a moment.",
-        "acceptAndRegister": "Accept all and register"
+        "acceptAndRegister": "Accept all and register",
+        "approvalTitle": "Approval required",
+        "fullTitle": "Event full",
+        "openTitle": "Registration open",
+        "open": "Your seat is confirmed as soon as you register."
       },
       "status": {
         "received": {

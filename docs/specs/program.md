@@ -258,14 +258,16 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   (`PROGRAM_LUMA_ENCRYPTION_KEY_MISSING`), and a key Luma refuses is not kept (`PROGRAM_LUMA_KEY_REFUSED`).
 - **Read.** `program.luma.LumaApi` lists the calendar's events, those it manages and those other hosts list on it
   (`GET /v1/calendars/events/list` with `access` `manage` then `view`, page by page). For each event not over it reads
-  the event in full (`GET /v1/events/get`): name, plain description, start and end, time zone, kind of place, city and
+  the event in full (`GET /v1/events/get`): name, description in Markdown as the host wrote it (`description_md`, else
+  the plain `description`), start and end, time zone, kind of place, city and
   country (an ISO code written in English words), cover, page and visibility. Calls carry the key, follow no redirect,
   end after `beyondpilot.program.luma.timeout` and read at most 4 MB; covers are downloaded through `LumaHttp` from the
   configured hosts only (`beyondpilot.program.luma.hosts`, `images.lumacdn.com`), at most 5 MB.
 - **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is its name
   as a slug (`tinyfish-big-minds`), else the path of its Luma page, else its identifier, with `-2`, `-3`… when taken; a
-  held program keeps the address it has; its summary the description's first line cut at a word to 300
-  characters, its about the description, its days the event's local days in its time zone, its page `external` at the
+  held program keeps the address it has; its summary the description's first line as plain text (no heading, list or
+  emphasis mark, a link's words without its address) cut at a word to 300 characters, its about the description in
+  Markdown, its days the event's local days in its time zone, its page `external` at the
   Luma address, one program event registering there (online, with no city, unless Luma calls the place `offline`), and
   its cover the image copied into storage (`StorageService.keep`). A `public` event is published when it has what
   publishing asks for; a `private` or `members-only` one, or one lacking a cover or a summary, waits as a draft. A held
@@ -282,7 +284,8 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   (`program.luma.webhook_refused`), never `410`, which would pause the webhook.
 - **Registering here.** A managed event without a price whose every question is of a kind Luma documents
   (`LumaForm`, `LumaQuestion`) gets `luma_form` at each read: whether registration is open, whether each guest waits
-  for approval, the seats left and the waitlist, the questions, the hosts, the time zone, and the venue or the call with
+  for approval, the seats left and the waitlist, the questions, the hosts with their picture on Luma (a form kept
+  before hosts had pictures still reads, its hosts by name), the time zone, and the venue or the call with
   whether Luma keeps it for guests. Only events this environment names take registrations here
   (`beyondpilot.program.luma.registration-events`: an identifier each, or `*`; none by default, `*` in production, the
   same on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
@@ -376,7 +379,7 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
 
 - **Form.** `GET /api/program/programs/{slug}/registration` (`EventRegistrations.registration`) gives the questions as
   the host wrote them, a `formVersion` mark of them, `state` (`open`, `waitlist` when the event is full and its waitlist
-  on, `closed`), `approval`, `zone`, `hosts`, and the caller's registration. The venue and the call that Luma keeps for
+  on, `closed`), `approval`, `zone`, `hosts` (each `name` and `avatarUrl`), and the caller's registration. The venue and the call that Luma keeps for
   guests are given only to a confirmed one (`placeKept` says they are kept). A text question labelled Name or Email is
   `known` and answered from the person's own name and address.
 - **Registering.** `POST` the same path with the name, the `formVersion` and the answers. The questions are read again
@@ -406,9 +409,16 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
 - **Ticket.** `GET /api/program/tickets/{ticket}/check-in.png` draws a confirmed guest's check-in address as a QR code
   (`CheckInCode`), and `GET /api/program/tickets/{ticket}/event.ics` gives the event as a calendar file with the venue
   (`EventCalendar`); both open without a session, by the unguessable ticket, and answer `404` for any other.
-- **On the site.** The event's page reads as Luma's: cover and hosts, name, date in the event's own time, place, the
-  card to register and the description. A visitor types their name, address and answers, then the code emailed to them
-  in the same card, which signs them in; a new account agrees to the consent text there before anything is sent.
+- **On the site.** The event's page reads as Luma's (BEY-245, after Kai's review of 24 October): on the left the
+  cover, who presents it (GenAI Fund) and the hosts with their pictures, held in view while the page scrolls; on the
+  right whether it is free and needs approval, the name, the date as a calendar leaf in the event's own time with a
+  calendar file of the name, times and city to save, the place, a short card and the description as Luma formats it
+  (`RichText`: Markdown with bold, headings, lists and links opening in a new tab; raw HTML shown as text, images left
+  out). The card says how registering goes and who registers, and its one button opens the questions in a dialog, a
+  sheet from the bottom on a phone, where a bar at the foot of the screen keeps the button in reach. In the dialog a
+  visitor types their name, address and answers, then the code emailed to them, which signs them in; a new account
+  agrees to the consent text there before anything is sent. A program's description elsewhere is shown the same way,
+  a plain text keeping its line breaks.
 
 ## Events
 

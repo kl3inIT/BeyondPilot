@@ -6032,7 +6032,13 @@
         "hostedBy": "Đơn vị tổ chức",
         "about": "Về sự kiện",
         "addressForGuests": "Địa chỉ sẽ hiện khi đăng ký của bạn được xác nhận.",
-        "linkForGuests": "Đường link tham gia sẽ hiện khi đăng ký của bạn được xác nhận."
+        "linkForGuests": "Đường link tham gia sẽ hiện khi đăng ký của bạn được xác nhận.",
+        "presentedBy": "Tổ chức bởi",
+        "presenter": "GenAI Fund",
+        "presenterLead": "Quỹ đầu tư mạo hiểm đầu tiên ở Đông Nam Á tập trung vào AI tạo sinh.",
+        "free": "Miễn phí",
+        "approval": "Cần phê duyệt",
+        "addToCalendar": "Thêm vào lịch"
       },
       "card": {
         "title": "Đăng ký",
@@ -6058,7 +6064,11 @@
         "codeBack": "Sửa câu trả lời",
         "codeLimited": "Bạn đã xin mã quá nhiều lần. Đợi một phút rồi thử lại.",
         "codeFailed": "Không gửi được mã. Thử lại sau giây lát.",
-        "acceptAndRegister": "Đồng ý tất cả và đăng ký"
+        "acceptAndRegister": "Đồng ý tất cả và đăng ký",
+        "approvalTitle": "Cần phê duyệt",
+        "fullTitle": "Đã hết chỗ",
+        "openTitle": "Đang nhận đăng ký",
+        "open": "Chỗ của bạn được xác nhận ngay khi đăng ký."
       },
       "status": {
         "received": {

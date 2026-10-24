@@ -215,7 +215,11 @@ public class EventRegistrations {
 				&& LumaGuest.Status.APPROVED.value().equals(mine.getStatus());
 		boolean shown = confirmed || !form.placeForGuests();
 		return new EventRegistrationResponse(form.version(), form.state().name().toLowerCase(Locale.ROOT),
-				form.approval(), form.zone(), form.hosts(),
+				form.approval(), form.zone(),
+				form.hosts()
+					.stream()
+					.map(host -> new EventRegistrationResponse.Host(host.name(), host.avatarUrl()))
+					.toList(),
 				form.questions()
 					.stream()
 					.map(question -> new EventQuestionEntry(question.id(), question.label(), question.type().value(),
