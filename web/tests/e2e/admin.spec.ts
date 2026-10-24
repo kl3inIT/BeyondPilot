@@ -367,7 +367,9 @@ test.describe("admin", () => {
 
     await expect(page.getByRole("heading", { level: 2 })).toHaveText("Review and finish");
     await expect(
-      page.getByText("Save it as private so the organization can look at it first, or publish it at once."),
+      page.getByText(
+        "Save it as private so the organization can look at it first, or publish it at once.",
+      ),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
     expect(submitted).toBeUndefined();
