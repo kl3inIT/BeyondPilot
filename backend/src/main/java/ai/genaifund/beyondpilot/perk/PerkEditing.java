@@ -216,6 +216,7 @@ public class PerkEditing {
 		if (Perk.CODES.equals(perk.getWay()) && codes.stock(id).loaded() == 0) {
 			throw new PerkException(PerkErrorCode.INCOMPLETE, "Publication of perk " + id + ", which holds no code");
 		}
+		requirePage(perk);
 		if (perk.publish()) {
 			perks.flush();
 			keepers.record(AuditAction.PERK_PUBLISH, keeper, perk, Map.of());
@@ -344,9 +345,23 @@ public class PerkEditing {
 	}
 
 	private void saved(Perk perk, Keeper keeper, Set<UUID> before) {
+		if (Perk.PUBLISHED.equals(perk.getState())) {
+			requirePage(perk);
+		}
 		perks.flush();
 		keepers.record(AuditAction.PERK_UPDATE, keeper, perk, Map.of());
 		changed(perk, before);
+	}
+
+	/**
+	 * A published perk shows somewhere: on the solutions it goes with, or on a program's page. One that shows nowhere
+	 * would be found by nobody.
+	 */
+	private static void requirePage(Perk perk) {
+		if (!perk.hasPage()) {
+			throw new PerkException(PerkErrorCode.PAGE_REQUIRED,
+					"Perk " + perk.getId() + " published with no solution and no program page");
+		}
 	}
 
 	/**

@@ -74,7 +74,11 @@ type PerkValues = {
   shownOnProgramIds: string[];
 };
 
-function valuesOf(perk: Perk | undefined): PerkValues {
+/**
+ * What the form opens with. A new perk of an organization with one solution goes with it from the
+ * start: a published perk shows on the solutions it goes with.
+ */
+function valuesOf(perk: Perk | undefined, solutions: PerkOptions["solutions"]): PerkValues {
   return {
     title: perk?.title ?? "",
     value: perk?.value ?? "",
@@ -95,7 +99,7 @@ function valuesOf(perk: Perk | undefined): PerkValues {
     places: perk?.places ? String(perk.places) : "",
     startsOn: perk?.startsAt ? partsInVietnam(perk.startsAt).day : "",
     endsOn: perk?.endsAt ? partsInVietnam(perk.endsAt).day : "",
-    solutionIds: perk?.solutionIds ?? [],
+    solutionIds: perk?.solutionIds ?? (solutions.length === 1 ? [solutions[0].id] : []),
     fromGenAiFund: perk?.fromGenAiFund ?? false,
     shownOnProgramIds: perk?.shownOnProgramIds ?? [],
   };
@@ -149,6 +153,7 @@ const refusalFields = {
   PERK_DATES_NOT_VALID: "endsOn",
   PERK_QUESTIONS_NOT_VALID: "questions",
   PERK_SOLUTION_NOT_USABLE: "solutionIds",
+  PERK_PAGE_REQUIRED: "solutionIds",
 } as const;
 
 const refusalCodes = Object.keys(refusalFields) as (keyof typeof refusalFields)[];
@@ -166,11 +171,14 @@ function Part({ title, children }: { title: string; children: React.ReactNode })
 /** Choices ticked among many: the solutions a perk goes with, the programs that show it. */
 function Ticks({
   label,
+  hint,
   options,
   value,
   onChange,
 }: {
   label: string;
+  /** What the choice does, under its label. */
+  hint?: string;
   options: { id: string; name: string }[];
   value: string[];
   onChange: (value: string[]) => void;
@@ -178,6 +186,7 @@ function Ticks({
   return (
     <div role="group" aria-label={label} className="flex flex-col gap-2">
       <p className="text-sm font-medium">{label}</p>
+      {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
       <ul className="grid gap-2 sm:grid-cols-2">
         {options.map((option) => (
           <li key={option.id}>
@@ -301,7 +310,7 @@ function PerkForm({ perk, options, side, organizationId }: PerkFormProps) {
   }, [say, t]);
 
   const form = useAppForm({
-    defaultValues: valuesOf(perk),
+    defaultValues: valuesOf(perk, options.solutions),
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },
     onSubmit: async ({ value }) => {
@@ -606,6 +615,7 @@ function PerkForm({ perk, options, side, organizationId }: PerkFormProps) {
                 {(field) => (
                   <Ticks
                     label={t("solutions")}
+                    hint={t("solutionsHint")}
                     options={options.solutions.slice(0, limits.solutions)}
                     value={field.state.value}
                     onChange={field.handleChange}

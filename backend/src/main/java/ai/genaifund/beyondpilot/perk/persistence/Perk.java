@@ -338,6 +338,14 @@ public class Perk {
 		return Set.copyOf(solutionIds);
 	}
 
+	/**
+	 * Whether a page shows it: the page of a solution it goes with, or a program's page, for that program's teams or
+	 * placed there by an operator.
+	 */
+	public boolean hasPage() {
+		return !solutionIds.isEmpty() || programId != null || !shownOnProgramIds.isEmpty();
+	}
+
 	public Set<UUID> getShownOnProgramIds() {
 		return Set.copyOf(shownOnProgramIds);
 	}
