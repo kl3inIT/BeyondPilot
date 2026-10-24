@@ -14,7 +14,7 @@ import tools.jackson.databind.JsonNode;
 /**
  * An event of the calendar as Luma's API gives it (BEY-245).
  * @param zone where it is held, so its days are that place's
- * @param description the plain text; only {@link LumaApi#event} gives it
+ * @param description in Markdown, as the host wrote it, else the plain text; only {@link LumaApi#event} gives it
  * @param city null when it is online or Luma gives no city
  * @param country in English words ("Vietnam"); Luma gives an ISO code
  * @param cover the address of its cover image; null when it has none
@@ -63,7 +63,9 @@ public record LumaEvent(String id, String name, @Nullable String description, In
 		String kind = LumaApi.text(node, "location_type");
 		boolean online = kind != null && !"offline".equals(kind) && !"missing".equals(kind);
 		JsonNode address = node.path("geo_address_json");
-		return Optional.of(new LumaEvent(id, name, LumaApi.text(node, "description"), startsAt, endsAt, zone, online,
+		String markdown = LumaApi.text(node, "description_md");
+		String description = markdown != null ? markdown : LumaApi.text(node, "description");
+		return Optional.of(new LumaEvent(id, name, description, startsAt, endsAt, zone, online,
 				online ? null : LumaApi.text(address, "city"), online ? null : country(LumaApi.text(address, "country")),
 				uri(LumaApi.text(node, "cover_url")), page, Visibility.of(LumaApi.text(node, "visibility")),
 				"view".equals(LumaApi.text(node, "access")), LumaForm.of(node, zone.getId()).orElse(null)));

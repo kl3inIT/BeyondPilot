@@ -481,7 +481,7 @@ function lumaEventRegistration(request, account) {
     state: "open",
     approval: true,
     zone: "Asia/Ho_Chi_Minh",
-    hosts: ["GenAI Fund"],
+    hosts: [{ name: "GenAI Fund" }],
     questions: [
       {
         id: "q-name",

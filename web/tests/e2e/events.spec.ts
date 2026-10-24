@@ -4,8 +4,9 @@ import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
 
 // An event of GenAI Fund's Luma calendar that people register for on BeyondPilot (BEY-245): its
-// page as Luma lays it out, and the card that registers. The stub answers the event and its form;
-// a registration sent is caught here and its status set for this browser by a cookie.
+// page as Luma lays it out, and the card whose button opens the questions in a dialog, a sheet on a
+// phone. The stub answers the event and its form; a registration sent is caught here and its status
+// set for this browser by a cookie.
 
 test.describe("events from Luma", () => {
   test("a signed-in person registers with the host's questions and sees it waits for approval", async ({
@@ -33,21 +34,26 @@ test.describe("events from Luma", () => {
       page.getByText("The address is shown once your registration is confirmed."),
     ).toBeVisible();
     await expect(page.getByText("Hosted by").first()).toBeAttached();
-    // The name the host asks again is the person's own, not a second field.
-    await expect(page.getByLabel("Name", { exact: true })).toHaveCount(1);
+    // The questions wait behind the button, so the page reads as the event, not a form.
+    await expect(page.getByLabel("Company")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
-    await page.getByLabel("Name", { exact: true }).fill("Linh Tran");
-    await page.getByRole("button", { name: "Request to join" }).click();
-    await expect(page.getByText("Fill this in.").first()).toBeVisible();
+    await page.getByRole("button", { name: "Request to join" }).first().click();
+    const dialog = page.getByRole("dialog");
+    // The name the host asks again is the person's own, not a second field.
+    await expect(dialog.getByLabel("Name", { exact: true })).toHaveCount(1);
+    await dialog.getByLabel("Name", { exact: true }).fill("Linh Tran");
+    await dialog.getByRole("button", { name: "Request to join" }).click();
+    await expect(dialog.getByText("Fill this in.").first()).toBeVisible();
     expect(sent).toBeUndefined();
+    await expectNoSeriousA11yViolations(page);
 
-    await page.getByRole("combobox", { name: "Your role" }).click();
+    await dialog.getByRole("combobox", { name: "Your role" }).click();
     await page.getByRole("option", { name: "Builder" }).click();
-    await page.getByLabel("Company").fill("Plain Cover");
-    await page.getByLabel("Job title").fill("CTO");
-    await page.getByRole("checkbox", { name: "I agree to the terms" }).click();
-    await page.getByRole("button", { name: "Request to join" }).click();
+    await dialog.getByLabel("Company").fill("Plain Cover");
+    await dialog.getByLabel("Job title").fill("CTO");
+    await dialog.getByRole("checkbox", { name: "I agree to the terms" }).click();
+    await dialog.getByRole("button", { name: "Request to join" }).click();
 
     await expect(page.getByRole("status")).toContainText("Pending approval");
     expect(sent).toEqual({
@@ -102,18 +108,20 @@ test.describe("events from Luma", () => {
     });
     await page.goto("/programs/gaf-briefing");
 
-    await page.getByLabel("Name", { exact: true }).fill("Linh Tran");
-    await page.getByLabel("Email").fill("linh@events.test");
-    await page.getByRole("combobox", { name: "Your role" }).click();
+    await page.getByRole("button", { name: "Request to join" }).first().click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Name", { exact: true }).fill("Linh Tran");
+    await dialog.getByLabel("Email").fill("linh@events.test");
+    await dialog.getByRole("combobox", { name: "Your role" }).click();
     await page.getByRole("option", { name: "Investor" }).click();
-    await page.getByLabel("Company").fill("Plain Cover");
-    await page.getByLabel("Job title").fill("CTO");
-    await page.getByRole("checkbox", { name: "I agree to the terms" }).click();
-    await page.getByRole("button", { name: "Request to join" }).click();
+    await dialog.getByLabel("Company").fill("Plain Cover");
+    await dialog.getByLabel("Job title").fill("CTO");
+    await dialog.getByRole("checkbox", { name: "I agree to the terms" }).click();
+    await dialog.getByRole("button", { name: "Request to join" }).click();
 
-    await expect(page.getByText("Enter the code we sent to")).toContainText("linh@events.test");
+    await expect(dialog.getByText("Enter the code we sent to")).toContainText("linh@events.test");
     // The sixth digit sends the code; no button is needed.
-    await page.getByLabel("Sign-in code").pressSequentially("123456");
+    await dialog.getByLabel("Sign-in code").pressSequentially("123456");
 
     await expect(page.getByRole("status")).toContainText("You're in");
     await expect(page.getByRole("link", { name: "Add to calendar" })).toBeVisible();

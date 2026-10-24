@@ -2500,6 +2500,14 @@ export type EventAnswer = {
     text?: string | null;
 };
 
+export type EventHost = {
+    /**
+     * The host's picture on Luma; absent when there is none.
+     */
+    avatarUrl?: string;
+    name: string;
+};
+
 /**
  * A question of an event's registration form, as the host wrote it on Luma.
  */
@@ -2550,7 +2558,10 @@ export type EventRegistration = {
      * A mark of the questions as they stand; a registration sends it back.
      */
     formVersion: string;
-    hosts: Array<string>;
+    /**
+     * As Luma shows them.
+     */
+    hosts: Array<EventHost>;
     /**
      * The address of the call; absent when there is none or it is kept for confirmed guests.
      */

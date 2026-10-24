@@ -22,14 +22,14 @@ import tools.jackson.databind.json.JsonMapper;
  * @param approval whether GenAI Fund approves each guest
  * @param seatsLeft the seats still free; null when the event has no limit
  * @param waitlist whether a full event puts new guests on its waitlist
- * @param hosts the names of the hosts, as Luma shows them
+ * @param hosts the hosts, as Luma shows them
  * @param zone where the event is held, so its times read as that place's
  * @param venue the full address; null for an event online or without one
  * @param meetingUrl the call's address for an event online; null when there is none
  * @param placeForGuests whether Luma shows the venue or the call only to a confirmed guest
  */
 public record LumaForm(boolean open, boolean approval, @Nullable Integer seatsLeft, boolean waitlist,
-		List<LumaQuestion> questions, List<String> hosts, String zone, @Nullable String venue,
+		List<LumaQuestion> questions, List<LumaHost> hosts, String zone, @Nullable String venue,
 		@Nullable String meetingUrl, boolean placeForGuests) {
 
 	private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -116,11 +116,12 @@ public record LumaForm(boolean open, boolean approval, @Nullable Integer seatsLe
 			}
 			LumaQuestion.of(question, type.get()).ifPresent(questions::add);
 		}
-		List<String> hosts = new ArrayList<>();
+		List<LumaHost> hosts = new ArrayList<>();
 		for (JsonNode host : node.path("hosts")) {
 			String name = LumaApi.text(host, "name");
 			if (name != null) {
-				hosts.add(name);
+				String avatar = LumaApi.text(host, "avatar_url");
+				hosts.add(new LumaHost(name, avatar != null && avatar.startsWith("https://") ? avatar : null));
 			}
 		}
 		JsonNode seats = node.path("spots_remaining");

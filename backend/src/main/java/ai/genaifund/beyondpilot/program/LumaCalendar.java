@@ -496,14 +496,28 @@ class LumaCalendar {
 		return slug.length() <= max ? slug : slug.substring(0, max).replaceAll("-+$", "");
 	}
 
-	/** The description's first paragraph, cut to what a summary holds. */
-	private static @Nullable String summary(@Nullable String description) {
+	/** The description's first paragraph as plain text, cut to what a summary holds. */
+	static @Nullable String summary(@Nullable String description) {
 		if (description == null) {
 			return null;
 		}
-		return description.lines().map(String::strip).filter(line -> !line.isEmpty()).findFirst()
+		return description.lines()
+			.map(LumaCalendar::plain)
+			.filter(line -> !line.isEmpty())
+			.findFirst()
 			.map(line -> cut(line, MAX_SUMMARY))
 			.orElse(null);
+	}
+
+	/** A line of Markdown as plain text: no heading, list or quote mark, emphasis, image or link address. */
+	private static String plain(String line) {
+		return line.strip()
+			.replaceFirst("^(#{1,6}|>|[-*+]|\\d+[.)])\\s+", "")
+			.replaceAll("!\\[([^\\]]*)]\\([^)]*\\)", "$1")
+			.replaceAll("\\[([^\\]]*)]\\([^)]*\\)", "$1")
+			.replaceAll("(?<![\\w*_])(\\*\\*|__|\\*|_|~~|`)(\\S(?:.*?\\S)?)\\1(?![\\w*_])", "$2")
+			.replaceAll("\\\\([\\\\`*_{}\\[\\]()#+\\-.!>])", "$1")
+			.strip();
 	}
 
 	/** The text, cut at a word to at most {@code max} characters with an ellipsis when it is longer. */

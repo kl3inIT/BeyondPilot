@@ -10,6 +10,8 @@ import {
   HourglassIcon,
   ListOrderedIcon,
   MapPinIcon,
+  TicketIcon,
+  UserCheckIcon,
   VideoIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -23,6 +25,13 @@ import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { ChoicesField } from "@/components/form/choices-field";
 import { AllRequired } from "@/components/form/form-fields";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ConsentDialog } from "@/features/identity/consent-dialog";
 import {
@@ -69,16 +78,24 @@ type Step =
 
 /**
  * The card to register for an event of GenAI Fund's Luma calendar, on its page here (BEY-245), as
- * Luma's own: the event's questions, then for a visitor the code sent to their address, typed in the
- * same card, which signs them in; a new account agrees to how its data is used; then the
- * registration goes to GenAI Fund through Luma. Once registered, the card says where it stands.
+ * Luma's own: how registering goes, a welcome and one button, which opens the event's questions full
+ * screen beside a summary of the event, above it on a phone; then for a visitor the code sent to
+ * their address, typed in the same dialog, which signs them in; a new account agrees to how its data is used; then the registration
+ * goes to GenAI Fund through Luma. Once registered, the card says where it stands.
  */
 function EventRegistrationCard({
   slug,
+  name,
+  cover,
+  when,
   registration,
   person,
 }: {
   slug: string;
+  name: string;
+  cover: string | null;
+  /** The event's day and hours, as the page writes them. */
+  when: string | null;
   registration: EventRegistration;
   person: Person;
 }) {
@@ -96,7 +113,14 @@ function EventRegistrationCard({
           ) : registration.state === "closed" ? (
             <p className="text-sm text-muted-foreground">{t("closed")}</p>
           ) : (
-            <RegistrationFlow slug={slug} registration={registration} person={person} />
+            <RegistrationStart
+              slug={slug}
+              name={name}
+              cover={cover}
+              when={when}
+              registration={registration}
+              person={person}
+            />
           )}
         </div>
       </CardContent>
@@ -193,8 +217,112 @@ function RegistrationStatus({
 }
 
 /**
- * The form, then for a visitor the code and, for a new account, the consent, all in the card. The
- * answers are kept while the person signs in, and sent once they are.
+ * How registering goes, a welcome naming who registers, and the button that opens the questions;
+ * on a phone a bar at the foot of the screen keeps the button in reach while the page is read.
+ */
+function RegistrationStart({
+  slug,
+  name,
+  cover,
+  when,
+  registration,
+  person,
+}: {
+  slug: string;
+  name: string;
+  cover: string | null;
+  when: string | null;
+  registration: EventRegistration;
+  person: Person;
+}) {
+  const t = useTranslations("Program.event.card");
+  const [open, setOpen] = useState(false);
+  const action = submitLabelOf(registration, t);
+  const waitlist = registration.state === "waitlist";
+  const way = waitlist
+    ? { icon: ListOrderedIcon, title: t("fullTitle"), lead: t("full") }
+    : registration.approval
+      ? { icon: UserCheckIcon, title: t("approvalTitle"), lead: t("approval") }
+      : { icon: TicketIcon, title: t("openTitle"), lead: t("open") };
+  const WayIcon = way.icon;
+
+  const flow = <RegistrationFlow slug={slug} registration={registration} person={person} />;
+
+  return (
+    <>
+      <div className="flex items-start gap-3">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-primary">
+          <WayIcon aria-hidden="true" className="size-4.5" />
+        </span>
+        <div className="flex flex-col">
+          <span className="font-medium">{way.title}</span>
+          <span className="text-sm text-muted-foreground">{way.lead}</span>
+        </div>
+      </div>
+      <div className="flex flex-col gap-1 border-t pt-4">
+        <p>{person?.name ? t("welcome", { name: person.name }) : t("welcomeVisitor")}</p>
+        {person && (
+          <p className="text-sm">
+            <span className="text-muted-foreground">{t("emailAs")}</span>{" "}
+            <span className="font-medium break-all">{person.email}</span>
+          </p>
+        )}
+      </div>
+      <Button className="w-full" onClick={() => setOpen(true)}>
+        {action}
+      </Button>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 backdrop-blur md:hidden">
+        <Button className="w-full" onClick={() => setOpen(true)}>
+          {action}
+        </Button>
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent size="fullscreen" className="overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 pt-12 pb-8 md:flex-row-reverse md:items-start md:gap-12 md:px-8 md:pt-16">
+            <div className="flex items-center gap-3 rounded-xl border p-3 md:w-80 md:shrink-0">
+              {cover && (
+                <Image
+                  src={cover}
+                  alt=""
+                  width={112}
+                  height={112}
+                  className="size-14 shrink-0 rounded-lg object-cover"
+                />
+              )}
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="line-clamp-2 font-medium">{name}</span>
+                {when && <span className="text-sm text-muted-foreground">{when}</span>}
+              </div>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-5">
+              <DialogHeader>
+                <DialogTitle size="lg">{action}</DialogTitle>
+                <DialogDescription className="sr-only">{name}</DialogDescription>
+              </DialogHeader>
+              {flow}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+/** The words of the button that sends a registration, as the event takes it. */
+function submitLabelOf(
+  registration: EventRegistration,
+  t: (key: "joinWaitlist" | "requestToJoin" | "register") => string,
+) {
+  return registration.state === "waitlist"
+    ? t("joinWaitlist")
+    : registration.approval
+      ? t("requestToJoin")
+      : t("register");
+}
+
+/**
+ * The form, then for a visitor the code and, for a new account, the consent, all in the dialog.
+ * The answers are kept while the person signs in, and sent once they are.
  */
 function RegistrationFlow({
   slug,
@@ -309,12 +437,7 @@ function RegistrationFlow({
     return <ConsentStep consent={step.consent} onAgreed={() => void register(step.values, true)} />;
   }
 
-  const submitLabel =
-    registration.state === "waitlist"
-      ? t("joinWaitlist")
-      : registration.approval
-        ? t("requestToJoin")
-        : t("register");
+  const submitLabel = submitLabelOf(registration, t);
 
   return (
     <form
@@ -326,11 +449,6 @@ function RegistrationFlow({
         void form.handleSubmit();
       }}
     >
-      {registration.state === "waitlist" ? (
-        <p className="text-sm text-muted-foreground">{t("full")}</p>
-      ) : (
-        registration.approval && <p className="text-sm text-muted-foreground">{t("approval")}</p>
-      )}
       <AllRequired>
         <form.AppField name="name">
           {(field) => <field.TextField label={t("name")} autoComplete="name" maxLength={200} />}
