@@ -32,13 +32,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ConsentDialog } from "@/features/identity/consent-dialog";
 import {
@@ -52,7 +45,6 @@ import {
   verifySignInCode,
   type CodeCheckOutcome,
 } from "@/features/identity/identity-api";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { failedWith } from "@/lib/api/failure";
 import {
@@ -86,21 +78,24 @@ type Step =
 
 /**
  * The card to register for an event of GenAI Fund's Luma calendar, on its page here (BEY-245), as
- * Luma's own: how registering goes and one button, which opens the event's questions in a dialog,
- * or a sheet on a phone; then for a visitor the code sent to their address, typed in the same
- * dialog, which signs them in; a new account agrees to how its data is used; then the registration
+ * Luma's own: how registering goes, a welcome and one button, which opens the event's questions full
+ * screen beside a summary of the event, above it on a phone; then for a visitor the code sent to
+ * their address, typed in the same dialog, which signs them in; a new account agrees to how its data is used; then the registration
  * goes to GenAI Fund through Luma. Once registered, the card says where it stands.
  */
 function EventRegistrationCard({
   slug,
   name,
   cover,
+  when,
   registration,
   person,
 }: {
   slug: string;
   name: string;
   cover: string | null;
+  /** The event's day and hours, as the page writes them. */
+  when: string | null;
   registration: EventRegistration;
   person: Person;
 }) {
@@ -122,6 +117,7 @@ function EventRegistrationCard({
               slug={slug}
               name={name}
               cover={cover}
+              when={when}
               registration={registration}
               person={person}
             />
@@ -221,24 +217,25 @@ function RegistrationStatus({
 }
 
 /**
- * How registering goes, who registers, and the button that opens the questions; on a phone a bar at
- * the foot of the screen keeps the button in reach while the page is read.
+ * How registering goes, a welcome naming who registers, and the button that opens the questions;
+ * on a phone a bar at the foot of the screen keeps the button in reach while the page is read.
  */
 function RegistrationStart({
   slug,
   name,
   cover,
+  when,
   registration,
   person,
 }: {
   slug: string;
   name: string;
   cover: string | null;
+  when: string | null;
   registration: EventRegistration;
   person: Person;
 }) {
   const t = useTranslations("Program.event.card");
-  const mobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const action = submitLabelOf(registration, t);
   const waitlist = registration.state === "waitlist";
@@ -249,23 +246,6 @@ function RegistrationStart({
       : { icon: TicketIcon, title: t("openTitle"), lead: t("open") };
   const WayIcon = way.icon;
 
-  const head = (
-    <div className="flex items-center gap-3">
-      {cover && (
-        <Image
-          src={cover}
-          alt=""
-          width={96}
-          height={96}
-          className="size-12 rounded-lg object-cover"
-        />
-      )}
-      <div className="flex min-w-0 flex-col">
-        <span className="text-sm text-muted-foreground">{action}</span>
-        <span className="font-semibold">{name}</span>
-      </div>
-    </div>
-  );
   const flow = <RegistrationFlow slug={slug} registration={registration} person={person} />;
 
   return (
@@ -279,12 +259,15 @@ function RegistrationStart({
           <span className="text-sm text-muted-foreground">{way.lead}</span>
         </div>
       </div>
-      {person && (
-        <p className="text-sm">
-          <span className="text-muted-foreground">{t("emailAs")}</span>{" "}
-          <span className="font-medium break-all">{person.email}</span>
-        </p>
-      )}
+      <div className="flex flex-col gap-1 border-t pt-4">
+        <p>{person?.name ? t("welcome", { name: person.name }) : t("welcomeVisitor")}</p>
+        {person && (
+          <p className="text-sm">
+            <span className="text-muted-foreground">{t("emailAs")}</span>{" "}
+            <span className="font-medium break-all">{person.email}</span>
+          </p>
+        )}
+      </div>
       <Button className="w-full" onClick={() => setOpen(true)}>
         {action}
       </Button>
@@ -293,29 +276,34 @@ function RegistrationStart({
           {action}
         </Button>
       </div>
-      {mobile ? (
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle className="sr-only">{name}</DrawerTitle>
-              <DrawerDescription className="sr-only">{action}</DrawerDescription>
-              {head}
-            </DrawerHeader>
-            <div className="min-h-0 overflow-y-auto px-4 pb-8">{flow}</div>
-          </DrawerContent>
-        </Drawer>
-      ) : (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-xl">
-            <DialogHeader>
-              <DialogTitle className="sr-only">{name}</DialogTitle>
-              <DialogDescription className="sr-only">{action}</DialogDescription>
-              {head}
-            </DialogHeader>
-            {flow}
-          </DialogContent>
-        </Dialog>
-      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent size="fullscreen" className="overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 pt-12 pb-8 md:flex-row-reverse md:items-start md:gap-12 md:px-8 md:pt-16">
+            <div className="flex items-center gap-3 rounded-xl border p-3 md:w-80 md:shrink-0">
+              {cover && (
+                <Image
+                  src={cover}
+                  alt=""
+                  width={112}
+                  height={112}
+                  className="size-14 shrink-0 rounded-lg object-cover"
+                />
+              )}
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="line-clamp-2 font-medium">{name}</span>
+                {when && <span className="text-sm text-muted-foreground">{when}</span>}
+              </div>
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-5">
+              <DialogHeader>
+                <DialogTitle size="lg">{action}</DialogTitle>
+                <DialogDescription className="sr-only">{name}</DialogDescription>
+              </DialogHeader>
+              {flow}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

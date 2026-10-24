@@ -6068,7 +6068,9 @@
         "approvalTitle": "Cần phê duyệt",
         "fullTitle": "Đã hết chỗ",
         "openTitle": "Đang nhận đăng ký",
-        "open": "Chỗ của bạn được xác nhận ngay khi đăng ký."
+        "open": "Chỗ của bạn được xác nhận ngay khi đăng ký.",
+        "welcome": "Chào {name}! Để tham gia sự kiện, vui lòng đăng ký bên dưới.",
+        "welcomeVisitor": "Xin chào! Để tham gia sự kiện, vui lòng đăng ký bên dưới."
       },
       "status": {
         "received": {

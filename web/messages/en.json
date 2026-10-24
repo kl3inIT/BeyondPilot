@@ -6068,7 +6068,9 @@
         "approvalTitle": "Approval required",
         "fullTitle": "Event full",
         "openTitle": "Registration open",
-        "open": "Your seat is confirmed as soon as you register."
+        "open": "Your seat is confirmed as soon as you register.",
+        "welcome": "Welcome, {name}! To join the event, please register below.",
+        "welcomeVisitor": "Welcome! To join the event, please register below."
       },
       "status": {
         "received": {

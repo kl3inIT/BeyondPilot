@@ -414,8 +414,9 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
   right whether it is free and needs approval, the name, the date as a calendar leaf in the event's own time with a
   calendar file of the name, times and city to save, the place, a short card and the description as Luma formats it
   (`RichText`: Markdown with bold, headings, lists and links opening in a new tab; raw HTML shown as text, images left
-  out). The card says how registering goes and who registers, and its one button opens the questions in a dialog, a
-  sheet from the bottom on a phone, where a bar at the foot of the screen keeps the button in reach. In the dialog a
+  out). The card says how registering goes and welcomes who registers, and its one button opens the questions full
+  screen, as Luma does, beside a summary of the event (cover, name, day and hours), above it on a phone, where a bar
+  at the foot of the screen keeps the button in reach. In the dialog a
   visitor types their name, address and answers, then the code emailed to them, which signs them in; a new account
   agrees to the consent text there before anything is sent. A program's description elsewhere is shown the same way,
   a plain text keeping its line breaks.

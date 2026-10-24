@@ -209,6 +209,7 @@ async function EventPage({
               slug={program.slug}
               name={program.name}
               cover={cover}
+              when={day ? [day, hours].filter(Boolean).join(" · ") : null}
               registration={registration}
               person={person}
             />
