@@ -30,7 +30,7 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
         kind: "use_case",
         industry: search.industry.length ? search.industry : undefined,
         proposalStatus: search.proposalStatus ?? undefined,
-        sort: search.sort ?? undefined,
+        sort: search.sort ?? "newest",
         page: Math.min(maxSearchPage, Math.max(1, search.page)),
         size: search.size ?? undefined,
       },
@@ -63,7 +63,7 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
     query: {
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       industry: search.industry.length === 0 ? undefined : search.industry,
-      sort: search.sort ?? "newest",
+      sort: search.sort === null || search.sort === "relevance" ? "newest" : search.sort,
       proposalStatus: search.proposalStatus ?? undefined,
       page: Math.max(1, search.page),
       size: search.size ?? undefined,

@@ -128,10 +128,10 @@ function UseCasesToolbar({ count }: UseCasesToolbarProps) {
       </Select>
       <Select
         items={sorts}
-        value={search.sort ?? (search.q.trim() ? "relevance" : "newest")}
+        value={search.sort ?? "newest"}
         onValueChange={(value) =>
           setSearch({
-            sort: useCaseSorts.find((sort) => sort === value) ?? null,
+            sort: [...useCaseSorts, "relevance" as const].find((sort) => sort === value) ?? null,
             page: null,
           })
         }

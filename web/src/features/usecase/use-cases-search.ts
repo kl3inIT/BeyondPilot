@@ -13,6 +13,9 @@ import { pageSize } from "@/lib/page-size";
 export const useCaseSorts = ["newest", "deadline", "budget"] as const;
 export const useCaseProposalStatuses = ["open", "closed"] as const;
 
+/** A search also offers the order of how well each use case matches; it is never the default. */
+const searchSorts = [...useCaseSorts, "relevance"] as const;
+
 /**
  * What narrows and orders the use case list, as the URL holds it: `?q=&industry=&sort=&page=`. The
  * page reads these on the server and the toolbar writes them, so both use this one description.
@@ -21,7 +24,7 @@ export const useCasesSearch = {
   q: parseAsString.withDefault(""),
   industry: parseAsArrayOf(parseAsStringLiteral(useCaseIndustries)).withDefault([]),
   proposalStatus: parseAsStringLiteral(useCaseProposalStatuses),
-  sort: parseAsStringLiteral(useCaseSorts),
+  sort: parseAsStringLiteral(searchSorts),
   page: parseAsInteger.withDefault(1),
   size: pageSize,
 };
