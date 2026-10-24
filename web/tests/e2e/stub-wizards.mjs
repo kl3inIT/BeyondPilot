@@ -250,6 +250,7 @@ export const draftUseCase = {
   closesAt: "2026-12-31T16:59:00Z",
   hideOrganizationName: false,
   editable: true,
+  access: "full_access",
   complete: true,
   changedSinceReview: false,
   lastEditedBy: { name: "Minh Trần", genaiFund: false, you: true },

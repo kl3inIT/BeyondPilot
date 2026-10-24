@@ -73,6 +73,7 @@ const mine = {
   ...brief,
   organizationName: "Pocket Policy",
   editable: false,
+  access: "full_access",
   complete: true,
   changedSinceReview: false,
   lastEditedBy: person("Minh Trần", { you: true }),
