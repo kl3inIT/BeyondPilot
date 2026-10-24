@@ -15,6 +15,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface UseCaseRepository extends JpaRepository<UseCase, UUID> {
 
+	/** The use case a read-only link opens. */
+	Optional<UseCase> findByPreviewToken(UUID previewToken);
+
 	/** One use case, locked for the change the caller is about to make. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select u from UseCase u where u.id = :id")

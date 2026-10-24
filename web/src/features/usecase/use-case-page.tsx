@@ -63,9 +63,10 @@ function Fact({ label, value }: FactProps) {
 
 /**
  * The public brief of one published use case and the actions to send a proposal. How many proposals
- * it received is not shown to visitors.
+ * it received is not shown to visitors. Read from a read-only link (`preview`), it says so and offers
+ * no proposal, since the use case is not public.
  */
-function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
+function UseCasePage({ useCase, preview = false }: { useCase: PublicUseCase; preview?: boolean }) {
   const t = useTranslations("UseCases");
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
@@ -107,6 +108,15 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
 
   return (
     <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
+      {preview && (
+        <p
+          role="status"
+          className="rounded-lg border bg-muted/50 px-4 py-3 text-sm text-muted-foreground"
+        >
+          {t("preview.banner")}
+        </p>
+      )}
+
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -182,12 +192,16 @@ function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
             </Status>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
-          <ProposalActions
-            useCaseId={useCase.id}
-            closesAt={useCase.closesAt}
-            proposalEditDays={useCase.proposalEditDays}
-            challenge={useCase.challenge ?? null}
-          />
+          {preview ? (
+            <p className="text-sm text-muted-foreground">{t("preview.noProposals")}</p>
+          ) : (
+            <ProposalActions
+              useCaseId={useCase.id}
+              closesAt={useCase.closesAt}
+              proposalEditDays={useCase.proposalEditDays}
+              challenge={useCase.challenge ?? null}
+            />
+          )}
         </aside>
       </div>
     </div>

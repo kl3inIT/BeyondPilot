@@ -3,10 +3,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
-import type { AdminUseCase, MyUseCase, UseCaseAccess } from "@/lib/api/generated";
+import type { AdminUseCase, MyUseCase, UseCaseAccess, UseCasePreview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { UseCaseAccessPanel } from "./use-case-access-panel";
+import { UseCasePreviewLink } from "./use-case-preview-link";
 import { UseCaseTabs } from "./use-case-tabs";
 
 /**
@@ -16,9 +17,12 @@ import { UseCaseTabs } from "./use-case-tabs";
 function WorkspaceUseCaseAccessPage({
   useCase,
   access,
+  preview,
 }: {
   useCase: MyUseCase;
   access: UseCaseAccess;
+  /** The read-only link, for those who have full access to a use case that is not public. */
+  preview: UseCasePreview | null;
 }) {
   const t = useTranslations("Organization.useCases.access");
   const w = useTranslations("Organization.useCases.wizard");
@@ -43,6 +47,7 @@ function WorkspaceUseCaseAccessPage({
         current="access"
         published={Boolean(useCase.publishedAt)}
       />
+      {preview && <UseCasePreviewLink area="workspace" id={useCase.id} preview={preview} />}
       <UseCaseAccessPanel area="workspace" id={useCase.id} access={access} />
     </div>
   );
@@ -52,10 +57,13 @@ function WorkspaceUseCaseAccessPage({
 function AdminUseCaseAccessPage({
   useCase,
   access,
+  preview,
   proposals,
 }: {
   useCase: AdminUseCase;
   access: UseCaseAccess;
+  /** The read-only link, for a use case that is not public. */
+  preview: UseCasePreview | null;
   /** How many proposals the use case received, for its tab. */
   proposals?: number;
 }) {
@@ -82,7 +90,8 @@ function AdminUseCaseAccessPage({
           published={Boolean(useCase.publishedAt)}
         />
       </AdminPageHeader>
-      <div className="max-w-4xl">
+      <div className="flex max-w-4xl flex-col gap-6">
+        {preview && <UseCasePreviewLink area="admin" id={useCase.id} preview={preview} />}
         <UseCaseAccessPanel area="admin" id={useCase.id} access={access} />
       </div>
     </div>

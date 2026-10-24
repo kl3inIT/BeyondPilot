@@ -264,10 +264,26 @@ public class UseCaseDirectory {
 		UseCase useCase = useCases.findById(id)
 			.filter(found -> UseCase.APPROVED.equals(found.getStatus()))
 			.orElseThrow(() -> notFound(id));
+		return render(useCase, member);
+	}
+
+	/**
+	 * One use case read from its read-only link, whatever its status, as a visitor would read it once public.
+	 * @throws UseCaseException when no link has this key, or the use case lacks a title or an industry
+	 */
+	@Transactional(readOnly = true)
+	public PublicUseCaseResponse previewed(UUID token, boolean member) {
+		UseCase useCase = useCases.findByPreviewToken(token)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No preview link " + token));
+		return render(useCase, member);
+	}
+
+	private PublicUseCaseResponse render(UseCase useCase, boolean member) {
+		UUID id = useCase.getId();
 		String title = useCase.getTitle();
 		String industry = useCase.getIndustry();
-		Instant publishedAt = useCase.getPublishedAt();
-		if (title == null || industry == null || publishedAt == null) {
+		Instant publishedAt = useCase.getPublishedAt() != null ? useCase.getPublishedAt() : useCase.getCreatedAt();
+		if (title == null || industry == null) {
 			throw notFound(id);
 		}
 		OrganizationName organization = organizations.activeNames(List.of(useCase.getOrganizationId()))

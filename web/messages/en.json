@@ -1451,7 +1451,8 @@
           "export": "Downloaded the use cases",
           "access_set": "Set access to a use case",
           "access_remove": "Removed access to a use case",
-          "access_general": "Changed what members may do with a use case"
+          "access_general": "Changed what members may do with a use case",
+          "preview": "Turned the link to a use case on or off"
         },
         "email": {
           "settings_update": "Changed the email settings",
@@ -1641,7 +1642,8 @@
           "export": "Downloaded the use cases",
           "access_set": "Set who may use a use case",
           "access_remove": "Removed a person from a use case",
-          "access_general": "Changed member access to a use case"
+          "access_general": "Changed member access to a use case",
+          "preview": "Turned the read-only link of a use case on or off"
         },
         "email": {
           "settings_update": "Changed <resource></resource>",
@@ -4878,6 +4880,14 @@
           "submit": "Add"
         },
         "done": "Access saved."
+      },
+      "preview": {
+        "title": "Read-only link",
+        "hint": "Anyone with the link can read this use case without signing in. It stays private in the list and in search. Turn it off and the link stops working for good.",
+        "link": "Link to this use case",
+        "copy": "Copy link",
+        "on": "The link is on.",
+        "off": "The link is off."
       }
     }
   },
@@ -7814,7 +7824,11 @@
       "description": "Review proposals in one place and pick providers for a pilot.",
       "action": "Publish a use case"
     },
-    "anonymous": "Organization not named"
+    "anonymous": "Organization not named",
+    "preview": {
+      "banner": "You are reading a private use case from a shared link. It is not public yet.",
+      "noProposals": "This use case is not open for proposals yet."
+    }
   },
   "Legal": {
     "updated": "Last updated: {date}",

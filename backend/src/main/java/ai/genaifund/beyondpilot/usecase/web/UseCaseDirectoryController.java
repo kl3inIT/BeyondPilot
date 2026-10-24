@@ -54,4 +54,13 @@ class UseCaseDirectoryController {
 	PublicUseCaseResponse get(@PathVariable UUID id, @CurrentActor @Nullable Actor actor) {
 		return directory.get(id, actor != null);
 	}
+
+	@GetMapping(path = "/preview/{token}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getPreviewedUseCase", summary = "One use case read from its read-only link")
+	@ApiResponse(responseCode = "200", description = "The use case, as it would read once public.")
+	@ApiResponse(responseCode = "404", description = "No link has this key: it is off, or never existed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	PublicUseCaseResponse preview(@PathVariable UUID token, @CurrentActor @Nullable Actor actor) {
+		return directory.previewed(token, actor != null);
+	}
 }

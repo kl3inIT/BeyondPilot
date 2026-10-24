@@ -7,6 +7,7 @@ import {
   hasUseCases,
   readMyUseCase,
   readMyUseCaseAccess,
+  readMyUseCasePreview,
 } from "@/features/usecase/my-use-case-queries";
 import { WorkspaceUseCaseAccessPage } from "@/features/usecase/use-case-access-page";
 import { getPathname } from "@/i18n/navigation";
@@ -37,5 +38,11 @@ export default async function OrganizationUseCaseAccessRoute({
     notFound();
   }
 
-  return <WorkspaceUseCaseAccessPage useCase={useCase} access={access} />;
+  // Only those with full access read the link, and a public use case has its own address.
+  const preview =
+    access.yourAccess === "full_access" && useCase.status !== "approved"
+      ? await readMyUseCasePreview(id)
+      : null;
+
+  return <WorkspaceUseCaseAccessPage useCase={useCase} access={access} preview={preview} />;
 }

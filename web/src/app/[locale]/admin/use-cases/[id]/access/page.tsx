@@ -6,6 +6,7 @@ import { readProposalCounts } from "@/features/proposal/received-queries";
 import {
   readAdminUseCase,
   readAdminUseCaseAccess,
+  readAdminUseCasePreview,
 } from "@/features/usecase/admin-use-case-queries";
 import { AdminUseCaseAccessPage } from "@/features/usecase/use-case-access-page";
 import { ApiError } from "@/lib/api/client";
@@ -41,9 +42,16 @@ export default async function AdminUseCaseAccessRoute({
   if (!useCase || !access) {
     notFound();
   }
+  const preview =
+    useCase.status === "approved" ? null : await readAdminUseCasePreview(id).catch(gone);
   const proposals = useCase.publishedAt ? await readProposalCounts([id]).catch(() => null) : null;
 
   return (
-    <AdminUseCaseAccessPage useCase={useCase} access={access} proposals={proposals?.get(id)} />
+    <AdminUseCaseAccessPage
+      useCase={useCase}
+      access={access}
+      preview={preview}
+      proposals={proposals?.get(id)}
+    />
   );
 }

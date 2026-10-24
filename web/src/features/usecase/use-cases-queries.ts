@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/api/client";
 import {
+  getPreviewedUseCase,
   getUseCase,
   listUseCases,
   search as searchDirectory,
@@ -94,6 +95,19 @@ export async function readProgramUseCases(program: string): Promise<UseCaseList>
 export async function readUseCase(id: string): Promise<PublicUseCase | null> {
   try {
     const { data } = await getUseCase({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 400 || error.status === 404)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** One use case by the key of its read-only link, or `null` when no such link is on. */
+export async function readPreviewedUseCase(token: string): Promise<PublicUseCase | null> {
+  try {
+    const { data } = await getPreviewedUseCase({ ...(await sessionRequest()), path: { token } });
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 400 || error.status === 404)) {

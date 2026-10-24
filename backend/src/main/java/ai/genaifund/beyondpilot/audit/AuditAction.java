@@ -253,6 +253,9 @@ public enum AuditAction {
 	/** What every member of the organization may do with a use case was changed. */
 	USE_CASE_ACCESS_GENERAL("use_case.access_general", "organization", "role"),
 
+	/** The read-only link to a private use case was turned on or off. */
+	USE_CASE_PREVIEW("use_case.preview", "organization", "enabled"),
+
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),

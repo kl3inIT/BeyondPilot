@@ -3,10 +3,12 @@ import { ApiError } from "@/lib/api/client";
 import {
   getAdminUseCase,
   getAdminUseCaseAccess,
+  getAdminUseCasePreview,
   listAdminUseCases,
   type AdminUseCase,
   type AdminUseCaseList,
   type UseCaseAccess,
+  type UseCasePreview,
   getUseCaseReviewQueue,
   type UseCaseReviewQueue,
 } from "@/lib/api/generated";
@@ -65,6 +67,19 @@ export async function readUseCaseQueue(): Promise<UseCaseReviewQueue> {
 export async function readAdminUseCaseAccess(id: string): Promise<UseCaseAccess | null> {
   try {
     const { data } = await getAdminUseCaseAccess({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** The read-only link of a use case, as an operator reads it, or `null` when there is no such use case. Server only. */
+export async function readAdminUseCasePreview(id: string): Promise<UseCasePreview | null> {
+  try {
+    const { data } = await getAdminUseCasePreview({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
