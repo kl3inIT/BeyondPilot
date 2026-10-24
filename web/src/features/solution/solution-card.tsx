@@ -11,14 +11,15 @@ import { siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { SolutionLogo } from "./solution-logo";
+import { SolutionLogoCover } from "./solution-logo-cover";
 import { PerkCorner, PerkLine } from "./solution-perks";
 
 /** How many capabilities a card names before it counts the rest. */
 const CAPABILITY_LIMIT = 3;
 
 /**
- * One solution in the directory: its cover with its logo over the corner, or its logo alone when it
- * has no cover, what it is called, who
+ * One solution in the directory: its cover with its logo over the corner, or its logo on a tint of
+ * its colour when it has no cover, what it is called, who
  * offers it, what it does and its capabilities. A solution that goes with perks says the first in
  * a line and carries a gift in the corner of its cover, which leads to their pages. The
  * last line is the proof a card can state: how many customer deployments GenAI Fund approved, or
@@ -40,11 +41,11 @@ function SolutionCard({
 
   return (
     <article className="relative flex min-w-0 flex-1 flex-col gap-3 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50">
-      {solution.coverFileId ? (
-        // The logo hangs over the foot of the cover, so the pair takes its height and half the logo's.
-        <div className="relative mb-5">
-          <div className="relative h-35 overflow-hidden rounded-xl border bg-muted">
-            {/* Filling its frame, as Dub's marketplace does: a whole cover in a wider frame leaves bands of the frame beside it. */}
+      {/* The logo hangs over the foot of the cover, so the pair takes its height and half the logo's. */}
+      <div className="relative mb-5">
+        <div className="relative h-35 overflow-hidden rounded-xl border bg-muted">
+          {solution.coverFileId ? (
+            // Filling its frame, as Dub's marketplace does: a whole cover in a wider frame leaves bands beside it.
             <Image
               src={publicFileUrl(solution.coverFileId)}
               alt=""
@@ -53,23 +54,20 @@ function SolutionCard({
               preload={preload}
               className="object-cover"
             />
-          </div>
-          <SolutionLogo
-            name={solution.name}
-            fileId={solution.logoFileId}
-            size="card"
-            className="absolute -bottom-5 left-4 shadow-sm"
-          />
-          {/* Above the link that covers the card, so a press on the gift opens the perk. */}
-          <PerkCorner perks={perks} className="absolute top-2 right-2 z-10" />
+          ) : (
+            // The same frame without a cover, so a row of cards stays aligned.
+            <SolutionLogoCover fileId={solution.logoFileId} />
+          )}
         </div>
-      ) : (
-        // No empty frame stands in for a missing cover: the logo leads the card.
-        <div className="flex items-start justify-between gap-3">
-          <SolutionLogo name={solution.name} fileId={solution.logoFileId} size="card" />
-          <PerkCorner perks={perks} className="relative z-10" />
-        </div>
-      )}
+        <SolutionLogo
+          name={solution.name}
+          fileId={solution.logoFileId}
+          size="card"
+          className="absolute -bottom-5 left-4 shadow-sm"
+        />
+        {/* Above the link that covers the card, so a press on the gift opens the perk. */}
+        <PerkCorner perks={perks} className="absolute top-2 right-2 z-10" />
+      </div>
       <div className="flex min-w-0 flex-col items-start gap-1">
         <h2 className="max-w-full truncate text-base font-medium">
           <Link
