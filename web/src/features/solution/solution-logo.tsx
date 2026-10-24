@@ -24,6 +24,9 @@ const solutionLogoVariants = cva(
 /** The widest a logo is drawn at each size, so the browser asks for no more than that. */
 const widths = { row: "32px", card: "48px", page: "72px" } as const;
 
+/** The margin inside the slot, so a wide wordmark does not touch its edge. */
+const insets = { row: "inset-0.5", card: "inset-1.5", page: "inset-2" } as const;
+
 type SolutionLogoProps = Required<VariantProps<typeof solutionLogoVariants>> & {
   /** The name of the solution; its initials stand in the slot without a logo. */
   name: string;
@@ -47,14 +50,16 @@ function SolutionLogo({ name, fileId, size, className }: SolutionLogoProps) {
       className={cn(solutionLogoVariants({ size }), className)}
     >
       {fileId && !broken ? (
-        <Image
-          src={publicFileUrl(fileId)}
-          alt=""
-          fill
-          sizes={widths[size ?? "card"]}
-          className="object-contain"
-          onError={() => setBroken(true)}
-        />
+        <span className={cn("absolute", insets[size ?? "card"])}>
+          <Image
+            src={publicFileUrl(fileId)}
+            alt=""
+            fill
+            sizes={widths[size ?? "card"]}
+            className="object-contain"
+            onError={() => setBroken(true)}
+          />
+        </span>
       ) : (
         initials(name, name)
       )}
