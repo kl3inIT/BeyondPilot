@@ -33,6 +33,9 @@ public enum PerkErrorCode implements ErrorCode {
 	SOLUTION_NOT_USABLE("PERK_SOLUTION_NOT_USABLE", ErrorCategory.VALIDATION,
 			"A perk goes only with solutions of the organization that gives it."),
 
+	PAGE_REQUIRED("PERK_PAGE_REQUIRED", ErrorCategory.VALIDATION,
+			"A published perk goes with a solution of its organization, or shows on a program's page."),
+
 	INCOMPLETE("PERK_INCOMPLETE", ErrorCategory.VALIDATION,
 			"A perk needs what its way of getting it asks for: its link or its code, and codes in its list before it is published."),
 

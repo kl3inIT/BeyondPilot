@@ -70,6 +70,7 @@ class PerkTest {
 		String founder = owner("founder@platypus-perks.test", "Platypus Cloud");
 		UUID organization = organizationOf(founder);
 		Map<String, Object> credits = perk("  $1,000  Platypus credits ");
+		credits.put("solutionIds", List.of(solution(founder, "Platypus Desk").id()));
 
 		// Only an operator writes for an organization; a perk's title is one line and its addresses are https ones.
 		assertProblem(post(founder, ADMIN, admin(organization, credits)), 403, "IDENTITY_OPERATOR_REQUIRED");
@@ -129,6 +130,8 @@ class PerkTest {
 		assertThat(events(id)).containsExactly("perk.create", "perk.update", "perk.publish", "perk.archive");
 
 		UUID spare = idOf(body(post(operator, ADMIN, admin(organization, perk("Platypus spare"))).expectStatus().isCreated()));
+		// With no solution and no program page, a perk would show nowhere: it stays a draft.
+		assertProblem(post(operator, ADMIN + "/" + spare + "/publish", null), 400, "PERK_PAGE_REQUIRED");
 		delete(operator, ADMIN + "/" + spare).expectStatus().isNoContent();
 		assertProblem(get(operator, ADMIN + "/" + spare), 404, "PERK_NOT_FOUND");
 	}
@@ -187,6 +190,7 @@ class PerkTest {
 	void aCodeForMembersIsShownOnlyToATeamThatTakesItAndTheTeamHoldsItOnce() {
 		String partner = owner("founder@kangaroo-perks.test", "Kangaroo Cloud");
 		Map<String, Object> credits = perk("Kangaroo credits");
+		credits.put("solutionIds", List.of(solution(partner, "Kangaroo Desk").id()));
 		credits.put("way", "code");
 		credits.put("url", null);
 		credits.put("code", "KANGAROO-100");
@@ -241,6 +245,7 @@ class PerkTest {
 	void aCodeListGivesEachTeamACodeOfItsOwnUntilTheLastIsTaken() {
 		String partner = owner("founder@bandicoot-perks.test", "Bandicoot Cloud");
 		Map<String, Object> vouchers = perk("Bandicoot vouchers");
+		vouchers.put("solutionIds", List.of(solution(partner, "Bandicoot Desk").id()));
 		vouchers.put("way", "codes");
 		vouchers.put("url", null);
 		String created = body(post(operator, ADMIN, admin(organizationOf(partner), vouchers)).expectStatus().isCreated());
@@ -286,6 +291,7 @@ class PerkTest {
 	void aRequestWaitsForThePartnerWhoseAnswerIsEmailedAndADeclineGivesThePlaceBack() {
 		String partner = owner("founder@quokka-perks.test", "Quokka Consulting");
 		Map<String, Object> assessment = perk("Readiness assessment");
+		assessment.put("solutionIds", List.of(solution(partner, "Quokka Desk").id()));
 		assessment.put("way", "request");
 		assessment.put("url", null);
 		assessment.put("places", 1);
@@ -353,9 +359,37 @@ class PerkTest {
 	}
 
 	@Test
+	void aRequestToAPartnerWithNobodyOnBeyondPilotIsAnsweredByGenAiFund() {
+		// GenAI Fund enters a partner that has no member, as it did for Builder Hub's partners.
+		UUID partner = UUID.fromString(JsonPath.read(body(post(operator, ORGANIZATION + "/admin/organizations",
+				Map.of("name", "Echidna Models", "type", "company", "website", "https://echidna.example.test"))
+			.expectStatus()
+			.isCreated()), "$.organization.id"));
+		UUID desk = idOf(body(post(operator, "/api/solution/admin/solutions",
+				Map.of("organizationId", partner, "name", "Echidna API")).expectStatus().isCreated()));
+		Map<String, Object> waitlist = perk("Echidna API waitlist");
+		waitlist.put("way", "request");
+		waitlist.put("url", null);
+		waitlist.put("solutionIds", List.of(desk));
+		String created = body(post(operator, ADMIN, admin(partner, waitlist)).expectStatus().isCreated());
+		UUID id = idOf(created);
+		post(operator, ADMIN + "/" + id + "/publish", null).expectStatus().isOk();
+
+		String lead = owner("lead@echidna-team.test", "Echidna Team");
+		String sent = body(claim(lead, slugOf(created), Map.of()).expectStatus().isCreated());
+		assertThat(JsonPath.<String>read(sent, "$.state")).isEqualTo("waiting");
+		// Nobody of the partner would read it, so GenAI Fund's operators are told, with the way to its record in Admin.
+		assertThat(mail.latestSubjectTo("operator@genaifund.test"))
+			.isEqualTo("A request for Echidna API waitlist waits for you");
+		assertThat(mail.latestTextTo("operator@genaifund.test")).contains("Echidna Team")
+			.containsPattern("https?://[^/ ]+/admin/solutions/perks/" + id);
+	}
+
+	@Test
 	void aRequestWithoutApprovalIsGrantedAsItIsSentAndOncePerPersonEachMemberGetsTheirOwn() {
 		String partner = owner("founder@numbat-perks.test", "Numbat Plans");
 		Map<String, Object> plan = perk("Numbat personal plan");
+		plan.put("solutionIds", List.of(solution(partner, "Numbat Desk").id()));
 		plan.put("way", "request");
 		plan.put("url", null);
 		plan.put("requireApproval", false);
@@ -379,9 +413,12 @@ class PerkTest {
 	@Test
 	void aPerkShowsBetweenItsDatesAndAnEndedOneIsListedOnlyWhenAsked() {
 		String partner = owner("founder@dingo-perks.test", "Dingo Cloud");
+		List<UUID> desk = List.of(solution(partner, "Dingo Desk").id());
 		Map<String, Object> ended = perk("Dingo summer credits");
+		ended.put("solutionIds", desk);
 		ended.put("endsAt", Instant.now().minus(Duration.ofDays(1)).toString());
 		Map<String, Object> coming = perk("Dingo winter credits");
+		coming.put("solutionIds", desk);
 		coming.put("startsAt", Instant.now().plus(Duration.ofDays(1)).toString());
 		Map<String, Object> backwards = perk("Dingo backwards credits");
 		backwards.put("startsAt", Instant.now().plus(Duration.ofDays(2)).toString());

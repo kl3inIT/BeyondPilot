@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.identity;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import ai.genaifund.beyondpilot.identity.dto.ContactRequest;
 import ai.genaifund.beyondpilot.identity.dto.MeResponse;
 import ai.genaifund.beyondpilot.identity.persistence.Account;
 import ai.genaifund.beyondpilot.identity.persistence.AccountRepository;
+import ai.genaifund.beyondpilot.identity.persistence.AccountStatus;
 import ai.genaifund.beyondpilot.identity.persistence.ExternalIdentity;
 import ai.genaifund.beyondpilot.identity.persistence.ExternalIdentityRepository;
 import ai.genaifund.beyondpilot.identity.persistence.PlatformRole;
@@ -187,6 +189,15 @@ public class IdentityService {
 		return accounts.findAllById(accountIds)
 			.stream()
 			.collect(Collectors.toMap(Account::getId, IdentityService::person));
+	}
+
+	/** The operators of GenAI Fund whose accounts are active, for a module that asks GenAI Fund to act. */
+	@Transactional(readOnly = true)
+	public List<Person> operators() {
+		return accounts.findByPlatformRoleAndStatus(PlatformRole.OPERATOR, AccountStatus.ACTIVE)
+			.stream()
+			.map(IdentityService::person)
+			.toList();
 	}
 
 	private MeResponse me(Account account) {

@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.identity.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,8 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 	Optional<Account> findForUpdate(UUID id);
 
 	/** Addresses are one account whatever their letter case. */
+	List<Account> findByPlatformRoleAndStatus(PlatformRole platformRole, AccountStatus status);
+
 	@Query("select a from Account a where lower(a.email) = lower(:email)")
 	Optional<Account> findByEmail(String email);
 
