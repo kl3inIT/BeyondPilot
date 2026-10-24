@@ -4834,12 +4834,7 @@
       "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
-      "backing": "GenAI Fund xác nhận:",
-      "tabs": {
-        "label": "Danh mục",
-        "solutions": "Giải pháp",
-        "perks": "Perk"
-      }
+      "backing": "GenAI Fund xác nhận:"
     },
     "perks": {
       "label": "Perk:",
@@ -4876,6 +4871,11 @@
       "maturity": {
         "label": "Giai đoạn",
         "all": "Mọi giai đoạn"
+      },
+      "perks": {
+        "label": "Perk",
+        "all": "Mọi perk",
+        "active": "Có perk đang mở"
       },
       "status": {
         "label": "Trạng thái",
@@ -5393,17 +5393,6 @@
       "members": "Các đội trên BeyondPilot",
       "applicants": "Đội đăng ký {program}",
       "shortlisted": "Đội lọt vòng {program}"
-    },
-    "catalogue": {
-      "metaTitle": "Perk · BeyondPilot",
-      "lead": "Tín dụng, giảm giá và dịch vụ từ đối tác cho các đội trên BeyondPilot và các đội trong chương trình của GenAI Fund.",
-      "count": "{count} perk",
-      "showEnded": "Hiện perk đã kết thúc",
-      "hideEnded": "Ẩn perk đã kết thúc",
-      "empty": {
-        "title": "Chưa có perk",
-        "description": "Perk của đối tác dành cho các đội sẽ hiện ở đây khi được đăng."
-      }
     },
     "page": {
       "by": "Của {name}",

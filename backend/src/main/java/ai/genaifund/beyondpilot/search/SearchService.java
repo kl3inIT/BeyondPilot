@@ -58,10 +58,11 @@ public class SearchService {
 		SearchRequest criteria = query.equals(request.q()) ? request
 				: new SearchRequest(query, request.kind(), request.page(), request.size(), request.industry(),
 						request.focusArea(), request.maturity(), request.role(), request.type(), request.phase(),
-						request.sort(), request.proposalStatus());
+						request.sort(), request.proposalStatus(), request.perks());
 		SearchRequest acrossKinds = kind == null ? criteria
 				: new SearchRequest(query, null, request.page(), request.size(), request.industry(), request.focusArea(),
-						request.maturity(), request.role(), request.type(), request.phase(), request.sort(), request.proposalStatus());
+						request.maturity(), request.role(), request.type(), request.phase(), request.sort(), request.proposalStatus(),
+						request.perks());
 		Map<String, Long> counts = index.counts(acrossKinds, meaning, true);
 		if (kind != null) {
 			counts.put(kind, index.counts(criteria, meaning, true).getOrDefault(kind, 0L));
