@@ -168,6 +168,8 @@ class SearchDirectoriesTest {
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("claims reader " + word) == 1);
 		assertThat(JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].perks")).isEmpty();
+		assertThat(withPerks("claims%20reader%20" + word)).isZero();
+		String slug = JsonPath.read(search("claims%20reader%20" + word), "$.items[0].slug");
 
 		Map<String, Object> perk = new HashMap<>();
 		perk.put("title", "Numbat credits " + word);
@@ -200,6 +202,16 @@ class SearchDirectoriesTest {
 		assertThat(JsonPath.<List<String>>read(found, "$.items[0].perks[*].value")).containsExactly("$1,000");
 		assertThat(JsonPath.<List<Boolean>>read(found, "$.items[0].perks[*].fromGenAiFund")).containsExactly(true);
 
+		// The perks filter keeps it, in search and in the directory, which reads the solutions the perks go with.
+		assertThat(withPerks("claims%20reader%20" + word)).isOne();
+		assertThat(solutionsWithPerks()).contains(slug);
+		String listed = body(client.get().uri("/api/solution/solutions?slug=" + slug).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].name")).containsExactly("Claims Reader " + word);
+		assertThat(JsonPath.<List<Object>>read(
+				body(client.get().uri("/api/solution/solutions?slug=no-such-" + word).exchange().expectStatus().isOk()),
+				"$.items"))
+			.isEmpty();
+
 		// A change to the perk reaches the card of every solution it goes with, and an archived one leaves it.
 		perk.put("value", "$2,000");
 		put(operator, "/api/perk/admin/perks/" + perkId,
@@ -215,6 +227,18 @@ class SearchDirectoriesTest {
 		post(operator, "/api/perk/admin/perks/" + perkId + "/archive", null);
 		await().atMost(WAIT)
 			.until(() -> JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].perks").isEmpty());
+		assertThat(withPerks("claims%20reader%20" + word)).isZero();
+		assertThat(solutionsWithPerks()).doesNotContain(slug);
+	}
+
+	/** How many solutions the query finds that go with an open perk. */
+	private long withPerks(String query) {
+		return JsonPath.<Number>read(search(query + "&kind=solution&perks=true"), "$.total").longValue();
+	}
+
+	private List<String> solutionsWithPerks() {
+		return JsonPath.read(body(client.get().uri("/api/perk/solutions/with-perks").exchange().expectStatus().isOk()),
+				"$");
 	}
 
 	/** The perk's form with the version a read of it answered. */

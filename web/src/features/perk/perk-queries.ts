@@ -9,9 +9,9 @@ import {
   listAdminPerks,
   listMyPerkClaims,
   listMyPerks,
-  listPerks,
   listProgramPerks,
   listSolutionPerks,
+  listSolutionsWithPerks,
   listTeamClaims,
   type OwnPerk,
   type Perk,
@@ -32,12 +32,9 @@ function absent(error: unknown): null {
   throw error;
 }
 
-/**
- * The catalogue. A visitor reads it too; the caller's session is sent so each card says whether their
- * team may get the perk. Server only.
- */
-export async function readPerks(ended: boolean): Promise<PerkCard[]> {
-  const { data } = await listPerks({ ...(await sessionRequest()), query: { ended } });
+/** The addresses of the listed solutions that go with an open perk, for the directory's perks filter. */
+export async function readSolutionsWithPerks(): Promise<string[]> {
+  const { data } = await listSolutionsWithPerks({ cache: "no-store" });
   return data;
 }
 

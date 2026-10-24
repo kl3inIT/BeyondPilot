@@ -88,10 +88,19 @@ public class SolutionDirectory {
 			}
 			organizationId = organization.get().id();
 		}
+		Collection<UUID> among = null;
+		if (request.slug() != null) {
+			among = idsAt(request.slug()).values();
+			if (among.isEmpty()) {
+				// Addresses no solution has select nothing.
+				return new PublicSolutionListResponse(List.of(), page, size, 0);
+			}
+		}
 		boolean opening = text == null && request.industry() == null && request.focusArea() == null
-				&& request.maturity() == null && organizationId == null && OPENING_SORT.equals(request.sort());
+				&& request.maturity() == null && organizationId == null && among == null
+				&& OPENING_SORT.equals(request.sort());
 		List<SolutionQueryRepository.Row> rows = solutionList.publicPage(text, request.industry(),
-				request.focusArea(), request.maturity(), organizationId, request.sort(), opening, size,
+				request.focusArea(), request.maturity(), organizationId, among, request.sort(), opening, size,
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.activeNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
@@ -102,7 +111,7 @@ public class SolutionDirectory {
 					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments(),
 					row.featuredAt() != null);
 		}).toList(), page, size, solutionList.publicCount(text, request.industry(), request.focusArea(),
-				request.maturity(), organizationId));
+				request.maturity(), organizationId, among));
 	}
 
 	/**

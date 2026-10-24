@@ -102,6 +102,14 @@ class PerksController {
 		return catalog.ofSolutions(slugs);
 	}
 
+	@GetMapping(path = "/solutions/with-perks", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listSolutionsWithPerks",
+			summary = "The addresses of the listed solutions that go with an open perk, for the directory's perks filter")
+	@ApiResponse(responseCode = "200", description = "The solutions' addresses.")
+	List<String> withPerks() {
+		return catalog.solutionsWithPerks();
+	}
+
 	@GetMapping(path = "/programs/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listProgramPerks",
 			summary = "The perks a program's page shows: for its teams, and those an operator added there")

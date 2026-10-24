@@ -8,7 +8,6 @@ import { ListFooter } from "@/components/composites/list-footer";
 import type { PublicSolutionList, SolutionPerkLine } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { DirectoryTabs } from "./directory-tabs";
 import { SolutionCard } from "./solution-card";
 import { solutionsSearch, type SolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
@@ -33,7 +32,8 @@ function SolutionsPage({ solutions, perks, search }: SolutionsPageProps) {
     search.q.trim() !== "" ||
     search.industry !== null ||
     search.focusArea !== null ||
-    search.maturity !== null;
+    search.maturity !== null ||
+    search.perks !== null;
   const shown = solutions.items.length;
 
   return (
@@ -44,7 +44,6 @@ function SolutionsPage({ solutions, perks, search }: SolutionsPageProps) {
         </h1>
         <p className="max-w-180 text-base text-muted-foreground md:text-lg">{t("lead")}</p>
       </header>
-      <DirectoryTabs current="solutions" />
       <SolutionsToolbar
         list="directory"
         count={shown > 0 ? t("showing", { shown, total: solutions.total }) : null}

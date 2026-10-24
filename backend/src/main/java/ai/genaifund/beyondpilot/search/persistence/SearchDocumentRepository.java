@@ -57,6 +57,7 @@ public class SearchDocumentRepository {
 			           where jsonb_exists(d.facets -> 'industries', industry)))
 			      and (cast(:focusArea as text) is null or jsonb_exists(d.facets -> 'focusAreas', :focusArea))
 			      and (cast(:maturity as text) is null or d.facets ->> 'maturity' = :maturity)
+			      and (cast(:perks as boolean) is not true or (d.kind = 'solution' and d.facets -> 'perks' <> '[]'::jsonb))
 			      and (cast(:role as text) is null or jsonb_exists(d.facets -> 'roles', :role))
 			      and (cast(:type as text) is null or d.facets ->> 'type' = :type)
 			      and (cast(:phase as text) is null or (d.kind = 'program' and
@@ -471,7 +472,8 @@ public class SearchDocumentRepository {
 	private static String matches(SearchRequest request) {
 		boolean scoped = request.kind() != null || (request.industry() != null && !request.industry().isEmpty())
 				|| request.focusArea() != null || request.maturity() != null || request.role() != null
-				|| request.type() != null || request.phase() != null || request.proposalStatus() != null;
+				|| request.type() != null || request.phase() != null || request.proposalStatus() != null
+				|| Boolean.TRUE.equals(request.perks());
 		// A scoped exact pool cannot lose eligible items to the global HNSW graph's candidate limit.
 		return MATCHES.formatted(terms(request.q()), scoped ? "materialized" : "not materialized");
 	}
@@ -551,6 +553,7 @@ public class SearchDocumentRepository {
 			.param("type", request.type(), Types.VARCHAR)
 			.param("phase", request.phase(), Types.VARCHAR)
 			.param("proposalStatus", request.proposalStatus(), Types.VARCHAR)
+			.param("perks", request.perks(), Types.BOOLEAN)
 			.param("similarity", TITLE_SIMILARITY)
 			.param("headline", "StartSel=\"" + MARK_START + "\", StopSel=\"" + MARK_END + "\", HighlightAll=true")
 			.param("fusionK", FUSION_K);

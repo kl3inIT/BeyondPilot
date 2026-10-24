@@ -49,7 +49,7 @@ function TeamPerksPage({ mine, counts, claims, perks }: TeamPerksPageProps) {
         id="perks-got"
         title={t("got.title")}
         action={
-          <Button prominence="secondary" href={siteRoutes.perks}>
+          <Button prominence="secondary" href={`${siteRoutes.solutions}?perks=active`}>
             {t("got.browse")}
           </Button>
         }
