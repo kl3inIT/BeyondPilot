@@ -548,7 +548,9 @@
     "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
     "USECASE_NOT_SUBMITTABLE": "Only a draft, or one GenAI Fund sent back, can be sent for review.",
     "USECASE_NOT_CHANGED": "Change the use case before sending it again.",
-    "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
+    "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review can move back to Draft.",
+    "USECASE_CANNOT_MAKE_PRIVATE": "Only a public use case can be made private.",
+    "USECASE_CANNOT_MAKE_PUBLIC": "Only a private use case that is still open can be made public. One never approved is sent for review.",
     "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
@@ -1433,14 +1435,16 @@
         "use_case": {
           "create": "Created a use case",
           "submit": "Sent a use case for review",
-          "draft": "Moved a use case back to Draft",
+          "draft": "Took a use case back from review",
+          "make_private": "Made a use case private",
+          "make_public": "Made a use case public again",
           "approve": "Approved a use case",
           "send_back": "Sent a use case back",
           "feature": "Featured a use case",
           "unfeature": "Stopped featuring a use case",
           "set_programs": "Set the programs of a use case",
           "update": "Changed a private use case",
-          "publish": "Published a private use case",
+          "publish": "Published a use case",
           "export": "Downloaded the use cases"
         },
         "email": {
@@ -1618,14 +1622,16 @@
         "use_case": {
           "create": "Created the use case <resource></resource>",
           "submit": "Sent the use case <resource></resource> for review",
-          "draft": "Moved the use case <resource></resource> back to Draft",
+          "draft": "Took the use case <resource></resource> back from review",
+          "make_private": "Made the use case <resource></resource> private",
+          "make_public": "Made the use case <resource></resource> public again",
           "approve": "Approved the use case <resource></resource>",
           "send_back": "Sent the use case <resource></resource> back",
           "feature": "Featured the use case <resource></resource>",
           "unfeature": "Stopped featuring the use case <resource></resource>",
           "set_programs": "Set the programs of the use case <resource></resource>",
           "update": "Changed the private use case <resource></resource>",
-          "publish": "Published the private use case <resource></resource>",
+          "publish": "Published the use case <resource></resource>",
           "export": "Downloaded the use cases"
         },
         "email": {
@@ -2212,15 +2218,17 @@
         }
       },
       "status": {
-        "draft": "Draft",
+        "draft": "Private · not approved yet",
         "in_review": "In review",
         "needs_changes": "Needs changes",
-        "approved": "Published",
+        "approved": "Public",
+        "private": "Private · was public",
         "closed": "Closed"
       },
       "note": {
         "draft": "Only {organization} can see it",
         "approved": "Visible in the directory",
+        "private": "Hidden from the public",
         "closed": "Locked, nobody can change it"
       },
       "columns": {
@@ -2249,8 +2257,8 @@
         "thisOrganization": "the organization",
         "publishSubmit": "Publish use case",
         "review": {
-          "title": "Review and publish",
-          "lead": "Publishing makes this use case visible immediately."
+          "title": "Review and finish",
+          "lead": "Save it as private so the organization can look at it first, or publish it at once."
         },
         "publishNote": "Publishing makes this use case visible immediately as an opportunity from {organization}.",
         "cancel": "Cancel",
@@ -2280,7 +2288,9 @@
           "label": "Days a sent proposal can be edited",
           "hint": "From 0 to 90 days after a provider sends a proposal. 0 means a sent proposal cannot be edited. Editing also ends when the use case closes.",
           "invalid": "Enter a whole number of days from 0 to 90."
-        }
+        },
+        "savePrivate": "Save as private",
+        "savedPrivate": "Saved “{title}” as private."
       },
       "untitled": "Untitled use case",
       "actions": {
@@ -2344,6 +2354,10 @@
             "draft": {
               "title": "Draft",
               "meta": "Waiting for {organization} to send it for review."
+            },
+            "private": {
+              "title": "Private",
+              "meta": "Hidden from the public. {organization} or GenAI Fund can make it public again."
             }
           },
           "sentBackMeta": "{date}, by {name} · “{note}”"
@@ -2355,6 +2369,22 @@
         "viewDetails": "View details",
         "backToReview": "Back to review",
         "proposalEditDays": "{days, plural, =0 {Sent proposals cannot be edited.} one {Sent proposals can be edited for # day after sending.} other {Sent proposals can be edited for # days after sending.}}"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "makePrivate": "Make private",
+        "makePublic": "Make public",
+        "publish": "Publish",
+        "lead": {
+          "approved": "Public. Everyone sees it in the list and in search, and providers can send proposals. Making it private hides it; proposals already sent stay saved.",
+          "private": "Private. Only people with access and GenAI Fund can see it. Making it public needs no review, and nobody is emailed.",
+          "draft": "Private and never approved. Publishing makes it public at once, and nobody is emailed.",
+          "needs_changes": "Sent back to {organization}. Publishing makes it public at once, and nobody is emailed."
+        },
+        "done": {
+          "private": "“{name}” is private now.",
+          "public": "“{name}” is public now."
+        }
       }
     },
     "ai": {
@@ -4564,22 +4594,24 @@
       "genaiFund": "GenAI Fund",
       "cancel": "Cancel",
       "summary": {
-        "approved": "{count} published",
+        "approved": "{count} public",
         "in_review": "{count} in review",
         "needs_changes": "{count} needs changes",
-        "draft": "{count, plural, one {# draft} other {# drafts}}",
-        "closed": "{count} closed"
+        "closed": "{count} closed",
+        "private": "{count} private"
       },
       "status": {
-        "draft": "Draft",
+        "draft": "Private",
         "in_review": "In review",
         "needs_changes": "Needs changes",
-        "approved": "Published",
+        "approved": "Public",
+        "private": "Private",
         "closed": "Closed"
       },
       "note": {
         "in_review": "Sent {date}",
-        "approved": "In the directory · closes {date}",
+        "approved": "Public · closes {date}",
+        "private": "Hidden from the public · make it public any time",
         "needs_changes": "Open it to see what GenAI Fund asked for",
         "draft": "Visible to your organization only",
         "closed": "Closed {date}"
@@ -4600,20 +4632,23 @@
         "edit": "Edit use case",
         "view": "Open use case",
         "pullBack": "Pull back to draft",
-        "moveToDraft": "Move back to Draft"
+        "makePrivate": "Make private",
+        "makePublic": "Make public"
       },
-      "editPublished": {
-        "title": "Edit a published use case?",
-        "description": "The use case leaves the directory until GenAI Fund approves your changes.",
-        "confirm": "Edit use case"
+      "makePrivate": {
+        "title": "Make “{name}” private?",
+        "description": "It disappears from the public list and from search. Providers can no longer send new proposals. Proposals already sent stay saved.",
+        "confirm": "Make private"
       },
-      "moveToDraft": {
-        "title": "Move “{name}” back to Draft?",
-        "description": "It leaves the directory and nobody reviews it until you submit it again.",
-        "confirm": "Move back to Draft"
+      "makePublic": {
+        "title": "Make “{name}” public?",
+        "description": "Everyone sees it in the list and in search, and providers can send proposals again. GenAI Fund approved it before, so there is no new review.",
+        "confirm": "Make public"
       },
       "done": {
-        "draft": "“{name}” is a draft again."
+        "draft": "“{name}” is a draft again.",
+        "private": "“{name}” is private now.",
+        "public": "“{name}” is public now."
       },
       "errors": {
         "REQUEST_INVALID": "Something you wrote is not valid. Check the fields and try again.",
@@ -4623,9 +4658,10 @@
         "brand": "BeyondPilot",
         "untitled": "New use case",
         "saving": "Saving…",
+        "saveAsPrivate": "Save as private",
+        "saveChanges": "Save changes",
         "notSaved": "Not saved",
         "saved": "Saved {time}",
-        "saveAndExit": "Save draft",
         "stepsLabel": "Steps of the use case",
         "yourUseCase": "Your use case",
         "steps": {
@@ -4644,23 +4680,19 @@
             "title": "Budget and timeline"
           },
           "review": {
-            "title": "Review and submit",
-            "lead": "After you submit, GenAI Fund reviews the use case before it is published."
+            "title": "Review and finish",
+            "lead": "Save it as private to keep working or share it. When it is ready, request to publish: GenAI Fund approves a use case once, the first time it goes public."
           }
         },
-        "saveNote": "Only people at {name} can see your draft.",
+        "saveNote": "Your use case is private until GenAI Fund approves it. Only people at {name} can see it.",
         "reload": "Reload",
         "backToList": "Back to use cases",
         "back": "Back",
         "continue": "Continue",
-        "submit": "Send for review",
+        "submit": "Request to publish",
         "sentBack": {
           "title": "GenAI Fund asked for changes",
           "note": "“{note}”"
-        },
-        "editingPublished": {
-          "title": "You are editing a published use case",
-          "description": "Your first change takes it out of the directory until GenAI Fund approves it again."
         },
         "allRequired": "All fields are required except Current solutions and Attachments.",
         "title": "Use case title",
@@ -4716,7 +4748,17 @@
         },
         "confirm": "I confirm this information is accurate and can be shown publicly.",
         "confirmRequired": "Confirm the information before you submit.",
-        "unchanged": "Change the use case before sending it again: GenAI Fund asked for changes."
+        "unchanged": "Change the use case before sending it again: GenAI Fund asked for changes.",
+        "editingApproved": {
+          "approved": {
+            "title": "This use case is public",
+            "description": "Every change you save is live at once. GenAI Fund does not review it again."
+          },
+          "private": {
+            "title": "This use case is private",
+            "description": "Every change you save is kept. Make it public from the list when you are ready, with no new review."
+          }
+        }
       },
       "review": {
         "edit": "Edit",

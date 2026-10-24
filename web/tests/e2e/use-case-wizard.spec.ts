@@ -137,19 +137,19 @@ test.describe("an organization's use case, written in steps", () => {
     await expectNoSeriousA11yViolations(page);
 
     // Leaving saves what waits, and the list of the organization's use cases opens.
-    await page.getByRole("button", { name: "Save draft" }).click();
+    await page.getByRole("button", { name: "Save as private" }).click();
     await expect(page).toHaveURL(listPath);
 
     // Opened again, the draft is read from the backend and goes on to its last step.
     await page.goto(wizardPath);
     await expect(page.getByLabel("Use case title")).toHaveValue("Invoice matching");
-    await openStep(page, isMobile, "Review and submit");
-    await expect(heading(page)).toHaveText("Review and submit");
+    await openStep(page, isMobile, "Review and finish");
+    await expect(heading(page)).toHaveText("Review and finish");
     await expect(page.getByText("1 requirement: 1 required, 0 optional")).toBeVisible();
     await expect(
       page.getByText("Finance matches invoices to purchase orders by hand."),
     ).toBeVisible();
-    const submit = page.getByRole("button", { name: "Send for review" });
+    const submit = page.getByRole("button", { name: "Request to publish" });
     await expect(submit).toBeDisabled();
     await page
       .getByRole("checkbox", {
@@ -196,7 +196,7 @@ test.describe("an organization's use case, written in steps", () => {
     await expect(open).toBeFocused();
 
     // The review step names the same files, and the PDF opens there too.
-    await openStep(page, isMobile, "Review and submit");
+    await openStep(page, isMobile, "Review and finish");
     await page.getByRole("button", { name: `Open ${attachedPdf.fileName}` }).click();
     await expect(page.getByRole("dialog", { name: attachedPdf.fileName })).toBeVisible();
     await expectNoSeriousA11yViolations(page);

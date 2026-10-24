@@ -147,6 +147,34 @@ class AdminUseCasesController {
 		return useCases.sendBack(actor, id, request);
 	}
 
+	@PostMapping(path = "/use-cases/{id}/make-private", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "makeAdminUseCasePrivate",
+			summary = "Hide a public use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The use case is now private.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The use case is not public.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminUseCaseResponse makePrivate(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.makePrivate(actor, id);
+	}
+
+	@PostMapping(path = "/use-cases/{id}/make-public", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "makeAdminUseCasePublic",
+			summary = "Make a use case public at once",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The use case is now public.")
+	@ApiResponse(responseCode = "400", description = "The use case lacks a part or is closed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The use case is in review or closed or public.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminUseCaseResponse makePublic(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.makePublic(actor, id);
+	}
+
 	@PutMapping(path = "/use-cases/{id}/programs", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setAdminUseCasePrograms", summary = "Set the programs a use case belongs to",

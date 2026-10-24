@@ -10,6 +10,7 @@ type ReviewState =
   | "in_review"
   | "needs_changes"
   | "approved"
+  | "private"
   | "active"
   | "rejected"
   | "suspended"
@@ -21,6 +22,7 @@ const tones = {
   in_review: "warning",
   needs_changes: "warning",
   approved: "success",
+  private: "info",
   active: "success",
   rejected: "destructive",
   suspended: "destructive",

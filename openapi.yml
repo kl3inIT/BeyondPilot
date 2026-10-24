@@ -1072,6 +1072,8 @@ paths:
           - use_case.create
           - use_case.submit
           - use_case.draft
+          - use_case.make_private
+          - use_case.make_public
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -1246,6 +1248,8 @@ paths:
             - use_case.create
             - use_case.submit
             - use_case.draft
+            - use_case.make_private
+            - use_case.make_public
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -1989,6 +1993,8 @@ paths:
           - use_case.create
           - use_case.submit
           - use_case.draft
+          - use_case.make_private
+          - use_case.make_public
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -2163,6 +2169,8 @@ paths:
             - use_case.create
             - use_case.submit
             - use_case.draft
+            - use_case.make_private
+            - use_case.make_public
             - use_case.approve
             - use_case.send_back
             - use_case.feature
@@ -14700,8 +14708,9 @@ paths:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
-          pattern: draft|in_review|needs_changes|approved|closed
+          pattern: draft|in_review|needs_changes|approved|private|closed
       - description: Only use cases of this organization.
         in: query
         name: organizationId
@@ -14851,8 +14860,9 @@ paths:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
-          pattern: draft|in_review|needs_changes|approved|closed
+          pattern: draft|in_review|needs_changes|approved|private|closed
       - description: Only use cases of this organization.
         in: query
         name: organizationId
@@ -15154,6 +15164,104 @@ paths:
       - session: []
       summary: "Feature a use case: it comes first in the opening view of the public\
         \ list"
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/make-private:
+    post:
+      operationId: makeAdminUseCasePrivate
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: The use case is now private.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not public.
+      security:
+      - session: []
+      summary: Hide a public use case
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/make-public:
+    post:
+      operationId: makeAdminUseCasePublic
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUseCase"
+          description: The use case is now public.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case lacks a part or is closed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is in review or closed or public.
+      security:
+      - session: []
+      summary: Make a use case public at once
       tags:
       - Use case administration
   /api/usecase/admin/use-cases/{id}/programs:
@@ -15552,11 +15660,102 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The use case is neither in review nor published.
+          description: The use case is not in review.
       security:
       - session: []
-      summary: "Take a use case out of review, or out of the directory, back to a\
-        \ draft"
+      summary: Take a use case out of review back to a draft
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/make-private:
+    post:
+      operationId: makeMyUseCasePrivate
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: The use case is now private.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,             that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not public.
+      security:
+      - session: []
+      summary: Hide a public use case
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/make-public:
+    post:
+      operationId: makeMyUseCasePublic
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyUseCase"
+          description: The use case is public again.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller is not a member of an organization, not taken down,             that publishes use cases."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization has no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The use case is not private or is closed.
+      security:
+      - session: []
+      summary: Make a private use case public again
       tags:
       - My organization's use cases
   /api/usecase/mine/{id}/submit:
@@ -16724,6 +16923,7 @@ components:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
         submittedAt:
           type:
@@ -16844,6 +17044,7 @@ components:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
         title:
           type:
@@ -17763,6 +17964,8 @@ components:
           - use_case.create
           - use_case.submit
           - use_case.draft
+          - use_case.make_private
+          - use_case.make_public
           - use_case.approve
           - use_case.send_back
           - use_case.feature
@@ -22680,6 +22883,7 @@ components:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
         submittedAt:
           type:
@@ -22757,6 +22961,7 @@ components:
           - in_review
           - needs_changes
           - approved
+          - private
           - closed
         submittedAt:
           type:

@@ -15,7 +15,9 @@ export function inBatches(ids: string[]): string[][] {
  * published, and nothing before that, when it cannot have received any.
  */
 export function proposalsShown(status: string, received: number | undefined): number | null {
-  return status === "approved" || status === "closed" ? (received ?? 0) : null;
+  return status === "approved" || status === "private" || status === "closed"
+    ? (received ?? 0)
+    : null;
 }
 
 /** Where the PDF of a proposal a use case received is read; only members of the posting organization may. */

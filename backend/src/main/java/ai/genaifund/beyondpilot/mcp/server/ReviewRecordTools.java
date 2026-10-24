@@ -137,7 +137,7 @@ class ReviewRecordTools {
 		properties.put("status", Map.of("type", "string", "description", "Only records of this status; leave it out "
 				+ "for every status. The values each area takes: organizations: active, claimed, suspended, merged. "
 				+ "solutions: in_review, needs_changes, approved, rejected, suspended. talent: in_review, "
-				+ "needs_changes, approved, suspended. use_cases: draft, in_review, needs_changes, approved, closed. "
+				+ "needs_changes, approved, suspended. use_cases: draft, in_review, needs_changes, approved, private, closed. "
 				+ "perks: draft, published, archived."));
 		properties.put("q", Map.of("type", "string", "description", "Only records whose name contains this."));
 		properties.put("page", Map.of("type", "integer", "minimum", 1, "description", "The page, from 1."));
@@ -382,7 +382,7 @@ class ReviewRecordTools {
 				List.of("active", "claimed", "suspended", "merged"));
 		statuses.put("solutions", List.of("in_review", "needs_changes", "approved", "rejected", "suspended"));
 		statuses.put("talent", List.of("in_review", "needs_changes", "approved", "suspended"));
-		statuses.put("use_cases", List.of("draft", "in_review", "needs_changes", "approved", "closed"));
+		statuses.put("use_cases", List.of("draft", "in_review", "needs_changes", "approved", "private", "closed"));
 		statuses.put("perks", List.of("draft", "published", "archived"));
 		return statuses;
 	}

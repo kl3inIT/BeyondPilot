@@ -15,7 +15,7 @@ public record AdminUseCaseListRequest(
 		@Parameter(description = "Use cases whose title or organization name contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
 		@Parameter(description = "Only use cases in this status, as a reader sees it now.",
-				schema = @Schema(allowableValues = { "draft", "in_review", "needs_changes", "approved",
+				schema = @Schema(allowableValues = { "draft", "in_review", "needs_changes", "approved", "private",
 						"closed" })) @Pattern(regexp = UseCaseCodes.STATUS) @Nullable String status,
 		@Parameter(description = "Only use cases of this organization.") @Nullable UUID organizationId,
 		@Parameter(description = "Only use cases featured when true, only those not featured when false.") @Nullable Boolean featured,

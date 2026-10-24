@@ -24,6 +24,7 @@ import { siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
+import { AdminUseCaseVisibility } from "./admin-use-case-visibility";
 import {
   adminUseCaseSortKeys,
   adminUseCasesSearch,
@@ -72,7 +73,9 @@ function AdminUseCasesPage({ useCases, search }: AdminUseCasesPageProps) {
             <span className="truncate text-muted-foreground">
               {t("note.draft", { organization: useCase.organization.name })}
             </span>
-          ) : useCase.status === "approved" || useCase.status === "closed" ? (
+          ) : useCase.status === "approved" ||
+            useCase.status === "private" ||
+            useCase.status === "closed" ? (
             <span className="truncate text-muted-foreground">{t(`note.${useCase.status}`)}</span>
           ) : null}
         </div>
@@ -103,6 +106,17 @@ function AdminUseCasesPage({ useCases, search }: AdminUseCasesPageProps) {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            {(useCase.status === "approved" ||
+              useCase.status === "private" ||
+              useCase.status === "draft" ||
+              useCase.status === "needs_changes") && (
+              <AdminUseCaseVisibility
+                id={useCase.id}
+                title={useCase.title ?? t("untitled")}
+                status={useCase.status}
+                appearance="item"
+              />
+            )}
             <AdminUseCaseFeature
               id={useCase.id}
               title={useCase.title ?? t("untitled")}

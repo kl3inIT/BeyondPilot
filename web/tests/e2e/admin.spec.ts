@@ -320,7 +320,7 @@ test.describe("admin", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create a use case");
     await expect(page.getByRole("navigation", { name: "Steps of the use case" })).toContainText(
-      "Review and publish",
+      "Review and finish",
     );
     await expect(page.getByText("Send for review", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Save draft", { exact: true })).toHaveCount(0);
@@ -365,7 +365,7 @@ test.describe("admin", () => {
     await page.getByLabel("Proposals close").fill(closes);
     await page.getByRole("button", { name: "Continue" }).click();
 
-    await expect(page.getByRole("heading", { level: 2 })).toHaveText("Review and publish");
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText("Review and finish");
     await expect(
       page.getByText("Publishing makes this use case visible immediately."),
     ).toBeVisible();

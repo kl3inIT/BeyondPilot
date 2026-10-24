@@ -238,6 +238,12 @@ public enum AuditAction {
 
 	USE_CASE_DRAFT("use_case.draft", "organization", "from"),
 
+	/** A public use case was made private, by its organization or by an operator. */
+	USE_CASE_MAKE_PRIVATE("use_case.make_private", "organization"),
+
+	/** A private use case was made public again, with no new review. */
+	USE_CASE_MAKE_PUBLIC("use_case.make_public", "organization"),
+
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
@@ -253,7 +259,7 @@ public enum AuditAction {
 	/** An operator changed a private draft GenAI Fund keeps for an organization. */
 	USE_CASE_UPDATE("use_case.update", "organization"),
 
-	/** An operator published a private draft GenAI Fund kept for an organization. */
+	/** An operator published a private draft, or a draft or a use case sent back, with no review. */
 	USE_CASE_PUBLISH("use_case.publish", "organization"),
 
 	/** An operator downloaded the use cases as a spreadsheet. {@code count} is how many the download holds. */

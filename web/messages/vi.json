@@ -548,7 +548,9 @@
     "USECASE_INCOMPLETE": "Hãy điền đủ mọi mục trước khi gửi use case.",
     "USECASE_NOT_SUBMITTABLE": "Chỉ bản nháp, hoặc use case GenAI Fund gửi lại, mới gửi duyệt được.",
     "USECASE_NOT_CHANGED": "Hãy chỉnh sửa use case trước khi gửi lại.",
-    "USECASE_CANNOT_MOVE_TO_DRAFT": "Chỉ use case đang duyệt hoặc đã đăng mới chuyển về bản nháp được.",
+    "USECASE_CANNOT_MOVE_TO_DRAFT": "Chỉ use case đang duyệt mới chuyển về bản nháp được.",
+    "USECASE_CANNOT_MAKE_PRIVATE": "Chỉ use case đang công khai mới chuyển sang riêng tư được.",
+    "USECASE_CANNOT_MAKE_PUBLIC": "Chỉ use case riêng tư còn hạn mới chuyển sang công khai được. Use case chưa từng được duyệt thì gửi duyệt.",
     "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
@@ -1433,14 +1435,16 @@
         "use_case": {
           "create": "Tạo một use case",
           "submit": "Gửi một use case đi duyệt",
-          "draft": "Chuyển một use case về bản nháp",
+          "draft": "Rút một use case khỏi hàng duyệt",
+          "make_private": "Chuyển một use case sang riêng tư",
+          "make_public": "Chuyển một use case sang công khai lại",
           "approve": "Duyệt một use case",
           "send_back": "Gửi lại một use case",
           "feature": "Đặt một use case nổi bật",
           "unfeature": "Bỏ nổi bật một use case",
           "set_programs": "Đặt chương trình cho một use case",
           "update": "Sửa một use case riêng tư",
-          "publish": "Công bố một use case riêng tư",
+          "publish": "Đăng một use case",
           "export": "Tải danh sách use case"
         },
         "email": {
@@ -1618,14 +1622,16 @@
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
           "submit": "Đã gửi use case <resource></resource> đi duyệt",
-          "draft": "Đã chuyển use case <resource></resource> về bản nháp",
+          "draft": "Đã rút use case <resource></resource> khỏi hàng duyệt",
+          "make_private": "Đã chuyển use case <resource></resource> sang riêng tư",
+          "make_public": "Đã chuyển use case <resource></resource> sang công khai lại",
           "approve": "Đã duyệt use case <resource></resource>",
           "send_back": "Đã gửi lại use case <resource></resource>",
           "feature": "Đã đặt use case <resource></resource> nổi bật",
           "unfeature": "Đã bỏ nổi bật use case <resource></resource>",
           "set_programs": "Đã đặt chương trình cho use case <resource></resource>",
           "update": "Đã sửa use case riêng tư <resource></resource>",
-          "publish": "Đã công bố use case riêng tư <resource></resource>",
+          "publish": "Đã đăng use case <resource></resource>",
           "export": "Tải danh sách use case"
         },
         "email": {
@@ -2212,15 +2218,17 @@
         }
       },
       "status": {
-        "draft": "Bản nháp",
+        "draft": "Riêng tư · chưa duyệt",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "approved": "Đã đăng",
+        "approved": "Công khai",
+        "private": "Riêng tư · từng công khai",
         "closed": "Đã đóng"
       },
       "note": {
         "draft": "Chỉ {organization} xem được",
         "approved": "Hiển thị trong danh mục",
+        "private": "Đang ẩn khỏi công khai",
         "closed": "Bị khóa, không ai sửa được"
       },
       "columns": {
@@ -2249,8 +2257,8 @@
         "thisOrganization": "tổ chức",
         "publishSubmit": "Đăng use case",
         "review": {
-          "title": "Kiểm tra và đăng",
-          "lead": "Khi đăng, use case sẽ hiển thị công khai ngay lập tức."
+          "title": "Xem lại và hoàn tất",
+          "lead": "Lưu ở chế độ riêng tư để tổ chức xem trước, hoặc đăng công khai ngay."
         },
         "publishNote": "Khi đăng, use case sẽ hiển thị ngay dưới dạng cơ hội của {organization}.",
         "cancel": "Hủy",
@@ -2280,7 +2288,9 @@
           "label": "Số ngày được chỉnh sửa đề xuất đã gửi",
           "hint": "Từ 0 đến 90 ngày kể từ khi nhà cung cấp gửi đề xuất. 0 nghĩa là đề xuất đã gửi không thể chỉnh sửa. Việc chỉnh sửa cũng kết thúc khi bài toán đóng.",
           "invalid": "Nhập một số ngày nguyên từ 0 đến 90."
-        }
+        },
+        "savePrivate": "Lưu ở chế độ riêng tư",
+        "savedPrivate": "Đã lưu “{title}” ở chế độ riêng tư."
       },
       "untitled": "Use case chưa đặt tên",
       "actions": {
@@ -2344,6 +2354,10 @@
             "draft": {
               "title": "Bản nháp",
               "meta": "Đang chờ {organization} gửi duyệt."
+            },
+            "private": {
+              "title": "Riêng tư",
+              "meta": "Đang ẩn khỏi công khai. {organization} hoặc GenAI Fund bật công khai lại được."
             }
           },
           "sentBackMeta": "{date}, bởi {name} · “{note}”"
@@ -2355,6 +2369,22 @@
         "viewDetails": "Xem chi tiết",
         "backToReview": "Về trang duyệt",
         "proposalEditDays": "{days, plural, =0 {Đề xuất đã gửi không thể chỉnh sửa.} other {Đề xuất đã gửi có thể được chỉnh sửa trong # ngày sau khi gửi.}}"
+      },
+      "visibility": {
+        "title": "Hiển thị",
+        "makePrivate": "Chuyển sang riêng tư",
+        "makePublic": "Chuyển sang công khai",
+        "publish": "Đăng công khai",
+        "lead": {
+          "approved": "Công khai. Mọi người thấy use case trong danh sách và tìm kiếm, nhà cung cấp gửi được proposal. Chuyển sang riêng tư sẽ ẩn nó; proposal đã gửi vẫn được giữ.",
+          "private": "Riêng tư. Chỉ người được cấp quyền và GenAI Fund xem được. Chuyển sang công khai không cần duyệt và không gửi email.",
+          "draft": "Riêng tư và chưa từng được duyệt. Đăng công khai có hiệu lực ngay và không gửi email.",
+          "needs_changes": "Đã trả lại cho {organization}. Đăng công khai có hiệu lực ngay và không gửi email."
+        },
+        "done": {
+          "private": "“{name}” đã chuyển sang riêng tư.",
+          "public": "“{name}” đã chuyển sang công khai."
+        }
       }
     },
     "ai": {
@@ -4564,22 +4594,24 @@
       "genaiFund": "GenAI Fund",
       "cancel": "Hủy",
       "summary": {
-        "approved": "{count} đã đăng",
+        "approved": "{count} công khai",
         "in_review": "{count} đang duyệt",
         "needs_changes": "{count} cần chỉnh sửa",
-        "draft": "{count} bản nháp",
-        "closed": "{count} đã đóng"
+        "closed": "{count} đã đóng",
+        "private": "{count} riêng tư"
       },
       "status": {
-        "draft": "Bản nháp",
+        "draft": "Riêng tư",
         "in_review": "Đang duyệt",
         "needs_changes": "Cần chỉnh sửa",
-        "approved": "Đã đăng",
+        "approved": "Công khai",
+        "private": "Riêng tư",
         "closed": "Đã đóng"
       },
       "note": {
         "in_review": "Đã gửi {date}",
-        "approved": "Có trong danh mục · đóng {date}",
+        "approved": "Công khai · đóng {date}",
+        "private": "Đang ẩn khỏi công khai · bật công khai lại bất cứ lúc nào",
         "needs_changes": "Mở ra để xem GenAI Fund yêu cầu gì",
         "draft": "Chỉ tổ chức của bạn xem được",
         "closed": "Đã đóng {date}"
@@ -4600,20 +4632,23 @@
         "edit": "Sửa use case",
         "view": "Mở use case",
         "pullBack": "Rút về bản nháp",
-        "moveToDraft": "Chuyển về bản nháp"
+        "makePrivate": "Chuyển sang riêng tư",
+        "makePublic": "Chuyển sang công khai"
       },
-      "editPublished": {
-        "title": "Sửa use case đã đăng?",
-        "description": "Use case rời danh mục cho đến khi GenAI Fund duyệt thay đổi của bạn.",
-        "confirm": "Sửa use case"
+      "makePrivate": {
+        "title": "Chuyển “{name}” sang riêng tư?",
+        "description": "Use case biến mất khỏi danh sách công khai và tìm kiếm. Nhà cung cấp không gửi thêm proposal được. Các proposal đã gửi vẫn được giữ.",
+        "confirm": "Chuyển sang riêng tư"
       },
-      "moveToDraft": {
-        "title": "Chuyển “{name}” về bản nháp?",
-        "description": "Use case rời danh mục và không ai duyệt cho đến khi bạn gửi lại.",
-        "confirm": "Chuyển về bản nháp"
+      "makePublic": {
+        "title": "Chuyển “{name}” sang công khai?",
+        "description": "Mọi người thấy use case trong danh sách và tìm kiếm, nhà cung cấp gửi proposal lại được. GenAI Fund đã duyệt trước đó nên không duyệt lại.",
+        "confirm": "Chuyển sang công khai"
       },
       "done": {
-        "draft": "“{name}” đã trở lại bản nháp."
+        "draft": "“{name}” đã trở lại bản nháp.",
+        "private": "“{name}” đã chuyển sang riêng tư.",
+        "public": "“{name}” đã chuyển sang công khai."
       },
       "errors": {
         "REQUEST_INVALID": "Có chỗ bạn nhập chưa hợp lệ. Kiểm tra các trường rồi thử lại.",
@@ -4623,9 +4658,10 @@
         "brand": "BeyondPilot",
         "untitled": "Use case mới",
         "saving": "Đang lưu…",
+        "saveAsPrivate": "Lưu ở chế độ riêng tư",
+        "saveChanges": "Lưu thay đổi",
         "notSaved": "Chưa lưu",
         "saved": "Đã lưu {time}",
-        "saveAndExit": "Lưu nháp",
         "stepsLabel": "Các bước của use case",
         "yourUseCase": "Use case của bạn",
         "steps": {
@@ -4644,23 +4680,19 @@
             "title": "Ngân sách và thời gian"
           },
           "review": {
-            "title": "Xem lại và gửi",
-            "lead": "Sau khi bạn gửi, GenAI Fund duyệt use case trước khi đăng."
+            "title": "Xem lại và hoàn tất",
+            "lead": "Lưu ở chế độ riêng tư để làm tiếp hoặc chia sẻ. Khi sẵn sàng, bấm xin đăng công khai: GenAI Fund chỉ duyệt một lần, lần đầu use case lên công khai."
           }
         },
-        "saveNote": "Chỉ người của {name} xem được bản nháp.",
+        "saveNote": "Use case ở chế độ riêng tư cho đến khi GenAI Fund duyệt. Chỉ người của {name} xem được.",
         "reload": "Tải lại",
         "backToList": "Về danh sách use case",
         "back": "Quay lại",
         "continue": "Tiếp tục",
-        "submit": "Gửi duyệt",
+        "submit": "Xin đăng công khai",
         "sentBack": {
           "title": "GenAI Fund yêu cầu chỉnh sửa",
           "note": "“{note}”"
-        },
-        "editingPublished": {
-          "title": "Bạn đang sửa một use case đã đăng",
-          "description": "Thay đổi đầu tiên đưa nó ra khỏi danh mục cho đến khi GenAI Fund duyệt lại."
         },
         "allRequired": "Mọi trường đều bắt buộc, trừ Giải pháp hiện có và Tệp đính kèm.",
         "title": "Tiêu đề use case",
@@ -4716,7 +4748,17 @@
         },
         "confirm": "Tôi xác nhận thông tin này chính xác và có thể hiển thị công khai.",
         "confirmRequired": "Hãy xác nhận thông tin trước khi gửi.",
-        "unchanged": "Hãy chỉnh sửa use case trước khi gửi lại: GenAI Fund đã yêu cầu thay đổi."
+        "unchanged": "Hãy chỉnh sửa use case trước khi gửi lại: GenAI Fund đã yêu cầu thay đổi.",
+        "editingApproved": {
+          "approved": {
+            "title": "Use case này đang công khai",
+            "description": "Mỗi thay đổi bạn lưu có hiệu lực ngay. GenAI Fund không duyệt lại."
+          },
+          "private": {
+            "title": "Use case này đang riêng tư",
+            "description": "Mỗi thay đổi bạn lưu đều được giữ. Khi sẵn sàng, chuyển sang công khai từ danh sách, không cần duyệt lại."
+          }
+        }
       },
       "review": {
         "edit": "Sửa",
