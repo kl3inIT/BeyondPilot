@@ -31,7 +31,7 @@ public enum UseCaseErrorCode implements ErrorCode {
 			"This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed."),
 
 	INCOMPLETE("USECASE_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Fill in every section before sending the use case for review."),
+			"Fill in every section before sending the use case for review, and keep every section filled in once it is approved."),
 
 	NOT_SUBMITTABLE("USECASE_NOT_SUBMITTABLE", ErrorCategory.CONFLICT,
 			"Only a draft, or a use case GenAI Fund sent back, can be sent for review."),
@@ -40,7 +40,13 @@ public enum UseCaseErrorCode implements ErrorCode {
 			"GenAI Fund asked for changes. Change the use case before sending it again."),
 
 	CANNOT_MOVE_TO_DRAFT("USECASE_CANNOT_MOVE_TO_DRAFT", ErrorCategory.CONFLICT,
-			"Only a use case in review or published can be moved back to a draft."),
+			"Only a use case in review can be taken back to a draft."),
+
+	CANNOT_MAKE_PRIVATE("USECASE_CANNOT_MAKE_PRIVATE", ErrorCategory.CONFLICT,
+			"Only a public use case can be made private."),
+
+	CANNOT_MAKE_PUBLIC("USECASE_CANNOT_MAKE_PUBLIC", ErrorCategory.CONFLICT,
+			"Only a private use case that is still open can be made public. One never approved is sent for review."),
 
 	NOT_AWAITING_REVIEW("USECASE_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"Only a use case in review can be approved, and only one in review or published can be sent back."),

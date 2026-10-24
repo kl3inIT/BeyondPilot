@@ -62,12 +62,11 @@ function Fact({ label, value }: FactProps) {
 }
 
 /**
- * The public brief of one published use case, with how many proposals it received and the actions to
- * send one. `proposals` is null when the count could not be read: the page shows without it.
+ * The public brief of one published use case and the actions to send a proposal. How many proposals
+ * it received is not shown to visitors.
  */
-function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals: number | null }) {
+function UseCasePage({ useCase }: { useCase: PublicUseCase }) {
   const t = useTranslations("UseCases");
-  const p = useTranslations("UseCaseProposal.actions");
   const industryName = useVocabulary("industry");
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
@@ -147,11 +146,10 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
         </div>
       </header>
 
-      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <Fact label={t("budget.label")} value={budget} />
         <Fact label={t("timeline.label")} value={timeline} />
         <Fact label={t(closed ? "detail.closed.label" : "detail.applyBy")} value={deadline} />
-        {proposals !== null && <Fact label={p("proposals")} value={String(proposals)} />}
       </dl>
 
       <div className="flex flex-col gap-8 lg:flex-row lg:items-start xl:gap-12">

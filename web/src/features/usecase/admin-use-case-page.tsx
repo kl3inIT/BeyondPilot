@@ -13,6 +13,7 @@ import { momentText } from "@/i18n/formats";
 import { AdminUseCaseDecision } from "./admin-use-case-decision";
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
 import { AdminUseCaseReview } from "./admin-use-case-review";
+import { AdminUseCaseVisibility } from "./admin-use-case-visibility";
 import { LiveRefresh } from "./live-refresh";
 import { UseCaseTabs } from "./use-case-tabs";
 
@@ -31,6 +32,7 @@ function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
   const statusLabel = useTranslations("Admin.useCases.status");
   const d = useTranslations("Admin.useCases.decision");
   const f = useTranslations("Admin.useCases.feature");
+  const v = useTranslations("Admin.useCases.visibility");
   const format = useFormatter();
   const locale = useLocale();
 
@@ -137,6 +139,30 @@ function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
                     title={title}
                     organization={organization}
                     published={status === "approved"}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {(status === "approved" ||
+            status === "private" ||
+            status === "draft" ||
+            status === "needs_changes") && (
+            <Card size="lg">
+              <CardHeader>
+                <CardTitle>{v("title")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  <p className="text-sm text-muted-foreground">
+                    {v(`lead.${status}`, { organization })}
+                  </p>
+                  <AdminUseCaseVisibility
+                    id={useCase.id}
+                    title={title}
+                    status={status}
+                    appearance="button"
                   />
                 </div>
               </CardContent>

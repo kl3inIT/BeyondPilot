@@ -302,6 +302,77 @@ public class UseCaseAdministration {
 	}
 
 	/**
+	 * Hides a public use case. It leaves the directory and search; its proposals stay saved, and it can be made public
+	 * again at any time. Nobody is emailed.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when there is no such use case, or it is not public
+	 */
+	@Transactional
+	public AdminUseCaseResponse makePrivate(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Instant now = Instant.now();
+		UseCase useCase = locked(id);
+		if (!UseCase.APPROVED.equals(useCase.statusAt(now))) {
+			throw new UseCaseException(UseCaseErrorCode.CANNOT_MAKE_PRIVATE,
+					"Use case " + id + " is " + useCase.statusAt(now));
+		}
+		useCase.makePrivate();
+		useCase.editedBy(operator.accountId());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(id));
+		record(AuditAction.USE_CASE_MAKE_PRIVATE, operator, useCase);
+		return read(actor, useCase, now);
+	}
+
+	/**
+	 * Makes a use case public at once: a private one, a draft or one GenAI Fund sent back. An operator's decision
+	 * needs no review, and nobody is emailed. One in review is approved with {@link #approve} instead.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when there is no such use case, it is in review, closed or public already, it lacks a
+	 * part a public use case needs, or its close date passed
+	 */
+	@Transactional
+	public AdminUseCaseResponse makePublic(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Instant now = Instant.now();
+		UseCase useCase = locked(id);
+		String status = useCase.statusAt(now);
+		if (!List.of(UseCase.PRIVATE, UseCase.DRAFT, UseCase.NEEDS_CHANGES).contains(status)) {
+			throw new UseCaseException(UseCaseErrorCode.CANNOT_MAKE_PUBLIC, "Use case " + id + " is " + status);
+		}
+		if (!useCase.isPublishable()) {
+			throw new UseCaseException(UseCaseErrorCode.INCOMPLETE, "Use case " + id + " lacks a part");
+		}
+		Instant closesAt = useCase.getClosesAt();
+		if (closesAt != null && !closesAt.isAfter(now)) {
+			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + closesAt + " is not after " + now);
+		}
+		if (UseCase.PRIVATE.equals(status)) {
+			useCase.makePublic(now);
+		}
+		else {
+			useCase.publish(now);
+		}
+		useCase.editedBy(operator.accountId());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(id));
+		record(UseCase.PRIVATE.equals(status) ? AuditAction.USE_CASE_MAKE_PUBLIC : AuditAction.USE_CASE_PUBLISH,
+				operator, useCase);
+		return read(actor, useCase, now);
+	}
+
+	private UseCase locked(UUID id) {
+		return useCases.findForUpdate(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+	}
+
+	/** The use case as an operator reads it now. */
+	private AdminUseCaseResponse read(Actor actor, UseCase useCase, Instant now) {
+		Map<UUID, OrganizationName> names = organizations.names(Set.of(useCase.getOrganizationId()));
+		return response(actor, useCase, organization(useCase.getOrganizationId(), names), now);
+	}
+
+	/**
 	 * Sends a use case back with what to change, for a caller that is not the admin screen.
 	 * @see #sendBack(Actor, UUID, SendBackUseCaseRequest)
 	 */

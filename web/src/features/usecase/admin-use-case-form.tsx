@@ -126,6 +126,8 @@ function AdminUseCaseForm() {
   // A refusal no field can say: it stands above the step, and leaves with the step and with the next change.
   const [problem, setProblem] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  /** What the review step sends: the use case public at once, or kept private for its organization. */
+  const mode = useRef<"publish" | "private">("publish");
   const shown = useRef(step);
 
   // A step that opens takes the focus: on its first field in error when it opened for one, on its
@@ -193,7 +195,7 @@ function AdminUseCaseForm() {
     },
     onSubmit: async ({ value }) => {
       setProblem(null);
-      await publish(value);
+      await create(value, mode.current === "publish");
     },
   });
   const organizationId = useStore(form.store, (state) => state.values.organizationId);
@@ -230,11 +232,10 @@ function AdminUseCaseForm() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function publish({
-    organizationId,
-    content: values,
-    proposalEditDays,
-  }: AdminUseCaseValues) {
+  async function create(
+    { organizationId, content: values, proposalEditDays }: AdminUseCaseValues,
+    publishNow: boolean,
+  ) {
     try {
       const amount = (text: string) => (values.budgetToBeDetermined ? null : Number(text));
       await createAdminUseCase({
@@ -264,10 +265,13 @@ function AdminUseCaseForm() {
           closesAt: instantInVietnam(values.closesDay, values.closesTime),
           hideOrganizationName: values.hideOrganizationName,
           proposalEditDays: editDaysOf(proposalEditDays) ?? DEFAULT_EDIT_DAYS,
-          publishNow: true,
+          publishNow,
         },
       });
-      notify.success("Admin.useCases.form.published", { title: values.title.trim() });
+      notify.success(
+        publishNow ? "Admin.useCases.form.published" : "Admin.useCases.form.savedPrivate",
+        { title: values.title.trim() },
+      );
       router.push(siteRoutes.adminUseCases);
     } catch (error) {
       const refusal = failedWith(error, ...refusalCodes);
@@ -297,7 +301,10 @@ function AdminUseCaseForm() {
       className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8"
       onSubmit={(event) => {
         event.preventDefault();
-        if (step === "review") void form.handleSubmit();
+        if (step === "review") {
+          mode.current = "publish";
+          void form.handleSubmit();
+        }
       }}
     >
       <AdminPageHeader title={t("title")} />
@@ -403,11 +410,24 @@ function AdminUseCaseForm() {
               </Button>
             )}
             {step === "review" ? (
-              <form.AppForm>
-                <form.SubmitButton disabled={missing.length > 0 || !organizationId}>
-                  {t("publishSubmit")}
-                </form.SubmitButton>
-              </form.AppForm>
+              <div className="flex flex-wrap items-center justify-end gap-3">
+                <Button
+                  prominence="secondary"
+                  type="button"
+                  disabled={missing.length > 0 || !organizationId}
+                  onClick={() => {
+                    mode.current = "private";
+                    void form.handleSubmit();
+                  }}
+                >
+                  {t("savePrivate")}
+                </Button>
+                <form.AppForm>
+                  <form.SubmitButton disabled={missing.length > 0 || !organizationId}>
+                    {t("publishSubmit")}
+                  </form.SubmitButton>
+                </form.AppForm>
+              </div>
             ) : (
               <Button
                 key={`continue-${step}`}

@@ -108,15 +108,41 @@ class MyUseCasesController {
 
 	@PostMapping(path = "/{id}/draft", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "moveMyUseCaseToDraft",
-			summary = "Take a use case out of review, or out of the directory, back to a draft",
+			summary = "Take a use case out of review back to a draft",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The use case, now a draft.")
 	@ApiResponse(responseCode = "404", description = "The organization has no such use case.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The use case is neither in review nor published.",
+	@ApiResponse(responseCode = "409", description = "The use case is not in review.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MyUseCaseResponse draft(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return useCases.backToDraft(actor, id);
+	}
+
+	@PostMapping(path = "/{id}/make-private", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "makeMyUseCasePrivate",
+			summary = "Hide a public use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The use case is now private.")
+	@ApiResponse(responseCode = "404", description = "The organization has no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The use case is not public.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	MyUseCaseResponse makePrivate(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.makePrivate(actor, id);
+	}
+
+	@PostMapping(path = "/{id}/make-public", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "makeMyUseCasePublic",
+			summary = "Make a private use case public again",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The use case is public again.")
+	@ApiResponse(responseCode = "404", description = "The organization has no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The use case is not private or is closed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	MyUseCaseResponse makePublic(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.makePublic(actor, id);
 	}
 
 	@GetMapping("/{id}/attachments/{fileId}")

@@ -128,10 +128,11 @@ public class UseCaseService {
 	}
 
 	/**
-	 * Saves what the members have written. A draft, or a use case GenAI Fund sent back, stays what it is. A published
-	 * use case becomes a draft with the first save, so it leaves the directory until it is sent and approved again.
-	 * @throws UseCaseException when the use case is in review or closed, the caller read an older version, or a part
-	 * is not valid
+	 * Saves what the members have written. A draft, a use case GenAI Fund sent back, a private one and a public one
+	 * stay what they are: GenAI Fund reviews a use case once, before it first goes public, and an edit after that takes
+	 * effect at once.
+	 * @throws UseCaseException when the use case is in review or closed, the caller read an older version, a part
+	 * is not valid, or a use case GenAI Fund approved would lack a part
 	 */
 	@Transactional
 	public MyUseCaseResponse save(Actor actor, UUID id, SaveMyUseCaseRequest request) {
@@ -155,9 +156,6 @@ public class UseCaseService {
 		}
 		files.requireUsable(actor, request.attachmentFileIds(), useCase.getAttachmentFileIds());
 
-		if (UseCase.APPROVED.equals(status)) {
-			useCase.backToDraft();
-		}
 		useCase.describe(text(request.title()), text(request.problemStatement()), request.industry(),
 				request.technologies().stream().distinct().toList());
 		useCase.explain(text(request.expectedOutcomes()), text(request.currentProcess()),
@@ -182,6 +180,10 @@ public class UseCaseService {
 		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
 		useCase.closeAt(closesAt);
 		useCase.showCompanyName(request.hideOrganizationName());
+		if ((UseCase.APPROVED.equals(status) || UseCase.PRIVATE.equals(status)) && !useCase.isComplete()) {
+			// GenAI Fund approved it whole. An edit takes effect at once, so it may not take a part away.
+			throw new UseCaseException(UseCaseErrorCode.INCOMPLETE, "Use case " + id + " would lack a part once saved");
+		}
 		useCase.editedBy(actor.accountId());
 		useCases.saveAndFlush(useCase);
 		events.publishEvent(new UseCaseChanged(useCase.getId()));
@@ -217,15 +219,15 @@ public class UseCaseService {
 	}
 
 	/**
-	 * Takes a use case out of review, or out of the directory, back to a draft the members can edit.
-	 * @throws UseCaseException when the use case is neither in review nor published
+	 * Takes a use case out of review, back to a draft the members can edit.
+	 * @throws UseCaseException when the use case is not in review
 	 */
 	@Transactional
 	public MyUseCaseResponse backToDraft(Actor actor, UUID id) {
 		Membership membership = writer(actor);
 		UseCase useCase = own(membership, id);
 		String status = useCase.statusAt(Instant.now());
-		if (!UseCase.IN_REVIEW.equals(status) && !UseCase.APPROVED.equals(status)) {
+		if (!UseCase.IN_REVIEW.equals(status)) {
 			throw new UseCaseException(UseCaseErrorCode.CANNOT_MOVE_TO_DRAFT, "Use case " + id + " is " + status);
 		}
 		useCase.backToDraft();
@@ -234,6 +236,50 @@ public class UseCaseService {
 		events.publishEvent(new UseCaseChanged(useCase.getId()));
 		record(AuditAction.USE_CASE_DRAFT, actor, useCase,
 				Map.of("organization", membership.organizationId().toString(), "from", status));
+		return response(actor, membership, useCase);
+	}
+
+	/**
+	 * Hides a public use case from the directory, search and the public page. Its proposals stay saved, and it can be
+	 * made public again at any time with no new review.
+	 * @throws UseCaseException when the use case is not public
+	 */
+	@Transactional
+	public MyUseCaseResponse makePrivate(Actor actor, UUID id) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(membership, id);
+		String status = useCase.statusAt(Instant.now());
+		if (!UseCase.APPROVED.equals(status)) {
+			throw new UseCaseException(UseCaseErrorCode.CANNOT_MAKE_PRIVATE, "Use case " + id + " is " + status);
+		}
+		useCase.makePrivate();
+		useCase.editedBy(actor.accountId());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
+		record(AuditAction.USE_CASE_MAKE_PRIVATE, actor, useCase,
+				Map.of("organization", membership.organizationId().toString()));
+		return response(actor, membership, useCase);
+	}
+
+	/**
+	 * Makes a private use case public again. GenAI Fund approved it before, so nobody reviews it again.
+	 * @throws UseCaseException when the use case is not private, or its close date has passed
+	 */
+	@Transactional
+	public MyUseCaseResponse makePublic(Actor actor, UUID id) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(membership, id);
+		Instant now = Instant.now();
+		String status = useCase.statusAt(now);
+		if (!UseCase.PRIVATE.equals(status)) {
+			throw new UseCaseException(UseCaseErrorCode.CANNOT_MAKE_PUBLIC, "Use case " + id + " is " + status);
+		}
+		useCase.makePublic(now);
+		useCase.editedBy(actor.accountId());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
+		record(AuditAction.USE_CASE_MAKE_PUBLIC, actor, useCase,
+				Map.of("organization", membership.organizationId().toString()));
 		return response(actor, membership, useCase);
 	}
 
@@ -303,7 +349,8 @@ public class UseCaseService {
 		People people = people(actor, List.of(useCase));
 		UUID sender = useCase.getSubmittedByAccountId();
 		return new MyUseCaseResponse(useCase.getId(), membership.organizationName(), status,
-				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.APPROVED.equals(status),
+				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.APPROVED.equals(status)
+						|| UseCase.PRIVATE.equals(status),
 				useCase.isComplete(), useCase.getTitle(), useCase.getProblemStatement(), useCase.getIndustry(),
 				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
 				useCase.getCurrentSolutions(), useCase.getTargetUsers(),

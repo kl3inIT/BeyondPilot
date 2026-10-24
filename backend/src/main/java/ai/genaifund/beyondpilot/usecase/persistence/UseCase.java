@@ -46,6 +46,9 @@ public class UseCase {
 
 	public static final String APPROVED = "approved";
 
+	/** An approved use case its organization or GenAI Fund keeps out of public view; it can be made public again. */
+	public static final String PRIVATE = "private";
+
 	/** What a use case reads as once its close date has passed, whatever it was stored as. It is never stored. */
 	public static final String CLOSED = "closed";
 
@@ -266,6 +269,22 @@ public class UseCase {
 		this.operatorsOnly = false;
 	}
 
+	/**
+	 * Hides an approved use case from the directory, search and the public page. Nothing about it is lost: it keeps
+	 * its dates and its proposals, and {@link #makePublic} brings it back without another review.
+	 */
+	public void makePrivate() {
+		this.status = PRIVATE;
+	}
+
+	/** Makes a private use case public again. It keeps the date it first went public. */
+	public void makePublic(Instant now) {
+		this.status = APPROVED;
+		if (this.publishedAt == null) {
+			this.publishedAt = now;
+		}
+	}
+
 	/** Keeps this draft from its organization's members until GenAI Fund publishes it. */
 	public void keepFromMembers() {
 		this.operatorsOnly = true;
@@ -314,6 +333,15 @@ public class UseCase {
 	/** The status at this moment: closed from the close date on, whatever was stored. */
 	public String statusAt(Instant now) {
 		return closesAt != null && !closesAt.isAfter(now) ? CLOSED : status;
+	}
+
+	/**
+	 * Whether it holds what the database requires of an approved use case: its title, problem, industry, expected
+	 * outcomes and budget. An operator may publish a use case that lacks the rest.
+	 */
+	public boolean isPublishable() {
+		return title != null && problemStatement != null && industry != null && expectedOutcomes != null
+				&& (budgetToBeDetermined || (budgetMin != null && budgetMax != null));
 	}
 
 	/** Whether it holds everything a use case in review needs. */

@@ -211,22 +211,77 @@ class UseCaseServiceTest {
 	}
 
 	@Test
-	void aPublishedUseCaseBecomesADraftWhenItsMembersEditItOrTakeItBack() {
+	void aPublicUseCaseIsEditedLiveAndNeedsNoReviewAgain() {
 		Team team = team("published.test");
 		UUID first = adminPublished(team.organization, "Published one");
-		UUID second = adminPublished(team.organization, "Published two");
 
 		String listed = body(get(team.founder, MINE).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].status")).containsOnly("approved");
 		assertThat(JsonPath.<Boolean>read(listed, "$.items[0].lastEditedBy.genaiFund")).isTrue();
 
 		String edited = body(put(team.founder, MINE + "/" + first, complete(0)).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(edited, "$.status")).isEqualTo("draft");
-		assertThat(JsonPath.<Object>read(edited, "$.publishedAt")).isNull();
+		assertThat(JsonPath.<String>read(edited, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(edited, "$.publishedAt")).isNotNull();
+		get(team.founder, "/api/usecase/use-cases/" + first).expectStatus().isOk();
 
-		String back = body(post(team.founder, MINE + "/" + second + "/draft", null).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(back, "$.status")).isEqualTo("draft");
-		assertThat(events(second)).containsExactly("use_case.draft");
+		// An edit takes effect at once, so it may not take a part away from a use case GenAI Fund approved.
+		long version = JsonPath.<Number>read(edited, "$.version").longValue();
+		assertProblem(put(team.founder, MINE + "/" + first, save(version)), 400, "USECASE_INCOMPLETE");
+		assertThat(events(first)).isEmpty();
+	}
+
+	@Test
+	void aPublicUseCaseIsMadePrivateAndPublicAgainByItsMembersWithNoReview() {
+		Team team = team("visibility.test");
+		UUID id = adminPublished(team.organization, "Visible then hidden");
+		get(team.founder, "/api/usecase/use-cases/" + id).expectStatus().isOk();
+
+		String hidden = body(post(team.colleague, MINE + "/" + id + "/make-private", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(hidden, "$.status")).isEqualTo("private");
+		assertThat(JsonPath.<Boolean>read(hidden, "$.editable")).isTrue();
+		assertThat(JsonPath.<Object>read(hidden, "$.publishedAt")).isNotNull();
+		assertProblem(get(operator, "/api/usecase/use-cases/" + id), 404, "USECASE_NOT_FOUND");
+		assertProblem(post(team.founder, MINE + "/" + id + "/make-private", null), 409, "USECASE_CANNOT_MAKE_PRIVATE");
+		assertProblem(post(team.founder, MINE + "/" + id + "/draft", null), 409, "USECASE_CANNOT_MOVE_TO_DRAFT");
+		assertProblem(post(team.founder, MINE + "/" + id + "/submit", null), 409, "USECASE_NOT_SUBMITTABLE");
+
+		// A private use case is edited like any other, and stays private.
+		long version = JsonPath.<Number>read(hidden, "$.version").longValue();
+		String edited = body(put(team.founder, MINE + "/" + id, complete(version)).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(edited, "$.status")).isEqualTo("private");
+
+		String back = body(post(team.founder, MINE + "/" + id + "/make-public", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(back, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(back, "$.publishedAt")).isNotNull();
+		get(team.founder, "/api/usecase/use-cases/" + id).expectStatus().isOk();
+		assertProblem(post(team.founder, MINE + "/" + id + "/make-public", null), 409, "USECASE_CANNOT_MAKE_PUBLIC");
+		assertThat(events(id)).containsExactly("use_case.make_private", "use_case.make_public");
+	}
+
+	@Test
+	void anOperatorMakesAUseCasePrivateAndPublicAgainAndAnyDraftPublic() {
+		Team team = team("operator-visibility.test");
+		UUID id = adminPublished(team.organization, "Hidden by an operator");
+
+		assertProblem(post(team.founder, ADMIN + "/" + id + "/make-private", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		String hidden = body(post(operator, ADMIN + "/" + id + "/make-private", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(hidden, "$.status")).isEqualTo("private");
+		assertProblem(post(operator, ADMIN + "/" + id + "/make-private", null), 409, "USECASE_CANNOT_MAKE_PRIVATE");
+		assertThat(JsonPath.<String>read(body(get(team.founder, MINE + "/" + id).expectStatus().isOk()), "$.status"))
+			.isEqualTo("private");
+
+		String back = body(post(operator, ADMIN + "/" + id + "/make-public", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(back, "$.status")).isEqualTo("approved");
+		assertProblem(post(operator, ADMIN + "/" + id + "/make-public", null), 409, "USECASE_CANNOT_MAKE_PUBLIC");
+		assertThat(events(id)).containsExactly("use_case.make_private", "use_case.make_public");
+
+		// A draft an organization wrote is published at once by an operator, if it holds what a public one needs.
+		UUID draft = create(team.founder);
+		assertProblem(post(operator, ADMIN + "/" + draft + "/make-public", null), 400, "USECASE_INCOMPLETE");
+		put(team.founder, MINE + "/" + draft, complete(0)).expectStatus().isOk();
+		String published = body(post(operator, ADMIN + "/" + draft + "/make-public", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(published, "$.status")).isEqualTo("approved");
+		assertThat(events(draft)).containsExactly("use_case.publish");
 	}
 
 	@Test

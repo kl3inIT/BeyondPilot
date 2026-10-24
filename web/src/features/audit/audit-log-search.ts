@@ -75,6 +75,8 @@ export const auditActions = [
   "use_case.create",
   "use_case.submit",
   "use_case.draft",
+  "use_case.make_private",
+  "use_case.make_public",
   "use_case.approve",
   "use_case.send_back",
   "use_case.feature",

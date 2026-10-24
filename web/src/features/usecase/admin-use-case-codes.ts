@@ -6,6 +6,7 @@ export const useCaseStatuses = [
   "in_review",
   "needs_changes",
   "approved",
+  "private",
   "closed",
 ] as const satisfies readonly AdminUseCase["status"][];
 

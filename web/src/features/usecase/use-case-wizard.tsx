@@ -187,6 +187,9 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values);
   const unchanged = status === "needs_changes" && !changedSinceReview;
+  // GenAI Fund approved it once: from then on every save takes effect, public or private, with no review.
+  const reviewedStatus = status === "approved" || status === "private" ? status : null;
+  const reviewed = reviewedStatus !== null;
 
   // Another step opens even while a field is wrong: that field stays marked and unsaved, and the
   // use case cannot be sent until it is put right.
@@ -283,10 +286,12 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
             <AlertDescription>{t("sentBack.note", { note: useCase.reviewNote })}</AlertDescription>
           </Alert>
         )}
-        {status === "approved" && (
+        {reviewedStatus && (
           <Alert>
-            <AlertTitle>{t("editingPublished.title")}</AlertTitle>
-            <AlertDescription>{t("editingPublished.description")}</AlertDescription>
+            <AlertTitle>{t(`editingApproved.${reviewedStatus}.title`)}</AlertTitle>
+            <AlertDescription>
+              {t(`editingApproved.${reviewedStatus}.description`)}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -360,10 +365,14 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
           )}
           <div className="flex flex-wrap items-center justify-end gap-3">
             {saveStatus}
-            <Button prominence="secondary" disabled={sending} onClick={() => void leave()}>
-              {t("saveAndExit")}
+            <Button
+              prominence={step === "review" && reviewed ? "primary" : "secondary"}
+              disabled={sending}
+              onClick={() => void leave()}
+            >
+              {reviewed ? t("saveChanges") : t("saveAsPrivate")}
             </Button>
-            {step === "review" ? (
+            {step === "review" && reviewed ? null : step === "review" ? (
               <form.AppForm>
                 <form.SubmitButton
                   disabled={missing.length > 0 || !confirmed || problem !== null || unchanged}

@@ -32,7 +32,7 @@ type MyUseCasesPageProps = {
 };
 
 /** The statuses a use case is counted under, in the order the summary says them. */
-const statuses = ["approved", "in_review", "needs_changes", "draft", "closed"] as const;
+const statuses = ["approved", "in_review", "needs_changes", "private", "closed"] as const;
 
 /**
  * My organization › Use cases: what the organization has asked providers for, each with where it
@@ -103,8 +103,13 @@ function MyUseCasesPage({
     };
   });
 
+  // A use case GenAI Fund has not approved yet is private as well: both are counted together.
   const count = (status: (typeof statuses)[number]) =>
-    useCases.items.filter((useCase) => useCase.status === status).length;
+    useCases.items.filter((useCase) =>
+      status === "private"
+        ? useCase.status === "private" || useCase.status === "draft"
+        : useCase.status === status,
+    ).length;
   const summary = statuses
     .filter((status) => count(status) > 0)
     .map((status) => t(`summary.${status}`, { count: count(status) }))

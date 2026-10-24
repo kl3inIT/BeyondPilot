@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { Link, useRouter } from "@/i18n/navigation";
-import { moveMyUseCaseToDraft, type MyUseCaseSummary } from "@/lib/api/generated";
+import {
+  makeMyUseCasePrivate,
+  makeMyUseCasePublic,
+  moveMyUseCaseToDraft,
+  type MyUseCaseSummary,
+} from "@/lib/api/generated";
 import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 
 import { useCaseWords } from "./my-use-case-errors";
@@ -26,30 +31,40 @@ type MyUseCaseActionsProps = {
 };
 
 /**
- * The menu of one row of the tab. What it offers follows the status: a draft or a use case sent back
- * is edited, one in review is opened and can be pulled back, a published one is edited after a
- * warning that GenAI Fund reviews it again, or moved back to a draft, and a closed one is only opened.
+ * The menu of one row of the tab. What it offers follows the status: a draft, a use case sent back, a
+ * public one and a private one are edited; one in review is opened and can be pulled back; a closed
+ * one is only opened. A public use case can be made private and a private one public again, with no
+ * review once GenAI Fund approved it.
  */
 function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
   const t = useTranslations("Organization.useCases");
   const p = useTranslations("UseCaseProposal.received");
   const notify = useNotify();
   const router = useRouter();
-  const [confirming, setConfirming] = useState<"edit" | "draft" | null>(null);
+  const [confirming, setConfirming] = useState<"private" | "public" | null>(null);
   const [pending, setPending] = useState(false);
   const name = useCase.title ?? t("untitled");
   const address = `${siteRoutes.workspaceUseCases}/${useCase.id}`;
 
   const status = useCase.status;
-  const editable = status === "draft" || status === "needs_changes";
-  const published = status === "approved";
+  const editable =
+    status === "draft" ||
+    status === "needs_changes" ||
+    status === "approved" ||
+    status === "private";
   const inReview = status === "in_review";
 
-  async function toDraft() {
+  async function change(
+    action: () => Promise<unknown>,
+    done:
+      | "Organization.useCases.done.draft"
+      | "Organization.useCases.done.private"
+      | "Organization.useCases.done.public",
+  ) {
     setPending(true);
     try {
-      await moveMyUseCaseToDraft({ path: { id: useCase.id } });
-      notify.success("Organization.useCases.done.draft", { name });
+      await action();
+      notify.success(done, { name });
       setConfirming(null);
       router.refresh();
     } catch (error) {
@@ -81,20 +96,33 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
                 {p("viewProposals")}
               </DropdownMenuItem>
             )}
-            {published && (
-              <DropdownMenuItem onClick={() => setConfirming("edit")}>
-                {t("actions.edit")}
-              </DropdownMenuItem>
-            )}
           </DropdownMenuGroup>
-          {(inReview || published) && <DropdownMenuSeparator />}
-          {(inReview || published) && (
+          {(inReview || status === "approved" || status === "private") && <DropdownMenuSeparator />}
+          {inReview && (
             <DropdownMenuGroup>
               <DropdownMenuItem
-                variant={published ? "destructive" : undefined}
-                onClick={() => (published ? setConfirming("draft") : void toDraft())}
+                onClick={() =>
+                  void change(
+                    () => moveMyUseCaseToDraft({ path: { id: useCase.id } }),
+                    "Organization.useCases.done.draft",
+                  )
+                }
               >
-                {t(published ? "actions.moveToDraft" : "actions.pullBack")}
+                {t("actions.pullBack")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          )}
+          {status === "approved" && (
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setConfirming("private")}>
+                {t("actions.makePrivate")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          )}
+          {status === "private" && (
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setConfirming("public")}>
+                {t("actions.makePublic")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
           )}
@@ -102,25 +130,34 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
       </DropdownMenu>
 
       <ConfirmDialog
-        open={confirming === "edit"}
-        onOpenChange={(open) => setConfirming(open ? "edit" : null)}
-        title={t("editPublished.title")}
-        description={t("editPublished.description")}
-        confirmLabel={t("editPublished.confirm")}
+        open={confirming === "private"}
+        onOpenChange={(open) => setConfirming(open ? "private" : null)}
+        title={t("makePrivate.title", { name })}
+        description={t("makePrivate.description")}
+        confirmLabel={t("makePrivate.confirm")}
         cancelLabel={t("cancel")}
-        pending={false}
-        onConfirm={() => router.push(address)}
+        pending={pending}
+        onConfirm={() =>
+          void change(
+            () => makeMyUseCasePrivate({ path: { id: useCase.id } }),
+            "Organization.useCases.done.private",
+          )
+        }
       />
       <ConfirmDialog
-        open={confirming === "draft"}
-        onOpenChange={(open) => setConfirming(open ? "draft" : null)}
-        title={t("moveToDraft.title", { name })}
-        description={t("moveToDraft.description")}
-        confirmLabel={t("moveToDraft.confirm")}
+        open={confirming === "public"}
+        onOpenChange={(open) => setConfirming(open ? "public" : null)}
+        title={t("makePublic.title", { name })}
+        description={t("makePublic.description")}
+        confirmLabel={t("makePublic.confirm")}
         cancelLabel={t("cancel")}
-        tone="danger"
         pending={pending}
-        onConfirm={() => void toDraft()}
+        onConfirm={() =>
+          void change(
+            () => makeMyUseCasePublic({ path: { id: useCase.id } }),
+            "Organization.useCases.done.public",
+          )
+        }
       />
     </>
   );

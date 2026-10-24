@@ -76,12 +76,3 @@ export async function readProposalCounts(useCaseIds: string[]): Promise<Map<stri
   );
   return counts;
 }
-
-/** How many proposals one use case received, or `null` when the count could not be read: the page shows without it. */
-export async function readProposalCount(useCaseId: string): Promise<number | null> {
-  try {
-    return (await readProposalCounts([useCaseId])).get(useCaseId) ?? 0;
-  } catch {
-    return null;
-  }
-}
