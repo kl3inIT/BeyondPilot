@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { hydrated } from "./hydration";
 import { serveStoredImages } from "./stored-files";
 
 /** The solutions shown, by the name each card leads with. */
@@ -171,15 +172,17 @@ test.describe("solutions directory", () => {
     await expect(shownSolutions(page)).toHaveText(["Policy Chat", "Clinic Triage"]);
 
     // A search keeps the filter.
-    await page.getByRole("searchbox", { name: "Search AI solutions" }).fill("clinic");
+    await (
+      await hydrated(page.getByRole("searchbox", { name: "Search AI solutions" }))
+    ).fill("clinic");
     await expect(page).toHaveURL(/[?&]q=clinic/);
     await expect(shownSolutions(page)).toHaveText(["Clinic Triage"]);
 
     await page.goto("/solutions");
     if (isMobile) {
-      await page.getByRole("button", { name: "Filters" }).click();
+      await (await hydrated(page.getByRole("button", { name: "Filters" }))).click();
     }
-    await page.getByRole("combobox", { name: "Perks" }).click();
+    await (await hydrated(page.getByRole("combobox", { name: "Perks" }))).click();
     await page.getByRole("option", { name: "With active perks" }).click();
     await expect(page).toHaveURL(/perks=active/);
     await expect(shownSolutions(page)).toHaveCount(2);

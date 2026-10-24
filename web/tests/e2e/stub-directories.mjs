@@ -478,8 +478,6 @@ export function answerDirectory(url) {
       (item) =>
         has(query.get("q"), item.name, item.summary) &&
         (among.length === 0 || among.includes(item.slug)) &&
-        // Search's perks filter, as the shared search API reads it.
-        (query.get("perks") !== "true" || perksOf(item.slug).length > 0) &&
         (!query.get("organization") || item.organizationSlug === query.get("organization")) &&
         (!query.get("industry") || item.industries.includes(query.get("industry"))) &&
         (!query.get("focusArea") || item.focusAreas.includes(query.get("focusArea"))) &&
@@ -534,7 +532,12 @@ export function directorySearchItems(url) {
   directory.searchParams.delete("page");
   directory.searchParams.set("size", "100");
   const [, response] = answerDirectory(directory);
-  return response.items.map((record) => ({
+  // Search's perks filter keeps the solutions with an open perk; the directory itself has no such filter.
+  const items =
+    url.searchParams.get("perks") === "true"
+      ? response.items.filter((record) => perksOf(record.slug).length > 0)
+      : response.items;
+  return items.map((record) => ({
     kind,
     slug: record.slug ?? record.id,
     title: record.name ?? record.title,
