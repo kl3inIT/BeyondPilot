@@ -349,12 +349,12 @@ Luma made of it (BEY-245; [design](../increments/active/bey-245-luma-registratio
   guests are read again (`GET /v1/events/guests/list`, `RegistrationDecisions`), and each registration here takes the
   status and check-in address of its guest, found by identifier, or by address while it has none. Every hour
   (`beyondpilot.program.luma.decision-interval`) the guests of each event still to come with a registration on Luma are
-  read the same way, for a delivery that was lost. A read that changed something logs `program.luma.guests_read`; one
-  that failed, `program.luma.guests_failed`.
-- **Emails.** Once Luma has the guest, and at each status it reaches later, the person is told of it once
-  (`emailed_status`): received for `pending_approval`, waitlisted for `waitlist`, confirmed for `approved` with the
-  check-in code and the calendar file, declined for `declined`. The kinds belong to `notification`
-  (`EmailService.sendEventRegistration*`).
+  read the same way, for a delivery that was lost. The page shows the new status; BeyondPilot emails nobody about it,
+  since Luma emails the guest of a decision made on Luma (checked on 24 October). A read that changed something logs
+  `program.luma.guests_read`; one that failed, `program.luma.guests_failed`.
+- **Emails.** Once Luma has the guest, the person is told of its status once (`emailed_status`): received for
+  `pending_approval`, waitlisted for `waitlist`, confirmed for `approved` with the check-in code and the calendar file.
+  The kinds belong to `notification` (`EmailService.sendEventRegistration*`).
 - **Ticket.** `GET /api/program/tickets/{ticket}/check-in.png` draws a confirmed guest's check-in address as a QR code
   (`CheckInCode`), and `GET /api/program/tickets/{ticket}/event.ics` gives the event as a calendar file with the venue
   (`EventCalendar`); both open without a session, by the unguessable ticket, and answer `404` for any other.

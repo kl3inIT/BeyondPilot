@@ -459,12 +459,6 @@ public class EmailService {
 	 * @param checkInCode whether Luma gave a check-in address to draw as a code
 	 */
 	@Transactional
-	/** Tells someone that GenAI Fund declined their registration for an event on Luma (BEY-245). */
-	public void sendEventRegistrationDeclined(String recipient, String eventName, @Nullable String when, String slug) {
-		queue(EmailKind.EVENT_REGISTRATION_DECLINED, recipient,
-				values("eventName", eventName, "when", when, "eventUrl", url(PROGRAMS + slug)));
-	}
-
 	public void sendEventRegistrationConfirmed(String recipient, String eventName, @Nullable String when,
 			@Nullable String where, String slug, String ticket, boolean checkInCode) {
 		queue(EmailKind.EVENT_REGISTRATION_CONFIRMED, recipient,

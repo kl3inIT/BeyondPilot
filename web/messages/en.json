@@ -3481,10 +3481,6 @@
           "name": "Event seat confirmed",
           "description": "Sent when someone's seat at a Luma event is confirmed, with their check-in code and a calendar file."
         },
-        "event_registration_declined": {
-          "name": "Event registration declined",
-          "description": "Sent when GenAI Fund declines someone's registration for a Luma event on Luma."
-        },
         "perk_request_waiting": {
           "name": "Perk request waiting",
           "description": "Sent to every member of the organization that gives a perk when a team sends a request it must grant or decline."

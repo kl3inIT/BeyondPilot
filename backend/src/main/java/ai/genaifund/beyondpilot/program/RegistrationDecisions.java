@@ -32,7 +32,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Brings back what GenAI Fund decides on Luma about the guests registered here (BEY-245): approved, declined, or moved
  * to or from the waitlist. A guest webhook only makes the event's guests be read again from Luma, whatever it says;
  * every hour the guests of events still to come are read too, for a delivery that was lost. Each change is kept on the
- * registration, and the person is emailed once for each status they reach.
+ * registration, so the event's page shows it. BeyondPilot emails nobody about it: Luma emails the guest of a decision
+ * made on Luma, and a second email would say the same.
  */
 @Component
 class RegistrationDecisions {
@@ -47,8 +48,6 @@ class RegistrationDecisions {
 
 	private final LumaKeys keys;
 
-	private final RegistrationSender sender;
-
 	private final TransactionTemplate transactions;
 
 	private final LumaApi api;
@@ -60,13 +59,12 @@ class RegistrationDecisions {
 	private final AtomicBoolean hooked = new AtomicBoolean();
 
 	RegistrationDecisions(LumaRegistrationRepository registrations, ProgramRepository programs,
-			LumaConnectionRepository connections, LumaKeys keys, RegistrationSender sender, LumaProperties properties,
+			LumaConnectionRepository connections, LumaKeys keys, LumaProperties properties,
 			TransactionTemplate transactions) {
 		this.registrations = registrations;
 		this.programs = programs;
 		this.connections = connections;
 		this.keys = keys;
-		this.sender = sender;
 		this.transactions = transactions;
 		this.api = new LumaApi(properties.api(), properties.timeout());
 	}
@@ -137,7 +135,8 @@ class RegistrationDecisions {
 				if (guest == null || !held.readOnLuma(guest.id(), guest.status().value(), guest.checkIn())) {
 					return false;
 				}
-				sender.tell(held);
+				// Luma told the guest; the status counts as told, so nothing here repeats it.
+				held.emailed();
 				return true;
 			}).orElse(false));
 			if (Boolean.TRUE.equals(done)) {

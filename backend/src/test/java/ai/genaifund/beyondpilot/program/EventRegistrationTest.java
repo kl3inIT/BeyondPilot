@@ -321,7 +321,7 @@ class EventRegistrationTest {
 	}
 
 	@Test
-	void aDecisionOnLumaComesBackByItsWebhookAndThePersonIsToldOnceForEachStatus() {
+	void aDecisionOnLumaComesBackByItsWebhookToThePageAndOnlyLumaEmailsIt() {
 		read(event(true, null, "enabled", true));
 		connections.findAll().forEach(held -> {
 			held.hooked("wh-1", keys.seal("whsec_test"), Instant.now());
@@ -337,8 +337,7 @@ class EventRegistrationTest {
 		guests("approved", "https://luma.com/check-in/evt-briefing?pk=g-mai");
 		deliver(client, "{\"type\":\"guest.updated\",\"data\":{\"id\":\"gst-linh\",\"approval_status\":\"declined\","
 				+ "\"event\":{\"id\":\"" + EVENT + "\"}}}").expectStatus().isNoContent();
-		await().atMost(Duration.ofSeconds(10))
-			.until(() -> mail.subjectsTo("mai@events.test").contains("You're in: Product briefing"));
+		await().atMost(Duration.ofSeconds(10)).until(() -> "approved".equals(registration("mai@events.test").get("status")));
 		assertThat(registration("mai@events.test")).containsEntry("status", "approved")
 			.containsEntry("check_in_url", "https://luma.com/check-in/evt-briefing?pk=g-mai")
 			.containsEntry("emailed_status", "approved");
@@ -349,14 +348,13 @@ class EventRegistrationTest {
 			.expectBody()
 			.jsonPath("$.mine.status").isEqualTo("approved");
 
-		// The hourly check finds nothing new and tells nobody again; a later decline is told once.
-		decisions.check(EVENT, Instant.now());
-		assertThat(mail.subjectsTo("mai@events.test")).filteredOn(subject -> subject.startsWith("You're in")).hasSize(1);
+		// The hourly check reads a later decline the same way; Luma emailed her each time, so BeyondPilot did not.
 		guests("declined", null);
 		decisions.check(EVENT, Instant.now());
-		await().atMost(Duration.ofSeconds(10))
-			.until(() -> mail.subjectsTo("mai@events.test").contains("About your registration: Product briefing"));
-		assertThat(registration("mai@events.test")).containsEntry("status", "declined");
+		assertThat(registration("mai@events.test")).containsEntry("status", "declined")
+			.containsEntry("emailed_status", "declined");
+		assertThat(mail.subjectsTo("mai@events.test")).filteredOn(subject -> subject.contains("Product briefing"))
+			.containsExactly("Registration received: Product briefing");
 
 		// A delivery not signed with the webhook's secret changes nothing.
 		deliver(client, "{\"type\":\"guest.updated\",\"data\":{\"event\":{\"id\":\"" + EVENT + "\"}}}", "other")

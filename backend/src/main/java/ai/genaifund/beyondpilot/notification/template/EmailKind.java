@@ -205,11 +205,6 @@ public enum EmailKind {
 			Variable.optional("where", "BỜM - Kitchen & Wine Bar, Ho Chi Minh City"),
 			Variable.optional("checkInImageUrl", "https://beyondpilot.example/api/program/tickets/sample/check-in.png"),
 			Variable.required("calendarUrl", "https://beyondpilot.example/api/program/tickets/sample/event.ics"),
-			Variable.optional("eventUrl", "https://beyondpilot.example/programs/gaf-tinyfish-vn")),
-
-	EVENT_REGISTRATION_DECLINED("event_registration_declined", EmailGroup.EVENTS, true, null,
-			Variable.required("eventName", "TinyFish, Big Minds"),
-			Variable.optional("when", "Thu 30 Oct 2026, 18:30 GMT+7"),
 			Variable.optional("eventUrl", "https://beyondpilot.example/programs/gaf-tinyfish-vn"));
 
 	/**
