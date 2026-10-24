@@ -47,12 +47,12 @@ function PerkCard({ perk }: { perk: PerkCardData }) {
   const format = useFormatter();
 
   return (
-    <article className="relative flex min-w-0 flex-1 flex-col gap-3 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50">
+    <article className="relative flex min-w-0 flex-1 flex-col gap-3 rounded-2xl border bg-card p-5 wrap-anywhere transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50">
       <div className="flex min-w-0 items-center gap-2.5">
         <OrganizationMark
           name={perk.organizationName}
           logoFileId={perk.organizationLogoFileId}
-          size="sm"
+          size="wide"
         />
         <span className="min-w-0 flex-1 truncate text-sm font-medium">{perk.organizationName}</span>
         {perk.fromGenAiFund && (
