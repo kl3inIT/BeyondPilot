@@ -88,6 +88,11 @@ export function proposalViewRoute(id: string) {
   return `${siteRoutes.useCases}/${id}/propose/view`;
 }
 
+/** A use case that is not public, read from its read-only link. */
+export function useCasePreviewRoute(token: string) {
+  return `${siteRoutes.useCases}/preview/${token}`;
+}
+
 /** The proposals a use case received, as the organization that posted it reads them. */
 export function workspaceUseCaseProposalsRoute(id: string) {
   return `${siteRoutes.workspaceUseCases}/${id}/proposals`;

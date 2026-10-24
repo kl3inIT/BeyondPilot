@@ -1,0 +1,8 @@
+[mcp_servers.figwright]
+command = 'C:\nvm4w\nodejs\node.exe'
+args = ['C:\nvm4w\nodejs\node_modules\npm\bin\npx-cli.js', '-y', '@figwright/mcp@0.6.0']
+startup_timeout_sec = 60
+tool_timeout_sec = 120
+
+[mcp_servers.figwright.env]
+PATH = 'C:\nvm4w\nodejs;C:\Program Files\Git\cmd;C:\Windows\System32;C:\Windows'

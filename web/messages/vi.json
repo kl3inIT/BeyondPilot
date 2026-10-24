@@ -1451,7 +1451,8 @@
           "export": "Tải danh sách use case",
           "access_set": "Đặt quyền truy cập use case",
           "access_remove": "Gỡ quyền truy cập use case",
-          "access_general": "Đổi quyền của các thành viên với use case"
+          "access_general": "Đổi quyền của các thành viên với use case",
+          "preview": "Bật hoặc tắt link tới use case"
         },
         "email": {
           "settings_update": "Đổi cấu hình email",
@@ -1641,7 +1642,8 @@
           "export": "Tải danh sách use case",
           "access_set": "Đặt người được dùng một use case",
           "access_remove": "Gỡ một người khỏi use case",
-          "access_general": "Đổi quyền thành viên với use case"
+          "access_general": "Đổi quyền thành viên với use case",
+          "preview": "Bật hoặc tắt link chỉ xem của một use case"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
@@ -4878,6 +4880,14 @@
           "submit": "Thêm"
         },
         "done": "Đã lưu quyền truy cập."
+      },
+      "preview": {
+        "title": "Link chỉ xem",
+        "hint": "Ai có link đều đọc được use case này mà không cần đăng nhập. Use case vẫn riêng tư trong danh sách và tìm kiếm. Tắt đi thì link ngừng hoạt động vĩnh viễn.",
+        "link": "Link tới use case này",
+        "copy": "Sao chép link",
+        "on": "Đã bật link.",
+        "off": "Đã tắt link."
       }
     }
   },
@@ -7814,7 +7824,11 @@
       "description": "Xem các đề xuất ở một nơi và chọn nhà cung cấp cho giai đoạn thí điểm.",
       "action": "Đăng bài toán"
     },
-    "anonymous": "Tổ chức ẩn danh"
+    "anonymous": "Tổ chức ẩn danh",
+    "preview": {
+      "banner": "Bạn đang đọc một use case riêng tư qua link được chia sẻ. Use case chưa công khai.",
+      "noProposals": "Use case này chưa nhận đề xuất."
+    }
   },
   "Legal": {
     "updated": "Cập nhật lần cuối: {date}",

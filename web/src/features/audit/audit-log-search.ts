@@ -80,6 +80,7 @@ export const auditActions = [
   "use_case.access_set",
   "use_case.access_remove",
   "use_case.access_general",
+  "use_case.preview",
   "use_case.approve",
   "use_case.send_back",
   "use_case.feature",

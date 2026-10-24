@@ -3,12 +3,14 @@ import { ApiError } from "@/lib/api/client";
 import {
   getMyUseCase,
   getMyUseCaseAccess,
+  getMyUseCasePreview,
   listMyUseCases,
   type MyOrganization,
   type MyUseCase,
   type MyUseCases,
   type Organization,
   type UseCaseAccess,
+  type UseCasePreview,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -38,6 +40,19 @@ export async function readMyUseCaseAccess(id: string): Promise<UseCaseAccess | n
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** The read-only link of a use case of the caller's organization, or `null` when the caller may not read it. Server only. */
+export async function readMyUseCasePreview(id: string): Promise<UseCasePreview | null> {
+  try {
+    const { data } = await getMyUseCasePreview({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && [400, 403, 404].includes(error.status)) {
       return null;
     }
     throw error;
