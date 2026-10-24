@@ -69,6 +69,7 @@ class UseCaseServiceTest {
 	void onlyTheMembersOfAnOrganizationNotTakenDownWriteItsUseCases() {
 		Team team = team("gate.test");
 		UUID mine = create(team.founder);
+		openToMembers(mine);
 		String stranger = TestSignIn.session(client, mail, "stranger@elsewhere.test");
 		Team takenDown = team("taken-down.test");
 		jdbc.sql("update organization set suspended_at = now() where id = ?").param(takenDown.organization).update();
@@ -98,6 +99,7 @@ class UseCaseServiceTest {
 	void aDraftIsWrittenInPartsAndSavedByAnyMember() {
 		Team team = team("parts.test");
 		UUID id = create(team.founder);
+		openToMembers(id);
 		String empty = body(get(team.founder, MINE + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(empty, "$.status")).isEqualTo("draft");
 		assertThat(JsonPath.<Boolean>read(empty, "$.editable")).isTrue();
@@ -188,6 +190,7 @@ class UseCaseServiceTest {
 	void aUseCaseIsSentForReviewWhenComplete_andThenItsMembersCannotEditIt() {
 		Team team = team("review.test");
 		UUID id = create(team.founder);
+		openToMembers(id);
 
 		assertProblem(post(team.founder, MINE + "/" + id + "/submit", null), 400, "USECASE_INCOMPLETE");
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
@@ -285,6 +288,84 @@ class UseCaseServiceTest {
 	}
 
 	@Test
+	void aMemberIsGivenARoleAndMayThenDoExactlyWhatItAllows() {
+		Team team = team("roles.test");
+		UUID id = create(team.founder);
+		UUID colleague = accountOf("colleague@roles.test");
+		String access = MINE + "/" + id + "/access";
+		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
+
+		// Nobody but the creator and the owners sees it, until it is shared.
+		assertProblem(get(team.colleague, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
+		assertProblem(put(team.colleague, MINE + "/" + id, save(1)), 404, "USECASE_NOT_FOUND");
+		assertProblem(get(team.colleague, access), 404, "USECASE_NOT_FOUND");
+		assertThat(JsonPath.<List<String>>read(body(get(team.colleague, MINE).expectStatus().isOk()), "$.items[*].id"))
+			.doesNotContain(id.toString());
+		String before = body(get(team.founder, access).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(before, "$.candidates[*].accountId")).containsExactly(colleague.toString());
+
+		// A viewer reads it and nothing else.
+		String viewer = body(put(team.founder, access + "/people/" + colleague, Map.of("role", "viewer")).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(viewer, "$.people[?(@.you == false)].role")).containsExactly("viewer");
+		assertThat(JsonPath.<List<String>>read(viewer, "$.candidates")).isEmpty();
+		String read = body(get(team.colleague, MINE + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.access")).isEqualTo("viewer");
+		assertThat(JsonPath.<Boolean>read(read, "$.editable")).isFalse();
+		assertThat(JsonPath.<List<String>>read(body(get(team.colleague, MINE).expectStatus().isOk()), "$.items[*].id"))
+			.contains(id.toString());
+		long version = JsonPath.<Number>read(read, "$.version").longValue();
+		assertProblem(put(team.colleague, MINE + "/" + id, complete(version)), 403, "USECASE_ACCESS_REQUIRED");
+		assertProblem(post(team.colleague, MINE + "/" + id + "/submit", null), 403, "USECASE_ACCESS_REQUIRED");
+		assertProblem(put(team.colleague, access + "/people/" + colleague, Map.of("role", "full_access")), 403,
+				"USECASE_ACCESS_REQUIRED");
+
+		// An editor changes it, and cannot send it or share it.
+		put(team.founder, access + "/people/" + colleague, Map.of("role", "editor")).expectStatus().isOk();
+		put(team.colleague, MINE + "/" + id, complete(version)).expectStatus().isOk();
+		assertProblem(post(team.colleague, MINE + "/" + id + "/submit", null), 403, "USECASE_ACCESS_REQUIRED");
+		assertProblem(post(team.colleague, MINE + "/" + id + "/make-private", null), 403, "USECASE_ACCESS_REQUIRED");
+
+		// Full access sends it for review.
+		put(team.founder, access + "/people/" + colleague, Map.of("role", "full_access")).expectStatus().isOk();
+		String sent = body(post(team.colleague, MINE + "/" + id + "/submit", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(sent, "$.status")).isEqualTo("in_review");
+
+		// Taking the role away hides it again; what every member may do is a second way in.
+		delete(team.founder, access + "/people/" + colleague).expectStatus().isOk();
+		assertProblem(get(team.colleague, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
+		String everyone = body(put(team.founder, access + "/members", Map.of("role", "viewer")).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(everyone, "$.memberAccess")).isEqualTo("viewer");
+		get(team.colleague, MINE + "/" + id).expectStatus().isOk();
+		put(team.founder, access + "/members", Map.of("role", "none")).expectStatus().isOk();
+		assertProblem(get(team.colleague, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
+		assertThat(events(id)).contains("use_case.access_set", "use_case.access_remove", "use_case.access_general",
+				"use_case.submit");
+
+		// An operator reads and changes who may do what, whatever the use case's status.
+		assertProblem(get(team.colleague, ADMIN + "/" + id + "/access"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		get(operator, ADMIN + "/" + id + "/access").expectStatus().isOk();
+		put(operator, ADMIN + "/" + id + "/access/people/" + colleague, Map.of("role", "viewer")).expectStatus().isOk();
+		get(team.colleague, MINE + "/" + id).expectStatus().isOk();
+		put(operator, ADMIN + "/" + id + "/access/members", Map.of("role", "editor")).expectStatus().isOk();
+		assertProblem(put(operator, ADMIN + "/" + id + "/access/people/" + accountOf("founder@roles.test"),
+				Map.of("role", "viewer")), 409, "USECASE_ACCESS_FIXED");
+	}
+
+	@Test
+	void aPublicUseCaseIsReadByEveryMemberWhateverTheyWereGiven() {
+		Team team = team("public-read.test");
+		UUID id = adminPublished(team.organization, "Open to everyone");
+		jdbc.sql("update use_case set member_access = 'none' where id = ?").param(id).update();
+		String read = body(get(team.colleague, MINE + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.access")).isEqualTo("viewer");
+		assertThat(JsonPath.<Boolean>read(read, "$.editable")).isFalse();
+		assertProblem(put(team.colleague, MINE + "/" + id, complete(0)), 403, "USECASE_ACCESS_REQUIRED");
+		// Made private, it is hidden from a member who was given nothing.
+		post(operator, ADMIN + "/" + id + "/make-private", null).expectStatus().isOk();
+		assertProblem(get(team.colleague, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
+	}
+
+	@Test
 	void aClosedUseCaseIsLockedForItsMembers() {
 		Team team = team("closed.test");
 		UUID id = adminPublished(team.organization, "Closing soon");
@@ -304,6 +385,7 @@ class UseCaseServiceTest {
 		Team ours = team("files-ours.test");
 		Team theirs = team("files-theirs.test");
 		UUID id = create(ours.founder);
+		openToMembers(id);
 		UUID file = UUID.randomUUID();
 		jdbc.sql("""
 				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
@@ -348,6 +430,7 @@ class UseCaseServiceTest {
 	void anOperatorApprovesAUseCaseInReviewAndItsMembersAreTold() {
 		Team team = team("approve.test");
 		UUID id = create(team.founder);
+		openToMembers(id);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.colleague, MINE + "/" + id + "/submit", null).expectStatus().isOk();
 
@@ -397,6 +480,7 @@ class UseCaseServiceTest {
 	void anOperatorSendsAUseCaseBackWithAReasonThatItsMembersReadUntilTheySendItAgain() {
 		Team team = team("sendback.test");
 		UUID id = create(team.founder);
+		openToMembers(id);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
 
@@ -504,6 +588,15 @@ class UseCaseServiceTest {
 	private record Team(UUID organization, String founder, String colleague) {
 	}
 
+	/** Lets every member of the organization do everything with a use case, as they could before access was set one by one. */
+	private void openToMembers(UUID useCase) {
+		jdbc.sql("update use_case set member_access = 'full_access' where id = ?").param(useCase).update();
+	}
+
+	private UUID accountOf(String email) {
+		return jdbc.sql("select id from identity_account where email = ?").param(email).query(UUID.class).single();
+	}
+
 	private UUID create(String session) {
 		return UUID.fromString(JsonPath.read(body(post(session, MINE, null).expectStatus().isCreated()), "$.id"));
 	}
@@ -543,6 +636,14 @@ class UseCaseServiceTest {
 			.cookie(TestSignIn.SESSION_COOKIE, session)
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(body)
+			.exchange();
+	}
+
+	private RestTestClient.ResponseSpec delete(String session, String uri) {
+		return client.delete()
+			.uri(uri)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
 			.exchange();
 	}
 

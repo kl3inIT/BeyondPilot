@@ -11,7 +11,10 @@ import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseAccessRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseMemberAccessRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseReviewQueueResponse;
@@ -29,6 +32,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -212,6 +216,58 @@ class AdminUseCasesController {
 	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
 		useCases.unfeature(actor, id);
 	}
+
+	@GetMapping(path = "/use-cases/{id}/access", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getAdminUseCaseAccess", summary = "Who may do what with a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The people with access and the members who could be given it.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse access(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.access(actor, id);
+	}
+
+	@PutMapping(path = "/use-cases/{id}/access/people/{accountId}", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "giveAdminUseCaseAccess", summary = "Give a member a role in a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "400", description = "The person is not a member of the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The person created it or owns the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse give(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId,
+			@Valid @RequestBody SetUseCaseAccessRequest request) {
+		return useCases.giveAccess(actor, id, accountId, request.role());
+	}
+
+	@DeleteMapping(path = "/use-cases/{id}/access/people/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "removeAdminUseCaseAccess", summary = "Take a member's role in a use case away",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The person created it or owns the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse remove(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId) {
+		return useCases.removeAccess(actor, id, accountId);
+	}
+
+	@PutMapping(path = "/use-cases/{id}/access/members", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "shareAdminUseCaseWithMembers",
+			summary = "Set what every other member of the organization may do",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse shareWithMembers(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetUseCaseMemberAccessRequest request) {
+		return useCases.shareWithMembers(actor, id, request.role());
+	}
+
 
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listUseCaseOrganizations",

@@ -8,6 +8,9 @@ import ai.genaifund.beyondpilot.usecase.UseCaseService;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCasesResponse;
 import ai.genaifund.beyondpilot.usecase.dto.SaveMyUseCaseRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseAccessRequest;
+import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseMemberAccessRequest;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +22,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -143,6 +147,57 @@ class MyUseCasesController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MyUseCaseResponse makePublic(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return useCases.makePublic(actor, id);
+	}
+
+	@GetMapping(path = "/{id}/access", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getMyUseCaseAccess", summary = "Who may do what with a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The people with access and the members who could be given it.")
+	@ApiResponse(responseCode = "404", description = "The caller cannot see such a use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse access(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return useCases.access(actor, id);
+	}
+
+	@PutMapping(path = "/{id}/access/people/{accountId}", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "giveMyUseCaseAccess", summary = "Give a member a role in a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "400", description = "The person is not a member of the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The caller cannot see such a use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The person created it or owns the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse give(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId,
+			@Valid @RequestBody SetUseCaseAccessRequest request) {
+		return useCases.giveAccess(actor, id, accountId, request.role());
+	}
+
+	@DeleteMapping(path = "/{id}/access/people/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "removeMyUseCaseAccess", summary = "Take a member's role in a use case away",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "404", description = "The caller cannot see such a use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The person created it or owns the organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse remove(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID accountId) {
+		return useCases.removeAccess(actor, id, accountId);
+	}
+
+	@PutMapping(path = "/{id}/access/members", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "shareMyUseCaseWithMembers",
+			summary = "Set what every other member of the organization may do",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "Who may do what now.")
+	@ApiResponse(responseCode = "404", description = "The caller cannot see such a use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseAccessResponse shareWithMembers(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetUseCaseMemberAccessRequest request) {
+		return useCases.shareWithMembers(actor, id, request.role());
 	}
 
 	@GetMapping("/{id}/attachments/{fileId}")

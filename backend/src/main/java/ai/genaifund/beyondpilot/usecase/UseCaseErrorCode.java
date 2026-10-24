@@ -56,6 +56,15 @@ public enum UseCaseErrorCode implements ErrorCode {
 
 	TIMELINE_OUT_OF_ORDER("USECASE_TIMELINE_OUT_OF_ORDER", ErrorCategory.VALIDATION,
 			"The shortest timeline is longer than the longest."),
+	ACCESS_REQUIRED("USECASE_ACCESS_REQUIRED", ErrorCategory.NOT_PERMITTED,
+			"Your access to this use case does not allow this. Ask someone with full access."),
+
+	ACCESS_FIXED("USECASE_ACCESS_FIXED", ErrorCategory.CONFLICT,
+			"The creator and the owners of the organization always have full access."),
+
+	ACCESS_NOT_A_MEMBER("USECASE_ACCESS_NOT_A_MEMBER", ErrorCategory.VALIDATION,
+			"Only a member of the organization can be given access to its use case."),
+
 	NOT_PRIVATE("USECASE_NOT_PRIVATE", ErrorCategory.CONFLICT,
 			"Only a private draft GenAI Fund keeps can be changed or published this way.");
 

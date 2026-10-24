@@ -13,6 +13,8 @@ public record MyUseCaseSummaryResponse(@Schema(requiredMode = Schema.RequiredMod
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "draft", "in_review", "needs_changes", "approved", "private", "closed" },
 				description = "Closed once the close date has passed, whatever the use case was before.") String status,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "viewer", "editor", "full_access" },
+				description = "What the caller may do with this use case.") String access,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant closesAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UseCasePersonResponse lastEditedBy,

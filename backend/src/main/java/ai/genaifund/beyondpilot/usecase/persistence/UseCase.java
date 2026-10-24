@@ -146,6 +146,10 @@ public class UseCase {
 	/** A draft GenAI Fund keeps to itself: only operators see it until it is published (BEY-232). */
 	private boolean operatorsOnly;
 
+	/** What every member of the organization may do with it, beyond the roles given to single members. */
+	@Column(nullable = false)
+	private String memberAccess = AccessRole.NONE.code();
+
 	@ElementCollection
 	@CollectionTable(name = "use_case_requirement", joinColumns = @JoinColumn(name = "use_case_id"))
 	@OrderColumn(name = "position")
@@ -292,6 +296,16 @@ public class UseCase {
 
 	public boolean isOperatorsOnly() {
 		return operatorsOnly;
+	}
+
+	/** What every member of the organization may do with it. */
+	public AccessRole getMemberAccess() {
+		return AccessRole.of(memberAccess).orElse(AccessRole.NONE);
+	}
+
+	/** Lets every member of the organization do this much with it; they may be given more one by one. */
+	public void shareWithMembers(AccessRole role) {
+		this.memberAccess = role.code();
 	}
 
 	/** Sends the use case to GenAI Fund: from then on it waits for a decision and its organization cannot edit it. */

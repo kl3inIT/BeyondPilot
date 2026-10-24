@@ -19,11 +19,13 @@ import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseAccessResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCasesResponse;
 import ai.genaifund.beyondpilot.usecase.dto.SaveMyUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCasePersonResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseRequirementEntry;
+import ai.genaifund.beyondpilot.usecase.persistence.AccessRole;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRequirement;
@@ -56,9 +58,13 @@ public class UseCaseService {
 
 	private final ApplicationEventPublisher events;
 
+	private final UseCaseAccess access;
+
 	UseCaseService(UseCaseRepository useCases, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit, UseCaseAttachments files, UseCasePeople people, ApplicationEventPublisher events) {
+			AuditTrail audit, UseCaseAttachments files, UseCasePeople people, ApplicationEventPublisher events,
+			UseCaseAccess access) {
 		this.events = events;
+		this.access = access;
 		this.useCases = useCases;
 		this.organizations = organizations;
 		this.identity = identity;
@@ -75,15 +81,23 @@ public class UseCaseService {
 	public MyUseCasesResponse mine(Actor actor) {
 		Membership membership = writer(actor);
 		Instant now = Instant.now();
+		Map<UUID, AccessRole> given = access.givenTo(actor);
+		Map<UUID, AccessRole> roles = new HashMap<>();
 		List<UseCase> own = useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(membership.organizationId())
 			.stream()
 			.filter(UseCaseService::seenByMembers)
+			.filter(useCase -> {
+				AccessRole role = access.roleOf(actor, membership, useCase,
+						given.getOrDefault(useCase.getId(), AccessRole.NONE));
+				roles.put(useCase.getId(), role);
+				return role != AccessRole.NONE;
+			})
 			.toList();
 		People people = people(actor, own);
 		return new MyUseCasesResponse(own.stream()
 			.map(useCase -> new MyUseCaseSummaryResponse(useCase.getId(), useCase.getTitle(), useCase.statusAt(now),
-					useCase.getClosesAt(), useCase.getSubmittedAt(), people.of(useCase.getLastEditedByAccountId()),
-					useCase.getUpdatedAt()))
+					roles.get(useCase.getId()).code(), useCase.getClosesAt(), useCase.getSubmittedAt(),
+					people.of(useCase.getLastEditedByAccountId()), useCase.getUpdatedAt()))
 			.toList());
 	}
 
@@ -95,10 +109,7 @@ public class UseCaseService {
 	@Transactional(readOnly = true)
 	public MyUseCaseResponse get(Actor actor, UUID id) {
 		Membership membership = writer(actor);
-		UseCase useCase = useCases.findById(id)
-			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
-			.filter(UseCaseService::seenByMembers)
-			.orElseThrow(() -> notFound(id));
+		UseCase useCase = readable(actor, membership, id);
 		return response(actor, membership, useCase);
 	}
 
@@ -109,10 +120,7 @@ public class UseCaseService {
 	@Transactional(readOnly = true)
 	public FileDownload attachment(Actor actor, UUID id, UUID fileId) {
 		Membership membership = writer(actor);
-		UseCase useCase = useCases.findById(id)
-			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
-			.filter(UseCaseService::seenByMembers)
-			.orElseThrow(() -> notFound(id));
+		UseCase useCase = readable(actor, membership, id);
 		return files.open(useCase, fileId);
 	}
 
@@ -137,7 +145,7 @@ public class UseCaseService {
 	@Transactional
 	public MyUseCaseResponse save(Actor actor, UUID id, SaveMyUseCaseRequest request) {
 		Membership membership = writer(actor);
-		UseCase useCase = own(membership, id);
+		UseCase useCase = own(actor, membership, id, AccessRole.EDITOR);
 		Instant now = Instant.now();
 		if (request.version() != useCase.getVersion()) {
 			throw new UseCaseException(UseCaseErrorCode.CHANGED_MEANWHILE,
@@ -198,7 +206,7 @@ public class UseCaseService {
 	@Transactional
 	public MyUseCaseResponse submit(Actor actor, UUID id) {
 		Membership membership = writer(actor);
-		UseCase useCase = own(membership, id);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
 		Instant now = Instant.now();
 		String status = useCase.statusAt(now);
 		if (!UseCase.DRAFT.equals(status) && !UseCase.NEEDS_CHANGES.equals(status)) {
@@ -225,7 +233,7 @@ public class UseCaseService {
 	@Transactional
 	public MyUseCaseResponse backToDraft(Actor actor, UUID id) {
 		Membership membership = writer(actor);
-		UseCase useCase = own(membership, id);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
 		String status = useCase.statusAt(Instant.now());
 		if (!UseCase.IN_REVIEW.equals(status)) {
 			throw new UseCaseException(UseCaseErrorCode.CANNOT_MOVE_TO_DRAFT, "Use case " + id + " is " + status);
@@ -247,7 +255,7 @@ public class UseCaseService {
 	@Transactional
 	public MyUseCaseResponse makePrivate(Actor actor, UUID id) {
 		Membership membership = writer(actor);
-		UseCase useCase = own(membership, id);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
 		String status = useCase.statusAt(Instant.now());
 		if (!UseCase.APPROVED.equals(status)) {
 			throw new UseCaseException(UseCaseErrorCode.CANNOT_MAKE_PRIVATE, "Use case " + id + " is " + status);
@@ -268,7 +276,7 @@ public class UseCaseService {
 	@Transactional
 	public MyUseCaseResponse makePublic(Actor actor, UUID id) {
 		Membership membership = writer(actor);
-		UseCase useCase = own(membership, id);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
 		Instant now = Instant.now();
 		String status = useCase.statusAt(now);
 		if (!UseCase.PRIVATE.equals(status)) {
@@ -283,6 +291,55 @@ public class UseCaseService {
 		return response(actor, membership, useCase);
 	}
 
+	/**
+	 * Who may do what with one use case of the caller's organization, and who could be given access.
+	 * @throws UseCaseException when the caller may not see the use case
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseAccessResponse access(Actor actor, UUID id) {
+		Membership membership = writer(actor);
+		UseCase useCase = readable(actor, membership, id);
+		return access.read(actor, useCase, access.roleOf(actor, membership, useCase));
+	}
+
+	/**
+	 * Gives a member of the organization a role in the use case, or changes the one they have.
+	 * @throws UseCaseException when the caller lacks full access, or the person is not a member or is the creator or an
+	 * owner
+	 */
+	@Transactional
+	public UseCaseAccessResponse giveAccess(Actor actor, UUID id, UUID accountId, String role) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
+		access.grant(actor, useCase, accountId, AccessRole.of(role).orElse(AccessRole.VIEWER));
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/**
+	 * Takes the role away from a member; what every member may do still applies to them.
+	 * @throws UseCaseException when the caller lacks full access, or the person is the creator or an owner
+	 */
+	@Transactional
+	public UseCaseAccessResponse removeAccess(Actor actor, UUID id, UUID accountId) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
+		access.revoke(actor, useCase, accountId);
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
+	/**
+	 * Sets what every other member of the organization may do with the use case.
+	 * @throws UseCaseException when the caller lacks full access
+	 */
+	@Transactional
+	public UseCaseAccessResponse shareWithMembers(Actor actor, UUID id, String role) {
+		Membership membership = writer(actor);
+		UseCase useCase = own(actor, membership, id, AccessRole.FULL_ACCESS);
+		access.shareWithMembers(actor, useCase, AccessRole.of(role).orElse(AccessRole.NONE));
+		useCases.saveAndFlush(useCase);
+		return access.read(actor, useCase, AccessRole.FULL_ACCESS);
+	}
+
 	/** The caller's organization, which must not be taken down. */
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
@@ -292,12 +349,36 @@ public class UseCaseService {
 					"Account " + actor.accountId() + " is not a member of an organization that is not taken down"));
 	}
 
-	/** One use case of the caller's organization, locked for the change about to be made. */
-	private UseCase own(Membership membership, UUID id) {
-		return useCases.findForUpdate(id)
+	/** One use case the caller may see, of their organization. Another person's is answered as not found. */
+	private UseCase readable(Actor actor, Membership membership, UUID id) {
+		UseCase useCase = useCases.findById(id)
 			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
 			.filter(UseCaseService::seenByMembers)
 			.orElseThrow(() -> notFound(id));
+		if (access.roleOf(actor, membership, useCase) == AccessRole.NONE) {
+			throw notFound(id);
+		}
+		return useCase;
+	}
+
+	/**
+	 * One use case of the caller's organization, locked for the change about to be made, when the caller's role allows
+	 * it. A use case the caller may not see is answered as not found; one they may see but not change is refused.
+	 */
+	private UseCase own(Actor actor, Membership membership, UUID id, AccessRole needed) {
+		UseCase useCase = useCases.findForUpdate(id)
+			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
+			.filter(UseCaseService::seenByMembers)
+			.orElseThrow(() -> notFound(id));
+		AccessRole role = access.roleOf(actor, membership, useCase);
+		if (role == AccessRole.NONE) {
+			throw notFound(id);
+		}
+		if (!role.atLeast(needed)) {
+			throw new UseCaseException(UseCaseErrorCode.ACCESS_REQUIRED,
+					"Use case " + id + " needs " + needed.code() + " access, the caller has " + role.code());
+		}
+		return useCase;
 	}
 
 	/** A draft GenAI Fund keeps private is not its members' until it is published (BEY-232). */
@@ -346,11 +427,13 @@ public class UseCaseService {
 	private MyUseCaseResponse response(Actor actor, Membership membership, UseCase useCase) {
 		Instant now = Instant.now();
 		String status = useCase.statusAt(now);
+		AccessRole role = access.roleOf(actor, membership, useCase);
 		People people = people(actor, List.of(useCase));
 		UUID sender = useCase.getSubmittedByAccountId();
 		return new MyUseCaseResponse(useCase.getId(), membership.organizationName(), status,
-				UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status) || UseCase.APPROVED.equals(status)
-						|| UseCase.PRIVATE.equals(status),
+				role.atLeast(AccessRole.EDITOR) && (UseCase.DRAFT.equals(status) || UseCase.NEEDS_CHANGES.equals(status)
+						|| UseCase.APPROVED.equals(status) || UseCase.PRIVATE.equals(status)),
+				role.code(),
 				useCase.isComplete(), useCase.getTitle(), useCase.getProblemStatement(), useCase.getIndustry(),
 				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
 				useCase.getCurrentSolutions(), useCase.getTargetUsers(),
