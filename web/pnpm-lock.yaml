@@ -7,6 +7,8 @@ settings:
 overrides:
   '@hey-api/json-schema-ref-parser>js-yaml': 4.3.2
   vite@>=8.3.0 <8.3.3: 8.3.4
+  undici@>=7.18.0 <7.30.1: 7.30.1
+  undici@>=8.0.0 <8.12.2: 8.12.3
 
 importers:
 

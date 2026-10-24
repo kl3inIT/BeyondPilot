@@ -109,7 +109,11 @@ function PerkPage({ page, signInHref }: PerkPageProps) {
       </Breadcrumb>
 
       <header className="flex items-start gap-3.5 md:gap-5">
-        <OrganizationMark name={card.organizationName} logoFileId={card.organizationLogoFileId} />
+        <OrganizationMark
+          name={card.organizationName}
+          logoFileId={card.organizationLogoFileId}
+          size="wide"
+        />
         <div className="flex min-w-0 flex-col gap-1.5">
           {card.value && (
             <p className="text-lg font-semibold text-primary md:text-xl">{card.value}</p>
