@@ -280,7 +280,7 @@ it does nothing, so tests and local runs never call Luma unless a test connects 
   for approval, the seats left and the waitlist, the questions, the hosts, the time zone, and the venue or the call with
   whether Luma keeps it for guests. Only events this environment names take registrations here
   (`beyondpilot.program.luma.registration-events`: an identifier each, or `*`; none by default, `*` in production, the
-  hidden test event on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
+  same on staging), and an event whose name starts with `beyondpilot.program.luma.created-name-prefix`
   when one is set ([Events created from BeyondPilot](#events-created-from-beyondpilot)); their page is `standard`, any
   other keeps Luma's. See [Registrations for Luma events](#registrations-for-luma-events).
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
