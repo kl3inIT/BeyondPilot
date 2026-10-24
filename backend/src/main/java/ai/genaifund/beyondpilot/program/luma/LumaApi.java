@@ -531,8 +531,11 @@ public final class LumaApi {
 		for (JsonNode entry : types.path("entries")) {
 			String id = text(unwrap(entry, "ticket_type"), "id");
 			if (id != null) {
-				call(HttpMethod.POST, "/v1/events/ticket-types/update", Map.of(), key,
-						Map.of("event_ticket_type_id", id, "require_approval", approval));
+				// In a fixed order, so what is sent reads the same each time.
+				Map<String, Object> body = new LinkedHashMap<>();
+				body.put("event_ticket_type_id", id);
+				body.put("require_approval", approval);
+				call(HttpMethod.POST, "/v1/events/ticket-types/update", Map.of(), key, body);
 				count++;
 			}
 		}
